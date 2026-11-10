@@ -1,6 +1,8 @@
 # Browser AI Games
 
-Free browser games made with AI — racing, fighting and adventure. No download, no build step: every game is a single HTML file.
+A small collection of AI-made games you can play right in your browser. Nothing too hard, just fun: made for kids, and for dads and moms who want to play together with them :)
+
+Racing, fighting and adventure, 1–2 players on one keyboard. No download, no build step: every game is a single HTML file.
 
 **▶ Play:** https://ozzoet.github.io/browser-ai-games/
 
