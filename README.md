@@ -12,7 +12,7 @@ Free browser games made with AI — racing, fighting and adventure. No download,
 | Studio Zero | 3D action adventure | 1 | [`studio-zero/`](studio-zero/) |
 | City Rush | Sprint racing | 1 | [`city-rush/`](city-rush/) |
 
-Dino Frenzy and Fight! currently have an Italian interface; the other games are in English.
+Dino Frenzy currently has an Italian interface; the other games are in English.
 
 ## Run locally
 Open `index.html` in a browser, or serve the folder: `python -m http.server 8000` → http://localhost:8000

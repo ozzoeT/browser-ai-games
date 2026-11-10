@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FIGHT! — Arena dei Quattro</title>
+<title>Fight! – 3D fighting game, 1 or 2 players | Browser AI Games</title><meta name="description" content="Free 3D fighting game in your browser: four fighters, special moves and supers. Fight the CPU or a friend on the same keyboard.">
 <style>
   html, body { margin: 0; height: 100%; background: #05050a; overflow: hidden; }
   #wrap { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
@@ -13,7 +13,7 @@
 </head>
 <body>
 <div id="wrap"><canvas id="gl"></canvas><canvas id="c"></canvas></div>
-<div id="err">Impossibile avviare il gioco: il browser non supporta WebGL (grafica 3D). Prova con Chrome, Edge o Firefox aggiornati.</div>
+<div id="err">Unable to start the game: your browser doesn't support WebGL (3D graphics). Try an up-to-date Chrome, Edge or Firefox.</div>
 <script>
 /**
  * @license
@@ -201,44 +201,44 @@ const PZ = (f, n) => f.ch.P[n] || POSES[n] || f.ch.P.idle || POSES.idle;
 
 // ============================================================ personaggi
 const CHARS = [
-  { id: 'kaira', name: 'KAIRA', style: 'Equilibrata · Karate', stage: 0,
-    desc: 'Tecnica pulita e completa: pugni diretti, calcio frontale e un potente calcio circolare.',
+  { id: 'kaira', name: 'KAIRA', style: 'Balanced · Karate', stage: 0,
+    desc: 'Clean, complete technique: straight punches, a front kick and a powerful roundhouse kick.',
     hp: 100, walk: 4.3, jump: -19.5, spd: 1, dmg: 1, scale: 1, reach: 1, bulk: 1, bounce: .6, stats: [3, 3, 3, 3],
     col: { skin: '#f0c29a', top: '#f4f1ea', sleeve: '#f4f1ea', fore: '#f0c29a', pants: '#f4f1ea', shin: '#eae6dc', shoe: '#e0ae86', glove: '#f0c29a', belt: '#1a1a22', accent: '#d8342a', hair: '#2b1b17', glow: '#ff7b2e' },
     alt: { top: '#3a4a7a', sleeve: '#3a4a7a', pants: '#3a4a7a', shin: '#34436e', accent: '#ffd21e' },
     P: { idle: P(.08, 0, [.9, .9], [-.2, 1.6], [.55, -.75], [-.35, -.2], 0, .6) },
-    nm: { p: ['jabW', 'kizami'], p2: ['gyakuW', 'gyaku'], k: ['maeW', 'mae'], khb: [15, -138, 124, -72], h: ['sideW', 'side'], hhb: [15, -152, 150, -95] }, hName: 'Yoko-geri', hLabel: 'calcio laterale',
+    nm: { p: ['jabW', 'kizami'], p2: ['gyakuW', 'gyaku'], k: ['maeW', 'mae'], khb: [15, -138, 124, -72], h: ['sideW', 'side'], hhb: [15, -152, 150, -95] }, hName: 'Yoko-geri', hLabel: 'side kick',
     demo: ['idle', 'kizami', 'gyaku', 'idle', 'maeW', 'mae', 'idle', 'sideW', 'side', 'side', 'sideW', 'idle', 'roundW', 'round', 'roundW', 'idle'],
     ai: { nR: 230, dR: 140, supR: 150, combo: 'n', aa: 'd' } },
-  { id: 'jin', name: 'JIN', style: 'Veloce · Kung Fu', stage: 3,
-    desc: 'Rapidissimo ma fragile: raffiche di pugni a catena, calcio laterale e calcio volante.',
+  { id: 'jin', name: 'JIN', style: 'Fast · Kung Fu', stage: 3,
+    desc: 'Lightning fast but fragile: chain-punch flurries, a side kick and a flying kick.',
     hp: 86, walk: 5.9, jump: -20.5, spd: .8, dmg: .85, scale: .97, reach: .97, bulk: .92, bounce: .3, stats: [2, 5, 2, 3],
     col: { skin: '#d9a57c', top: '#e8862a', sleeve: '#e8862a', sleeveF: '#d9a57c', fore: '#d9a57c', pants: '#c96a1e', shin: '#efe9da', shoe: '#1a1a22', glove: '#d9a57c', belt: '#a8231c', accent: '#a8231c', hair: '#1a1410', glow: '#ffb02e' },
     alt: { top: '#5a6a7a', sleeve: '#5a6a7a', pants: '#3f4c5a', belt: '#e8c23a' },
     P: { idle: P(-.02, 0, [1.0, .6], [.5, 1.3], [.35, -.35], [-.15, -.55], 0, .75) },
-    nm: { p: ['jabW', 'wcA'], p2: ['wcA', 'wcB'], k: ['maeW', 'mae'], khb: [15, -138, 122, -72], h: ['sideW', 'side'], hhb: [15, -150, 146, -92], hsu: 9 }, hName: 'Calcio laterale', hLabel: 'calcio laterale',
+    nm: { p: ['jabW', 'wcA'], p2: ['wcA', 'wcB'], k: ['maeW', 'mae'], khb: [15, -138, 122, -72], h: ['sideW', 'side'], hhb: [15, -150, 146, -92], hsu: 9 }, hName: 'Side Kick', hLabel: 'side kick',
     demo: ['idle', 'wcA', 'wcB', 'wcA', 'wcB', 'idle', 'sideW', 'side', 'sideW', 'idle', 'jKick', 'idle'],
     ai: { nR: 110, dR: 330, supR: 120, combo: 'n', aa: 'p' } },
-  { id: 'bruno', name: 'BRUNO', style: 'Potente · Lotta di strada', stage: 2,
-    desc: 'Lento ma devastante: tanta resistenza, ganci pesanti e una carica che assorbe un colpo.',
+  { id: 'bruno', name: 'BRUNO', style: 'Powerful · Street Brawl', stage: 2,
+    desc: 'Slow but devastating: huge stamina, heavy hooks and a charge that shrugs off a hit.',
     hp: 126, walk: 3.3, jump: -17.5, spd: 1.22, dmg: 1.32, scale: 1.14, reach: 1, bulk: 1.38, bounce: .2, stats: [5, 1, 5, 2],
     col: { skin: '#c98d62', top: '#2f6b45', sleeve: '#c98d62', fore: '#c98d62', pants: '#3a3f55', shin: '#3a3f55', shoe: '#3d2616', glove: '#e8e2d4', belt: '#5a3a22', accent: '#ffc531', hair: '#3a2414', glow: '#ffb52e' },
     alt: { top: '#8a2a2a', pants: '#2a2a30', shin: '#2a2a30' },
     P: { idle: P(.26, 0, [.75, 1.5], [.45, 1.7], [.6, -.85], [-.4, -.3], 0, .35) },
-    nm: { p: ['hookW', 'hook'], p2: ['overW', 'over'], k: ['teepW', 'teep'], khb: [15, -128, 120, -62], kkb: 11, h: ['kneeW', 'knee'], hhb: [10, -160, 84, -82], hsu: 8, hstep: 6, hkb: 7, hdmg: 11 }, hName: 'Ginocchiata', hLabel: 'ginocchiata',
+    nm: { p: ['hookW', 'hook'], p2: ['overW', 'over'], k: ['teepW', 'teep'], khb: [15, -128, 120, -62], kkb: 11, h: ['kneeW', 'knee'], hhb: [10, -160, 84, -82], hsu: 8, hstep: 6, hkb: 7, hdmg: 11 }, hName: 'Knee Strike', hLabel: 'knee strike',
     demo: ['idle', 'hookW', 'hook', 'overW', 'over', 'idle', 'teepW', 'teep', 'idle', 'kneeW', 'knee', 'idle', 'slamW', 'slam', 'idle'],
     ai: { nR: 125, dR: 340, supR: 150, combo: 'd', aa: 'p' } },
-  { id: 'lyra', name: 'LYRA', style: 'Allungo · Taekwondo', stage: 1,
-    desc: 'Gambe lunghe e calci spettacolari: calcio alto, calcio ad ascia e calcio girato all\'indietro.',
+  { id: 'lyra', name: 'LYRA', style: 'Reach · Taekwondo', stage: 1,
+    desc: 'Long legs and spectacular kicks: high kick, axe kick and spinning back kick.',
     hp: 92, walk: 4.2, jump: -19.5, spd: 1.02, dmg: .95, scale: 1.02, reach: 1.06, bulk: .9, bounce: 2.2, stats: [3, 3, 2, 5],
     col: { skin: '#f3d2c0', top: '#f2f4f8', sleeve: '#f2f4f8', fore: '#f3d2c0', pants: '#23262e', shin: '#23262e', shoe: '#2a6fd0', glove: '#2a6fd0', belt: '#2a6fd0', accent: '#2a6fd0', hair: '#8a3a22', glow: '#5aa8ff' },
     alt: { top: '#d8342a', sleeve: '#d8342a', shoe: '#f2f4f8', glove: '#f2f4f8', belt: '#f2f4f8' },
     P: { idle: P(.02, 0, [.45, 1.3], [.1, 1.7], [.32, -.42], [-.3, -.35], 0, .95) },
-    nm: { p: ['jabW', 'jab'], p2: ['crossW', 'cross'], k: ['roundW', 'round'], khb: [15, -188, 138, -122], h: ['sideHW', 'sideH'], hhb: [15, -200, 152, -122] }, hName: 'Yeop-chagi', hLabel: 'calcio laterale',
+    nm: { p: ['jabW', 'jab'], p2: ['crossW', 'cross'], k: ['roundW', 'round'], khb: [15, -188, 138, -122], h: ['sideHW', 'sideH'], hhb: [15, -200, 152, -122] }, hName: 'Yeop-chagi', hLabel: 'side kick',
     demo: ['idle', 'roundW', 'round', 'roundW', 'idle', 'axeUp', 'axeDown', 'idle', 'jab', 'cross', 'idle', 'sideHW', 'sideH', 'sideH', 'idle'],
     ai: { nR: 140, dR: 215, supR: 200, combo: 'd', aa: 'k' } }
 ];
-const STAT_NAMES = ['Potenza', 'Velocità', 'Resistenza', 'Allungo'];
+const STAT_NAMES = ['Power', 'Speed', 'Stamina', 'Reach'];
 
 function normals(ch) {
   const r = ch.reach, d = ch.dmg, n = ch.nm, f = x => Math.max(2, Math.round(x * ch.spd));
@@ -277,26 +277,26 @@ const SPECIALS = {
       on(f, t) { if (inAct(this, t)) f.vx = f.facing * 4.2; if (t >= this.su && (t - this.su) % 6 === 0 && t < this.su + this.ac) sfx('whoosh'); } }
   },
   jin: {
-    n: { name: 'Pugni a Catena', su: 5, ac: 18, rc: 12, multi: 5, hb: [10, -160, 100, -100], dmg: 3.2, hs: 14, bs: 9, kb: 1.5, chip: true, stop: 3,
+    n: { name: 'Chain Punches', su: 5, ac: 18, rc: 12, multi: 5, hb: [10, -160, 100, -100], dmg: 3.2, hs: 14, bs: 9, kb: 1.5, chip: true, stop: 3,
       on(f, t) { if (inAct(this, t)) { f.vx = f.facing * 3; if ((t - this.su) % 5 === 0) sfx('whoosh'); } } },
-    d: { name: 'Calcio Volante', su: 7, ac: 16, rc: 12, wind: 'crouch', pose: 'jKick', rec: 'jump', hb: [5, -112, 116, -18], dmg: 11, kd: true, launch: -9, kb: 9, rush: 260, chip: true,
+    d: { name: 'Flying Kick', su: 7, ac: 16, rc: 12, wind: 'crouch', pose: 'jKick', rec: 'jump', hb: [5, -112, 116, -18], dmg: 11, kd: true, launch: -9, kb: 9, rush: 260, chip: true,
       on(f, t) { if (t === this.su) { f.vy = -10.5; f.vx = f.facing * 13; dust(f.x, 5); sfx('jump'); } } },
-    sup: { name: 'CENTO PUGNI', sup: true, su: 6, ac: 38, rc: 22, multi: 4, hb: [10, -165, 104, -90], dmg: 2.6, hs: 14, bs: 9, kb: 1.5, chip: true, stop: 3,
+    sup: { name: 'HUNDRED FISTS', sup: true, su: 6, ac: 38, rc: 22, multi: 4, hb: [10, -165, 104, -90], dmg: 2.6, hs: 14, bs: 9, kb: 1.5, chip: true, stop: 3,
       fin: { t: 7, dmg: 12, kd: true, launch: -10, kb: 15, stop: 16, chip: true, sup: true },
       on(f, t) { if (inAct(this, t)) { f.vx = f.facing * 3.4; if ((t - this.su) % 4 === 0) sfx('whoosh'); } } }
   },
   bruno: {
-    n: { name: 'Martello', su: 16, ac: 4, rc: 24, wind: 'slamW', pose: 'slam', rec: 'slam', hb: [10, -195, 106, 0], dmg: 15, kd: true, launch: -6, kb: 4, chip: true,
+    n: { name: 'Hammer', su: 16, ac: 4, rc: 24, wind: 'slamW', pose: 'slam', rec: 'slam', hb: [10, -195, 106, 0], dmg: 15, kd: true, launch: -6, kb: 4, chip: true,
       on(f, t) { if (t === this.su + 2) { game.shake = Math.max(game.shake, 7); dust(f.x + f.facing * 70, 8); sfx('quake'); } } },
-    d: { name: 'Carica di Spalla', su: 11, ac: 22, rc: 18, wind: 'crouch', pose: 'dash', rec: 'dash', hb: [0, -150, 78, -30], dmg: 15, kd: true, launch: -10, kb: 10, armor: 1, rush: 270, chip: true,
+    d: { name: 'Shoulder Charge', su: 11, ac: 22, rc: 18, wind: 'crouch', pose: 'dash', rec: 'dash', hb: [0, -150, 78, -30], dmg: 15, kd: true, launch: -10, kb: 10, armor: 1, rush: 270, chip: true,
       on(f, t) { if (inAct(this, t)) { f.vx = f.facing * 11.5; if (t % 3 === 0) dust(f.x - f.facing * 30, 2); } } },
-    sup: { name: 'DEMOLITORE', sup: true, su: 14, ac: 6, rc: 34, wind: 'upperW', pose: 'upper', rec: 'upper', hb: [5, -215, 112, -40], dmg: 34, kd: true, launch: -21, kb: 5, armor: 2, stop: 20, chip: true,
+    sup: { name: 'WRECKING BALL', sup: true, su: 14, ac: 6, rc: 34, wind: 'upperW', pose: 'upper', rec: 'upper', hb: [5, -215, 112, -40], dmg: 34, kd: true, launch: -21, kb: 5, armor: 2, stop: 20, chip: true,
       on(f, t) { if (t >= 5 && t < this.su) f.vx = f.facing * 9; if (t === this.su) { f.vy = -7; dust(f.x, 8); } } }
   },
   lyra: {
-    n: { name: 'Calcio ad Ascia', su: 14, ac: 5, rc: 20, wind: 'axeUp', pose: 'axeDown', rec: 'axeDown', hb: [20, -205, 126, -30], dmg: 12, kd: true, launch: -5, kb: 4, chip: true,
+    n: { name: 'Axe Kick', su: 14, ac: 5, rc: 20, wind: 'axeUp', pose: 'axeDown', rec: 'axeDown', hb: [20, -205, 126, -30], dmg: 12, kd: true, launch: -5, kb: 4, chip: true,
       on(f, t) { if (t === this.su + 3) dust(f.x + f.facing * 80, 5); } },
-    d: { name: 'Calcio Girato', su: 12, ac: 5, rc: 20, wind: 'spinW', pose: 'backKick', rec: 'spinEnd', hb: [10, -142, 140, -78], dmg: 13, kd: true, launch: -8, kb: 13, rush: 90, chip: true,
+    d: { name: 'Spinning Back Kick', su: 12, ac: 5, rc: 20, wind: 'spinW', pose: 'backKick', rec: 'spinEnd', hb: [10, -142, 140, -78], dmg: 13, kd: true, launch: -8, kb: 13, rush: 90, chip: true,
       on(f, t) { if (t >= 3 && t < this.su) f.vx = f.facing * 6; } },
     sup: { name: 'TORNADO', sup: true, su: 8, ac: 42, rc: 24, multi: 14, wind: 'roundW', pose: 'tornado', rec: 'idle', hb: [10, -188, 136, -80], dmg: 9, hs: 20, bs: 12, kb: 3, chip: true, stop: 6,
       fin: { t: 14, dmg: 12, kd: true, launch: -12, kb: 12, stop: 16, chip: true, sup: true },
@@ -315,10 +315,10 @@ for (const ch of CHARS) {
 }
 
 const DIFFS = [
-  { name: 'FACILE', desc: 'La CPU reagisce lentamente, para poco e usa poche tecniche speciali.', col: '#6fe07a', react: 26, block: .12, aggro: .45, special: .25, combo: .05, antiAir: .1, sup: .25 },
-  { name: 'NORMALE', desc: 'Un avversario onesto: para, contrattacca e usa le tecniche speciali.', col: '#ffd84a', react: 15, block: .4, aggro: .7, special: .5, combo: .35, antiAir: .4, sup: .6 },
-  { name: 'DIFFICILE', desc: 'Riflessi rapidi, combinazioni frequenti e buona difesa.', col: '#ff8a3a', react: 8, block: .66, aggro: .85, special: .7, combo: .7, antiAir: .7, sup: .85 },
-  { name: 'INCUBO', desc: 'Reazioni quasi istantanee. Punisce ogni errore. Buona fortuna.', col: '#ff3b5c', react: 4, block: .88, aggro: .95, special: .85, combo: .95, antiAir: .92, sup: 1 }
+  { name: 'EASY', desc: 'The CPU reacts slowly, rarely blocks and uses few special moves.', col: '#6fe07a', react: 26, block: .12, aggro: .45, special: .25, combo: .05, antiAir: .1, sup: .25 },
+  { name: 'NORMAL', desc: 'A fair opponent: blocks, counters and uses special moves.', col: '#ffd84a', react: 15, block: .4, aggro: .7, special: .5, combo: .35, antiAir: .4, sup: .6 },
+  { name: 'HARD', desc: 'Quick reflexes, frequent combos and solid defence.', col: '#ff8a3a', react: 8, block: .66, aggro: .85, special: .7, combo: .7, antiAir: .7, sup: .85 },
+  { name: 'NIGHTMARE', desc: 'Near-instant reactions. Punishes every mistake. Good luck.', col: '#ff3b5c', react: 4, block: .88, aggro: .95, special: .85, combo: .95, antiAir: .92, sup: 1 }
 ];
 
 // ============================================================ stato di gioco
@@ -729,19 +729,19 @@ function fightTick() {
     } else if (g.timer <= 0) {
       const r0 = a.hp / a.ch.hp, r1 = b.hp / b.ch.hp;
       g.phase = 'ko'; g.pt = 0; g.winner = Math.abs(r0 - r1) < .001 ? -1 : r0 > r1 ? 0 : 1;
-      banner('TEMPO!', '', '#ffd84a'); sfx('bell');
+      banner('TIME!', '', '#ffd84a'); sfx('bell');
     }
   } else if (g.phase === 'intro') {
-    if (g.pt === 1) banner(g.wins[0] === 1 && g.wins[1] === 1 ? 'ROUND FINALE' : 'ROUND ' + g.round, '', '#ffd84a');
-    if (g.pt === 68) { banner('COMBATTI!', '', '#ffffff'); sfx('bell'); }
+    if (g.pt === 1) banner(g.wins[0] === 1 && g.wins[1] === 1 ? 'FINAL ROUND' : 'ROUND ' + g.round, '', '#ffd84a');
+    if (g.pt === 68) { banner('FIGHT!', '', '#ffffff'); sfx('bell'); }
     if (g.pt >= 86) g.phase = 'fight';
   } else if (g.phase === 'ko') {
     if (g.pt === 80) {
-      if (g.winner < 0) banner('PAREGGIO', 'Il round si ripete', '#cfd3ff');
+      if (g.winner < 0) banner('DRAW', 'The round will be replayed', '#cfd3ff');
       else {
         const w = F[g.winner]; g.wins[g.winner]++;
         if (w.state === 'idle' || w.state === 'crouch') setState(w, 'win');
-        banner(w.ch.name + ' VINCE', w.hp >= w.ch.hp ? 'PERFECT!' : '', w.ch.col.glow); sfx('ok');
+        banner(w.ch.name + ' WINS', w.hp >= w.ch.hp ? 'PERFECT!' : '', w.ch.col.glow); sfx('ok');
       }
     }
     if (g.pt >= 205) {
@@ -953,7 +953,7 @@ function stageKit(g, seed) {
 }
 const X0 = -1100, X1 = WORLD + 1100;
 const STAGES = [
-  { name: 'Dojo del Tramonto', amb: 'petals',
+  { name: 'Sunset Dojo', amb: 'petals',
     env: { sky: ['#2a1650', '#8a3a70', '#f0704a', '#ffc878'], fog: ['#e08a6a', 1500, 5200], hemi: ['#ffc8a0', '#5a3050', .8], sun: ['#ffd8b0', 1.0, [500, 700, 800]] },
     build(g) {
       const K = stageKit(g, 11), R = K.R;
@@ -981,7 +981,7 @@ const STAGES = [
       for (let i = 0; i < 9; i++) K.peak(X0 - 900 + i * 620 + R() * 200, -3300 - R() * 600, 600 + R() * 350, 600 + R() * 500, i % 2 ? '#6a4a8a' : '#5a3f7a', '#f6dfe6');
       K.disc(330, '#ffe6ac', 820, 420, -4600, 12);
     } },
-  { name: 'Tetti della Città', amb: 'rain',
+  { name: 'City Rooftops', amb: 'rain',
     env: { sky: ['#05061a', '#141040', '#3a1a5c', '#7a2a70'], fog: ['#2a1a54', 1400, 5200], hemi: ['#a8b4f0', '#3a3058', 1.0], sun: ['#dfe6ff', .95, [-500, 800, 700]] },
     build(g) {
       const K = stageKit(g, 23), R = K.R;
@@ -1006,7 +1006,7 @@ const STAGES = [
       K.sign('HOTEL', '#ff4fa8', 300, 330, -540, 300, 110); K.sign('BAR', '#4fe8ff', 1350, 250, -520, 200, 90); K.sign('道場', '#ffe14a', 2050, 420, -700, 260, 120);
       K.disc(150, '#e8f4ff', 1240, 760, -3600, 14); K.disc(34, '#bcd4e8', 1200, 790, -3590, 8); K.disc(22, '#bcd4e8', 1300, 720, -3590, 8);
     } },
-  { name: 'Porto al Crepuscolo', amb: null,
+  { name: 'Twilight Harbour', amb: null,
     env: { sky: ['#1a2a50', '#3a5a80', '#e08a60', '#ffd090'], fog: ['#d09a78', 1700, 6000], hemi: ['#ffd0a8', '#40506a', .85], sun: ['#ffe0b8', 1.0, [600, 650, 800]] },
     build(g) {
       const K = stageKit(g, 37), R = K.R;
@@ -1032,7 +1032,7 @@ const STAGES = [
       for (let i = 0; i < 7; i++) K.peak(X0 - 800 + i * 700 + R() * 300, -4600 - R() * 600, 700 + R() * 400, 380 + R() * 300, '#3a4a6a');
       K.disc(260, '#ffcf90', 1500, 260, -5600, 12);
     } },
-  { name: 'Tempio tra le Nevi', amb: 'snow',
+  { name: 'Snowbound Temple', amb: 'snow',
     env: { sky: ['#4a78bc', '#8ab0dc', '#d8e6f6', '#ffffff'], fog: ['#dfe8f5', 1500, 5200], hemi: ['#eef4ff', '#7a8aa8', .68], sun: ['#fff4e0', .62, [-450, 800, 700]] },
     build(g) {
       const K = stageKit(g, 53), R = K.R;
@@ -1198,7 +1198,7 @@ function hpBar(f, right) {
   ctx.fillStyle = 'rgba(255,255,255,.25)'; ctx.fillRect(x0, y + 2, w, 5);
   ctx.strokeStyle = '#f2f2ff'; ctx.lineWidth = 2.5; ctx.strokeRect(x0 - 1, y - 1, w + 2, h + 2);
   ctx.restore();
-  const label = f.ch.name + (right && game.mode === 1 ? '  · CPU ' + DIFFS[game.diff].name : right ? '  · G2' : '  · G1');
+  const label = f.ch.name + (right && game.mode === 1 ? '  · CPU ' + DIFFS[game.diff].name : right ? '  · P2' : '  · P1');
   txt(label, right ? 1212 : 68, 88, 26, '#fff', right ? 'right' : 'left', { stroke: '#0a0a14' });
   for (let i = 0; i < 2; i++) {
     const px = right ? 716 + i * 30 : 564 - i * 30, on = game.wins[f.idx] > i;
@@ -1209,11 +1209,11 @@ function hpBar(f, right) {
   const mr = f.meter / 100, col = f.ch.col.glow;
   ctx.fillStyle = full && (game.T >> 2) % 2 ? '#ffffff' : col; ctx.fillRect(right ? mx + mw * (1 - mr) : mx, my, mw * mr, 14);
   ctx.strokeStyle = '#f2f2ff'; ctx.lineWidth = 2; ctx.strokeRect(mx - 1, my - 1, mw + 2, 16);
-  txt(full ? 'SUPER PRONTA!' + (right ? (game.mode === 2 ? '  J + K + L' : '') : '  F + G + H') : 'SUPER', right ? mx + mw : mx, my - 16, 17, full ? '#fff' : '#c8cbe8', right ? 'right' : 'left', { stroke: '#0a0a14' });
+  txt(full ? 'SUPER READY!' + (right ? (game.mode === 2 ? '  J + K + L' : '') : '  F + G + H') : 'SUPER', right ? mx + mw : mx, my - 16, 17, full ? '#fff' : '#c8cbe8', right ? 'right' : 'left', { stroke: '#0a0a14' });
   if (f.comboT > 0 && f.combo > 1) {
     const k = 1 + Math.max(0, (f.comboT - 75) / 10) * .5, cx = right ? 1130 : 150;
     ctx.save(); ctx.translate(cx, 190); ctx.scale(k, k); ctx.globalAlpha = Math.min(1, f.comboT / 15);
-    txt(String(f.combo), 0, 0, 78, '#ffd21e', 'center', { stroke: '#0a0a14' }); txt('COLPI!', 0, 50, 28, '#fff', 'center', { stroke: '#0a0a14' });
+    txt(String(f.combo), 0, 0, 78, '#ffd21e', 'center', { stroke: '#0a0a14' }); txt('HITS!', 0, 50, 28, '#fff', 'center', { stroke: '#0a0a14' });
     ctx.restore();
   }
 }
@@ -1225,13 +1225,13 @@ function drawHUD() {
   ctx.strokeStyle = '#f2f2ff'; ctx.lineWidth = 2.5; ctx.stroke();
   txt(String(sec).padStart(2, '0'), 638, 60, 54, sec <= 10 ? '#ff4a3a' : '#fff', 'center');
   if (g.phase === 'intro' && g.round === 1 && g.wins[0] + g.wins[1] === 0) {
-    const t = g.mode === 1 ? 'A / D muovi  ·  W salta  ·  S giù  ·  tieni INDIETRO per parare' : 'G1 si muove con WASD  ·  G2 con le frecce  ·  tieni INDIETRO per parare';
+    const t = g.mode === 1 ? 'A / D move  ·  W jump  ·  S crouch  ·  hold BACK to block' : 'P1 moves with WASD  ·  P2 with the arrow keys  ·  hold BACK to block';
     txt(t, W / 2, 598, 20, '#fff', 'center', { body: true, stroke: '#0a0a14', sw: 4 });
   }
   const lg = { body: true, stroke: '#0a0a14', sw: 4 };
-  const keyLine = (f, a, b, c) => `${a} pugno · ${b} calcio · ${c} ${f.ch.hLabel}   ·   ${a}+${b} speciale 1 · ${b}+${c} speciale 2 · ${a}+${b}+${c} super`;
+  const keyLine = (f, a, b, c) => `${a} punch · ${b} kick · ${c} ${f.ch.hLabel}   ·   ${a}+${b} special 1 · ${b}+${c} special 2 · ${a}+${b}+${c} super`;
   if (g.mode === 1) txt(keyLine(g.f[0], 'F', 'G', 'H'), W / 2, 648, 15, '#fff', 'center', lg);
-  else { txt('G1   ' + keyLine(g.f[0], 'F', 'G', 'H'), W / 2, 630, 14, '#ffd21e', 'center', lg); txt('G2   ' + keyLine(g.f[1], 'J', 'K', 'L'), W / 2, 650, 14, '#3fe8ff', 'center', lg); }
+  else { txt('P1   ' + keyLine(g.f[0], 'F', 'G', 'H'), W / 2, 630, 14, '#ffd21e', 'center', lg); txt('P2   ' + keyLine(g.f[1], 'J', 'K', 'L'), W / 2, 650, 14, '#3fe8ff', 'center', lg); }
   if (g.banner) {
     const b = g.banner, k = 1 + Math.max(0, 1 - b.t / 9) * 1.6, a = Math.min(1, (b.max - b.t) / 14);
     ctx.save(); ctx.translate(W / 2, 300); ctx.scale(k, k); ctx.globalAlpha = a;
@@ -1256,8 +1256,8 @@ function renderFight() {
   drawHUD();
   if (g.paused) {
     dim(.72);
-    txt('PAUSA', W / 2, 250, 110, '#fff', 'center', { stroke: '#0a0a14' });
-    ['RIPRENDI', 'MENU PRINCIPALE'].forEach((s, i) => menuItem(s, W / 2, 380 + i * 70, g.pmenu === i, 44));
+    txt('PAUSED', W / 2, 250, 110, '#fff', 'center', { stroke: '#0a0a14' });
+    ['RESUME', 'MAIN MENU'].forEach((s, i) => menuItem(s, W / 2, 380 + i * 70, g.pmenu === i, 44));
   }
 }
 
@@ -1273,7 +1273,7 @@ function menuItem(s, x, y, on, size) {
 function demoPose(f, seq, period, off) {
   poseTo(f, PZ(f, seq[((game.T + (off || 0)) / period | 0) % seq.length]), .25);
 }
-const TITLE_ITEMS = ['1 GIOCATORE  vs  CPU', '2 GIOCATORI', 'COMANDI'];
+const TITLE_ITEMS = ['1 PLAYER  vs  CPU', '2 PLAYERS', 'CONTROLS'];
 function titleDemo() {
   const g = game;
   if (!g.titleF) { const a = Math.random() * 4 | 0; g.titleF = [mkFighter(a, 0, WORLD / 2 - 150), mkFighter((a + 1 + (Math.random() * 3 | 0)) % 4, 1, WORLD / 2 + 150)]; }
@@ -1299,9 +1299,9 @@ function titleRender() {
   txt('FIGHT!', 7, 7, 150, '#1a0520', 'center');
   txt('FIGHT!', 0, 0, 150, '#ffd21e', 'center', { stroke: '#b3122a', sw: 16 });
   ctx.restore();
-  txt('ARENA DEI QUATTRO', W / 2, 192, 34, '#fff', 'center', { stroke: '#0a0a14' });
+  txt('ARENA OF FOUR', W / 2, 192, 34, '#fff', 'center', { stroke: '#0a0a14' });
   TITLE_ITEMS.forEach((s, i) => menuItem(s, W / 2, 566 + i * 44, g.menu === i, 32));
-  txt('↑ ↓ / W S  scegli   ·   INVIO / F  conferma   ·   M  audio ' + (mute ? 'OFF' : 'ON'), W / 2, 698, 17, '#e8e8ff', 'center', { body: true, stroke: '#0a0a14', sw: 4 });
+  txt('↑ ↓ / W S  select   ·   ENTER / F  confirm   ·   M  audio ' + (mute ? 'OFF' : 'ON'), W / 2, 698, 17, '#e8e8ff', 'center', { body: true, stroke: '#0a0a14', sw: 4 });
 }
 
 function diffTick() {
@@ -1314,21 +1314,21 @@ function diffTick() {
 function diffRender() {
   const g = game;
   dim(.72);
-  txt('DIFFICOLTÀ', W / 2, 110, 90, '#fff', 'center', { stroke: '#0a0a14' });
+  txt('DIFFICULTY', W / 2, 110, 90, '#fff', 'center', { stroke: '#0a0a14' });
   DIFFS.forEach((d, i) => {
     const y = 240 + i * 82, on = g.diff === i;
     menuItem(d.name, W / 2, y, on, 52);
     for (let k = 0; k <= i; k++) { ctx.fillStyle = on ? d.col : '#4a4d6a'; ctx.beginPath(); ctx.arc(W / 2 + 250 + k * 26, y, 9, 0, TAU); ctx.fill(); }
   });
   txt(DIFFS[g.diff].desc, W / 2, 590, 24, DIFFS[g.diff].col, 'center', { body: true, stroke: '#0a0a14', sw: 5 });
-  txt('INVIO / F  conferma   ·   ESC  indietro', W / 2, 690, 18, '#c8cbe8', 'center', { body: true, stroke: '#0a0a14', sw: 4 });
+  txt('ENTER / F  confirm   ·   ESC  back', W / 2, 690, 18, '#c8cbe8', 'center', { body: true, stroke: '#0a0a14', sw: 4 });
 }
 
 function helpTick() { titleDemo(); if (navBack() || navOK()) { game.screen = 'title'; sfx('back'); } }
 function helpRender() {
   dim(.82);
-  txt('COMANDI', W / 2, 70, 70, '#fff', 'center', { stroke: '#0a0a14' });
-  const rows = [['', 'GIOCATORE 1', 'GIOCATORE 2'], ['Muovi', 'A / D', '← / →'], ['Salta', 'W', '↑'], ['Accovacciati', 'S', '↓'], ['Pugno', 'F', 'J'], ['Calcio', 'G', 'K'], ['Calcio laterale *', 'H', 'L'], ['Speciale 1', 'F + G', 'J + K'], ['Speciale 2', 'G + H', 'K + L'], ['Super (a barra piena)', 'F + G + H', 'J + K + L']];
+  txt('CONTROLS', W / 2, 70, 70, '#fff', 'center', { stroke: '#0a0a14' });
+  const rows = [['', 'PLAYER 1', 'PLAYER 2'], ['Move', 'A / D', '← / →'], ['Jump', 'W', '↑'], ['Crouch', 'S', '↓'], ['Punch', 'F', 'J'], ['Kick', 'G', 'K'], ['Side kick *', 'H', 'L'], ['Special 1', 'F + G', 'J + K'], ['Special 2', 'G + H', 'K + L'], ['Super (full meter)', 'F + G + H', 'J + K + L']];
   rows.forEach((r, i) => {
     const y = 146 + i * 38, head = i === 0;
     if (!head) { ctx.fillStyle = i % 2 ? 'rgba(255,255,255,.06)' : 'rgba(255,255,255,.02)'; ctx.fillRect(250, y - 18, 780, 36); }
@@ -1337,14 +1337,14 @@ function helpRender() {
     txt(r[2], 900, y, head ? 28 : 26, head ? '#3fe8ff' : '#fff', 'center', head ? { stroke: '#0a0a14' } : { body: true });
   });
   const tips = [
-    'PARATA — tieni premuto INDIETRO (lontano dall\'avversario) mentre vieni colpito.',
-    'TASTI INSIEME — premili nello stesso momento (va bene anche uno subito dopo l\'altro).   * Bruno: ginocchiata.',
-    'COMBINAZIONE — pugno due volte: diretto avanzato + diretto arretrato. Poi puoi chiudere con una speciale.',
-    'SUPER — funziona solo quando la barra in basso è piena: si carica colpendo e subendo.',
-    'In 1 giocatore funzionano entrambi i set di tasti.   INVIO / ESC = pausa   ·   M = audio.'
+    'BLOCK — hold BACK (away from your opponent) while you are being attacked.',
+    'BUTTON COMBOS — press them together (one right after the other works too).   * Bruno: knee strike.',
+    'COMBO — punch twice: lead jab + rear straight. Then finish with a special.',
+    'SUPER — only works when the bottom meter is full: it charges as you hit and get hit.',
+    'In 1-player mode both key sets work.   ENTER / ESC = pause   ·   M = audio.'
   ];
   tips.forEach((t, i) => txt(t, W / 2, 518 + i * 32, 19, i === 3 ? '#ffd21e' : '#e8e8ff', 'center', { body: true, stroke: '#0a0a14', sw: 4 }));
-  txt('ESC / INVIO  indietro', W / 2, 692, 18, '#c8cbe8', 'center', { body: true, stroke: '#0a0a14', sw: 4 });
+  txt('ESC / ENTER  back', W / 2, 692, 18, '#c8cbe8', 'center', { body: true, stroke: '#0a0a14', sw: 4 });
 }
 
 // ---- selezione personaggi
@@ -1387,8 +1387,8 @@ function selectRender() {
   const g = game, s = g.sel, T = g.T;
   const gr = ctx.createLinearGradient(0, 0, W, 0); gr.addColorStop(0, 'rgba(6,4,20,.88)'); gr.addColorStop(.3, 'rgba(6,4,20,.25)'); gr.addColorStop(.7, 'rgba(6,4,20,.25)'); gr.addColorStop(1, 'rgba(6,4,20,.88)');
   ctx.fillStyle = gr; ctx.fillRect(0, 0, W, H); ctx.fillStyle = 'rgba(6,4,20,.6)'; ctx.fillRect(0, 520, W, 200); ctx.fillRect(0, 0, W, 86);
-  txt('SCEGLI IL TUO LOTTATORE', W / 2, 46, 50, '#fff', 'center', { stroke: '#0a0a14' });
-  const cols = ['#ffd21e', '#3fe8ff'], labels = g.mode === 1 ? ['GIOCATORE', 'CPU · ' + DIFFS[g.diff].name] : ['GIOCATORE 1', 'GIOCATORE 2'];
+  txt('CHOOSE YOUR FIGHTER', W / 2, 46, 50, '#fff', 'center', { stroke: '#0a0a14' });
+  const cols = ['#ffd21e', '#3fe8ff'], labels = g.mode === 1 ? ['PLAYER', 'CPU · ' + DIFFS[g.diff].name] : ['PLAYER 1', 'PLAYER 2'];
   for (let i = 0; i < 2; i++) {
     const active = g.mode === 2 || (i === 0 ? true : s.done[0]);
     const ci = s.cur[i], cx = i ? 870 : 410, al = i ? 'right' : 'left', tx = i ? 1240 : 40;
@@ -1396,7 +1396,7 @@ function selectRender() {
     if (!active) { txt('?', cx, 330, 220, '#5a5d7a', 'center', { stroke: '#0a0a14' }); continue; }
     if (ci >= CHARS.length) {
       txt('?', cx, 330, 240, cols[i], 'center', { stroke: '#0a0a14' });
-      txt('CASUALE', tx, 160, 60, '#fff', al, { stroke: '#0a0a14' }); continue;
+      txt('RANDOM', tx, 160, 60, '#fff', al, { stroke: '#0a0a14' }); continue;
     }
     const ch = CHARS[ci];
     txt(ch.name, tx, 162, 68, '#fff', al, { stroke: '#0a0a14' });
@@ -1410,7 +1410,7 @@ function selectRender() {
     const kk = i === 0 ? ['H', 'F + G', 'G + H', 'F + G + H'] : g.mode === 2 ? ['L', 'J + K', 'K + L', 'J + K + L'] : null;
     [ch.hName, ch.sp.n.name, ch.sp.d.name, ch.sp.sup.name + ' (super)'].forEach((m, k) =>
       txt((kk ? kk[k] + '  —  ' : '') + m, sx, 386 + k * 26, 16, k === 3 ? '#ffd21e' : '#fff', 'left', { body: true, stroke: '#0a0a14', sw: 3 }));
-    if (s.done[i]) txt('PRONTO!', cx, 150, 54, cols[i], 'center', { stroke: '#0a0a14' });
+    if (s.done[i]) txt('READY!', cx, 150, 54, cols[i], 'center', { stroke: '#0a0a14' });
   }
   const n = CHARS.length + 1, tw = 124, gap = 14, x0 = W / 2 - (n * tw + (n - 1) * gap) / 2, ty = 548;
   for (let k = 0; k < n; k++) {
@@ -1418,17 +1418,17 @@ function selectRender() {
     if (ch && PORT[k]) ctx.drawImage(PORT[k], x, ty, tw, 124);
     else { ctx.fillStyle = '#2a2c44'; ctx.fillRect(x, ty, tw, 124); txt('?', x + tw / 2, ty + 56, 90, '#c8cbe8', 'center', { stroke: '#0a0a14' }); }
     ctx.lineWidth = 3; ctx.strokeStyle = '#0a0a14'; ctx.strokeRect(x, ty, tw, 124);
-    txt(ch ? ch.name : 'CASUALE', x + tw / 2, ty + 108, 22, '#fff', 'center', { stroke: '#0a0a14' });
+    txt(ch ? ch.name : 'RANDOM', x + tw / 2, ty + 108, 22, '#fff', 'center', { stroke: '#0a0a14' });
     for (let i = 0; i < 2; i++) {
       const active = g.mode === 2 || i === 0 || s.done[0];
       if (!active || s.cur[i] !== k) continue;
       const pulse = s.done[i] ? 0 : sin(T * .25) * 2, o = 5 + i * 5 + pulse;
       ctx.lineWidth = 4; ctx.strokeStyle = cols[i]; ctx.strokeRect(x - o, ty - o, tw + o * 2, 124 + o * 2);
-      txt(g.mode === 1 ? (i ? 'CPU' : 'G1') : 'G' + (i + 1), x + (i ? tw - 20 : 20), ty - 14 - o, 20, cols[i], 'center', { stroke: '#0a0a14' });
+      txt(g.mode === 1 ? (i ? 'CPU' : 'P1') : 'P' + (i + 1), x + (i ? tw - 20 : 20), ty - 14 - o, 20, cols[i], 'center', { stroke: '#0a0a14' });
     }
   }
-  const hint = g.mode === 1 ? (s.done[0] ? 'Scegli l\'avversario:  ← →  ·  INVIO / F conferma  ·  ESC indietro' : '← →  /  A D  scegli  ·  INVIO / F  conferma  ·  ESC  indietro')
-    : 'G1:  A / D  +  F          G2:  ← / →  +  J          ESC  indietro';
+  const hint = g.mode === 1 ? (s.done[0] ? 'Choose your opponent:  ← →  ·  ENTER / F confirm  ·  ESC back' : '← →  /  A D  select  ·  ENTER / F  confirm  ·  ESC  back')
+    : 'P1:  A / D  +  F          P2:  ← / →  +  J          ESC  back';
   txt(hint, W / 2, 702, 17, '#e8e8ff', 'center', { body: true, stroke: '#0a0a14', sw: 4 });
 }
 
@@ -1451,7 +1451,7 @@ function vsRender() {
 }
 
 // ---- risultato
-const RES_ITEMS = ['RIVINCITA', 'SELEZIONE PERSONAGGI', 'MENU PRINCIPALE'];
+const RES_ITEMS = ['REMATCH', 'CHARACTER SELECT', 'MAIN MENU'];
 function resultTick() {
   const g = game; g.resT++;
   for (const f of g.f) blendPose(f);
@@ -1470,7 +1470,7 @@ function resultRender() {
   drawAmbient(STAGES[g.stage].amb, g.T);
   const gr = ctx.createLinearGradient(0, 0, 0, H); gr.addColorStop(0, 'rgba(6,4,20,.8)'); gr.addColorStop(.4, 'rgba(6,4,20,.1)'); gr.addColorStop(.62, 'rgba(6,4,20,.3)'); gr.addColorStop(1, 'rgba(6,4,20,.85)');
   ctx.fillStyle = gr; ctx.fillRect(0, 0, W, H);
-  const youWin = g.mode === 1 ? (g.matchWinner === 0 ? 'HAI VINTO!' : 'HAI PERSO…') : 'GIOCATORE ' + (g.matchWinner + 1) + ' VINCE!';
+  const youWin = g.mode === 1 ? (g.matchWinner === 0 ? 'YOU WIN!' : 'YOU LOSE…') : 'PLAYER ' + (g.matchWinner + 1) + ' WINS!';
   txt(w.ch.name, W / 2, 86, 110, '#fff', 'center', { stroke: '#0a0a14', sw: 12 });
   txt(youWin + '   ' + g.wins[0] + ' — ' + g.wins[1], W / 2, 168, 44, g.mode === 1 && g.matchWinner === 1 ? '#ff5a6a' : '#ffd21e', 'center', { stroke: '#0a0a14' });
   RES_ITEMS.forEach((s, i) => menuItem(s, W / 2, 548 + i * 52, g.menu === i, 36));
