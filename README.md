@@ -2,7 +2,7 @@
 
 Free browser games made with AI — racing, fighting and adventure. No download, no build step: every game is a single HTML file.
 
-**▶ Play:** https://ozzoet.github.io/-browser-ai-games/
+**▶ Play:** https://ozzoet.github.io/browser-ai-games/
 
 | Game | Genre | Players | Path |
 |---|---|---|---|
