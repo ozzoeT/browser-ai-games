@@ -17,7 +17,9 @@ Questa skill raccoglie lo stile visivo già applicato ai giochi del repo e le ri
    | `fight/` | three.js **r149 incorporato** nel file | Niente `colorspace_fragment` negli shader; luci "legacy" (intensità ~1–4). Unità ≈ pixel (personaggio alto ~190). |
    | `iron-line/`, `studio-zero/`, `skyflip/` | three.js **r160 da cdnjs** (UMD, `three.min.js`) | Negli `ShaderMaterial` aggiungi `#include <colorspace_fragment>`. Unità = metri. Gli addons (EffectComposer, GLTFLoader…) **non** sono nel build UMD. |
    | `city-drive/` (Afterglow GP), `city-rush/` | **motore 3D fatto a mano su canvas 2D** (poligoni proiettati, ordinati per z) | Effetti con `globalCompositeOperation='lighter'` e sprite di bagliore; niente depth buffer. |
-   | `dino-frenzy/` | canvas 2D | Come sopra, in 2D puro. |
+   | `dino-frenzy/` | canvas 2D | Come sopra, in 2D puro. Particelle in `parts` con forme (`spark`, `star`, `ring`, `conf`…). |
+
+   Skyflip ha in più un canvas 2D sovrapposto (`fx`, disegnato in `drawFx`) per effetti di schermo, e un hook di test `window.__skyflip`.
 2. **Leggi il ciclo principale** (`frame`/`loop`/`render`) e cerca come il gioco "avvolge" le funzioni
    (diversi giochi fanno `const originalX = x; x = function(){...}`): è il punto più pulito dove agganciarsi.
 3. **Non toccare il gameplay**: hitbox, statistiche, fisica restano uguali. Se un cambio estetico
@@ -61,6 +63,8 @@ Vedi `scripts/shoot.js`. Trucchi utili:
   di esplosione accesa) invece di tempi fissi.
 - Lo screenshot coi tasti simulati può mancare l'attimo: per mosse/eventi rari chiamali dal codice
   nella copia di test.
+- In headless `waitForFunction` (polling su animation frame) a volte si blocca: se un'attesa scade
+  senza errori nella pagina, usa un ciclo con `waitForTimeout(500)` + `evaluate` invece.
 
 ## Registro (aggiorna qui)
 
@@ -73,10 +77,12 @@ Vedi `scripts/shoot.js`. Trucchi utili:
 | 2026-11 | Afterglow GP | Bagliori additivi (luci, turbo, lampioni, porte), lens flare, scintille sugli urti | Bagliori solo sul tratto di pista davanti (`md(p.s-cam.ss)<110`) per non vederli attraverso i palazzi |
 | 2026-11 | City Rush | Stesso pass di bagliori + flare, scintille additive | |
 | 2026-11 | Studio Zero | Scintille morbide, traccianti luminosi, lampi, "pop" di coriandoli, raggi di sole + pulviscolo, punti deboli e colonne obiettivo luminose | |
+| 2026-11 | Skyflip | Lens flare + bagliore sul sole basso (spento se coperto da un palazzo), pulviscolo luminoso per livello, stelle cadenti (tramonto/notte), anelli d'urto all'atterraggio | Occlusione del sole: raggio contro gli AABB di `solids` (`sunBlocked`) |
+| 2026-11 | Dino Frenzy | Alone additivo su scintille e stelle, aura turbo/super, anello d'urto all'atterraggio, raggi di sole nella giungla, braci luminose sul vulcano | `drawGlowParts()` dopo `drawParts()` |
 
 ### Idee non ancora fatte
-- Skyflip: tramonto/notte sui tetti, pioggia, scia di velocità.
-- Dino Frenzy: bagliori `lighter` e onde d'urto all'atterraggio.
+- Skyflip: pioggia su un livello nuovo, scie luminose dietro le mani durante flip e spin.
+- Dino Frenzy: aurora più viva e neve con alone sul ghiacciaio, lava che illumina il terreno.
 - Iron Line: bioma "tempesta" con pioggia e fulmini (ricetta in `effects.md`), torce negli accampamenti.
 - Afterglow GP: gara notturna (cielo scuro + lampioni più forti), scie luminose delle luci posteriori.
 - Bloom vero con `EffectComposer` (richiede moduli ES / importmap invece di `three.min.js`).
