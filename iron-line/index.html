@@ -210,19 +210,24 @@ function mergeParts(parts){
 }
 const C={skin:0xe2b48c,metal:0xaab3bd,dmetal:0x6d7680,wood:0x8a5a2b,dwood:0x5c3b1c,leather:0x6b4a2e,cloth:0xd8cdb0,dark:0x24242a,straw:0xd9b75e,horse:0x7a4a2a,hair:0x3b2a1a,gold:0xe0b84a,fur:0x8b6b4a,rope:0xb59a6a,stone:0x8d8a84};
 const TEAM=[{main:0x2f6fe0,dark:0x1d3f8a,light:0x9cc0ff},{main:0xd8352c,dark:0x7f1d18,light:0xffa79c}];
-const unitMat=new THREE.MeshLambertMaterial({vertexColors:true});
+const unitMat=new THREE.MeshLambertMaterial({vertexColors:true,flatShading:true});
 
 function sword(len=.8){return[P(box(.03,.08,len),C.metal,0,-.57,.12+len/2),P(box(.24,.05,.05),C.gold,0,-.57,.1),P(box(.045,.045,.18),C.leather,0,-.57,0),P(sph(.04,6,4),C.gold,0,-.57,-.1)];}
 function roundShield(team,r=.36){return[P(cyl(r,r,.05,16),TEAM[team].main,.06,-.36,.13,PI/2),P(cyl(r+.03,r+.03,.03,16),C.dmetal,.06,-.36,.1,PI/2),P(sph(.08,8,6),C.metal,.06,-.36,.16),P(box(.06,r*1.6,.06),TEAM[team].light,.06,-.36,.16)];}
 function spearParts(len,tipC=C.metal){return[P(cyl(.025,.025,len,5),C.wood,0,-.57,len/2-.8,PI/2),P(cone(.06,.26,6),tipC,0,-.57,len-.67,PI/2)];}
 function axe(){return[P(cyl(.03,.03,.8,5),C.wood,0,-.57,.3,PI/2),P(box(.04,.28,.2),C.metal,0,-.48,.62),P(box(.04,.1,.06),C.dmetal,0,-.6,.62)];}
+// stile "cavaliere sfaccettato": corpo low poly a facce piatte su uno scheletro snodato (anche, ginocchia, spalle, gomiti)
+const ico=(r,d=0)=>new THREE.IcosahedronGeometry(r,d);
+const SHIN_Y=-.43;
 function human(team,o){
- const tc=TEAM[team];
- const torso=[P(box(.5,.6,.3),o.tunic??tc.main,0,1.2,0),P(box(.52,.08,.32),C.leather,0,.94,0),P(box(.44,.16,.27),o.pants,0,.86,0),
-  P(box(.12,.1,.12),C.skin,0,1.53,0),P(sph(.17),C.skin,0,1.7,0),P(box(.045,.045,.02),C.dark,-.065,1.72,.16),P(box(.045,.045,.02),C.dark,.065,1.72,.16),...(o.head||[]),...(o.torsoX||[])];
- const leg=[P(box(.17,.8,.2),o.pants,0,-.4,0),P(box(.19,.13,.27),o.boots??C.leather,0,-.8,.03)];
- const arm=sl=>[P(box(.13,.52,.14),sl,0,-.26,0),P(box(.12,.12,.12),o.hand??C.skin,0,-.57,0)];
- return{torso,leg,legPiv:[[-.12,.86,0],[.12,.86,0]],armR:[...arm(o.sleeveR??o.sleeve??o.tunic??tc.main),...(o.armR||[])],armRPiv:[-.33,1.45,0],armL:[...arm(o.sleeveL??o.sleeve??o.tunic??tc.main),...(o.armL||[])],armLPiv:[.33,1.45,0]};
+ const tc=TEAM[team],tun=o.tunic??tc.main,jn=o.joint??C.leather;
+ const torso=[P(cyl(.27,.2,.6,6),tun,0,1.2,0,0,PI/6,0,1,1,.62),P(cyl(.235,.235,.08,6),C.leather,0,.94,0,0,PI/6,0,1,1,.66),P(cyl(.22,.25,.18,6),o.pants,0,.84,0,0,PI/6,0,1,1,.62),
+  P(cyl(.065,.075,.1,6),C.skin,0,1.53,0),P(ico(.17,1),C.skin,0,1.7,0),P(box(.045,.045,.02),C.dark,-.065,1.72,.155),P(box(.045,.045,.02),C.dark,.065,1.72,.155),
+  P(cone(.03,.07,4),C.skin,0,1.68,.18,PI/2),P(ico(.085),jn,-.33,1.45,0),P(ico(.085),jn,.33,1.45,0),...(o.head||[]),...(o.torsoX||[])];
+ const leg=[P(cyl(.095,.075,.42,6),o.pants,0,-.21,0)];
+ const shin=[P(ico(.08),jn,0,0,0),P(cyl(.075,.06,.3,6),o.shin??o.pants,0,-.17,0),P(cyl(.075,.095,.14,6),o.boots??C.leather,0,-.36,0),P(box(.13,.07,.12),o.boots??C.leather,0,-.395,.09)];
+ const arm=sl=>[P(cyl(.07,.06,.27,6),sl,0,-.135,0),P(ico(.06),jn,0,-.29,0),P(cyl(.06,.05,.24,6),sl,0,-.42,0),P(ico(.068),o.hand??C.skin,0,-.57,0)];
+ return{torso,leg,shin,legPiv:[[-.12,.86,0],[.12,.86,0]],armR:[...arm(o.sleeveR??o.sleeve??o.tunic??tc.main),...(o.armR||[])],armRPiv:[-.33,1.45,0],armL:[...arm(o.sleeveL??o.sleeve??o.tunic??tc.main),...(o.armL||[])],armLPiv:[.33,1.45,0]};
 }
 function bowParts(){const arc=1.1,R=.9;const g=new THREE.TorusGeometry(R,.025,4,12,arc);g.rotateZ(PI/2-arc/2);
  return[P(g,C.dwood,0,R-.57,0,PI,PI/2,0),P(box(.008,.008,2*R*Math.sin(arc/2)),C.cloth,0,R-.57-R*Math.cos(arc/2),0)];}
@@ -230,10 +235,10 @@ const SPEC={
  peasant:t=>human(t,{pants:0x6b5a3e,head:[P(cone(.3,.2,10),C.straw,0,1.95,0),P(cyl(.36,.36,.02,12),C.straw,0,1.85,0)],
   torsoX:[P(box(.34,.42,.02),C.cloth,0,1.12,.16)],armR:[P(cyl(.025,.025,2.2,5),C.wood,0,-.57,.5,PI/2),P(box(.26,.03,.03),C.dmetal,0,-.57,1.6),
   ...[-.11,0,.11].map(x=>P(box(.025,.025,.3),C.dmetal,x,-.57,1.75))]}),
- sword:t=>human(t,{pants:0x4a4a52,sleeve:C.dmetal,head:[P(sph(.195,10,5,0,PI/2),C.metal,0,1.73,0),P(box(.035,.13,.03),C.metal,0,1.7,.185)],
-  torsoX:[P(box(.54,.12,.33),C.dmetal,0,1.48,0)],armR:sword(),armL:roundShield(t)}),
- shield:t=>human(t,{tunic:C.metal,pants:C.dmetal,sleeve:C.metal,boots:C.dmetal,head:[P(cyl(.2,.2,.32,10),C.metal,0,1.74,0),P(cone(.2,.1,10),C.metal,0,1.95,0),P(box(.26,.035,.02),C.dark,0,1.77,.2)],
-  torsoX:[P(box(.36,.64,.32),TEAM[t].main,0,1.17,0),P(box(.6,.14,.36),C.metal,0,1.48,0)],armR:sword(.55),
+ sword:t=>human(t,{pants:0x4a4a52,sleeve:C.dmetal,shin:C.dmetal,joint:C.dmetal,head:[P(sph(.195,7,4,0,PI/2),C.metal,0,1.73,0),P(box(.035,.13,.03),C.metal,0,1.7,.185),P(cone(.05,.28,5),TEAM[t].main,0,2.0,-.06,-.45)],
+  torsoX:[P(box(.54,.12,.33),C.dmetal,0,1.48,0),P(ico(.13),C.metal,-.3,1.5,0),P(ico(.13),C.metal,.3,1.5,0)],armR:sword(),armL:roundShield(t)}),
+ shield:t=>human(t,{tunic:C.metal,pants:C.dmetal,sleeve:C.metal,boots:C.dmetal,shin:C.metal,joint:C.dark,head:[P(cyl(.2,.21,.32,7),C.metal,0,1.74,0),P(cone(.205,.1,7),C.metal,0,1.95,0),P(box(.26,.035,.02),C.dark,0,1.77,.2),P(box(.03,.14,.02),C.dark,0,1.7,.2),P(cone(.05,.3,5),TEAM[t].main,0,2.12,-.05,-.4)],
+  torsoX:[P(cyl(.25,.3,.5,6),TEAM[t].main,0,1.04,0,0,PI/6,0,1,1,.66),P(box(.6,.14,.36),C.metal,0,1.48,0),P(ico(.14),C.metal,-.31,1.52,0),P(ico(.14),C.metal,.31,1.52,0)],armR:sword(.55),
   armL:[P(box(.72,1.12,.07),TEAM[t].main,.04,-.52,.2),P(box(.78,1.18,.04),C.dmetal,.04,-.52,.165),P(box(.12,.62,.08),TEAM[t].light,.04,-.48,.24),P(box(.4,.12,.08),TEAM[t].light,.04,-.36,.24)]}),
  spear:t=>human(t,{pants:0x55452f,head:[P(cyl(.13,.3,.07,12),C.metal,0,1.86,0),P(sph(.15,8,4,0,PI/2),C.metal,0,1.86,0)],
   torsoX:[P(box(.52,.3,.32),C.leather,0,1.36,0)],armR:spearParts(3.1),armL:roundShield(t,.26)}),
@@ -266,18 +271,19 @@ const MODEL_CACHE={};
 function modelGeos(type,team){
  const k=type+team;if(MODEL_CACHE[k])return MODEL_CACHE[k];
  const s=SPEC[type](team);
- const g={torso:mergeParts(s.torso),leg:s.leg?mergeParts(s.leg):null,legPiv:s.legPiv,armR:s.armR?mergeParts(s.armR):null,armRPiv:s.armRPiv,armL:s.armL?mergeParts(s.armL):null,armLPiv:s.armLPiv,
+ const g={torso:mergeParts(s.torso),leg:s.leg?mergeParts(s.leg):null,shin:s.shin?mergeParts(s.shin):null,legPiv:s.legPiv,armR:s.armR?mergeParts(s.armR):null,armRPiv:s.armRPiv,armL:s.armL?mergeParts(s.armL):null,armLPiv:s.armLPiv,
   cata:s.cata?mergeParts(s.cata):null,cataPiv:s.cataPiv};
  return MODEL_CACHE[k]=g;
 }
 function buildModel(type,team,mat=unitMat,shadow=true){
  const G=modelGeos(type,team);const root=new THREE.Group();root.rotation.order='YXZ';
  const torso=new THREE.Mesh(G.torso,mat);torso.castShadow=shadow;root.add(torso);
- const legs=G.legPiv.map(p=>{const m=new THREE.Mesh(G.leg,mat);m.position.set(...p);root.add(m);return m;});
+ const shins=[];const legs=G.legPiv.map(p=>{const m=new THREE.Mesh(G.leg,mat);m.position.set(...p);root.add(m);
+  if(G.shin){const k=new THREE.Mesh(G.shin,mat);k.position.y=SHIN_Y;m.add(k);shins.push(k);}return m;});
  const mk=(geo,piv)=>{if(!geo)return null;const m=new THREE.Mesh(geo,mat);m.position.set(...piv);m.userData.piv=piv[2];root.add(m);return m;};
  const armR=mk(G.armR,G.armRPiv),armL=mk(G.armL,G.armLPiv),carm=mk(G.cata,G.cataPiv);
  if(armR&&shadow)armR.castShadow=true;
- const M={root,torso,legs,armR,armL,carm};restPose(M,type);return M;
+ const M={root,torso,legs,shins,armR,armL,carm};restPose(M,type);return M;
 }
 function restPose(M,type){const p=POSE[type];if(M.armR){M.armR.rotation.x=p.r;}if(M.armL)M.armL.rotation.x=p.l;if(M.carm)M.carm.rotation.x=-1.25;}
 
@@ -609,7 +615,8 @@ function animate(dt){
   M.root.position.set(u.x,u.y,u.z);M.root.rotation.set(-Math.max(0,u.stagger)*.7,u.yaw,0);if(u.nArrows)M.root.updateMatrixWorld();
   const spd=Math.hypot(u.vx,u.vz);u.phase+=dt*spd*(T.cav?1.6:3.4);const sw=Math.min(1,spd/1.5)*(T.cav?.55:.65);
   if(T.cav){M.legs.forEach((l,i)=>l.rotation.x=Math.sin(u.phase+(i<2?0:PI))*sw*(i%2?1:-1));M.torso.position.y=Math.abs(Math.sin(u.phase))*.08*sw;}
-  else if(M.legs.length){M.legs[0].rotation.x=Math.sin(u.phase)*sw;M.legs[1].rotation.x=-Math.sin(u.phase)*sw;M.torso.position.y=Math.abs(Math.cos(u.phase))*.05*sw+Math.sin(tt*2+u.id)*.006;}
+  else if(M.legs.length){M.legs[0].rotation.x=Math.sin(u.phase)*sw;M.legs[1].rotation.x=-Math.sin(u.phase)*sw;
+   if(M.shins.length){const c=Math.cos(u.phase);M.shins[0].rotation.x=Math.max(0,-c)*sw*1.3;M.shins[1].rotation.x=Math.max(0,c)*sw*1.3;}M.torso.position.y=Math.abs(Math.cos(u.phase))*.05*sw+Math.sin(tt*2+u.id)*.006;}
   const a=u.atk;
   if(p.s==='cata'){let r=-1.25;if(a>=0){r=a<.12?-1.25-a*.6:a<.25?lerp(-1.32,.2,(a-.12)/.13):lerp(.2,-1.25,ease((a-.25)/.75));}M.carm.rotation.x=r;continue;}
   let rr=p.r,rl=p.l,rz=M.armR?M.armR.userData.piv:0,pz=0;
@@ -628,7 +635,7 @@ function animate(dt){
   if(T.cav)M.root.rotation.set(0,u.yaw,u.fall);else M.root.rotation.set(u.fall,u.yaw,0);
   const k=Math.min(1,u.deadT*3),L=u.limbs;
   if(T.cav){M.legs.forEach((l,i)=>l.rotation.x=lerp(l.rotation.x,L[i%4]*.6,k));}
-  else if(M.legs.length){M.legs[0].rotation.x=lerp(M.legs[0].rotation.x,L[0]*.5,k);M.legs[1].rotation.x=lerp(M.legs[1].rotation.x,L[1]*.5,k);M.legs[0].rotation.z=-.2*k;M.legs[1].rotation.z=.2*k;}
+  else if(M.legs.length){M.legs[0].rotation.x=lerp(M.legs[0].rotation.x,L[0]*.5,k);M.legs[1].rotation.x=lerp(M.legs[1].rotation.x,L[1]*.5,k);M.legs[0].rotation.z=-.2*k;M.legs[1].rotation.z=.2*k;if(M.shins.length){M.shins[0].rotation.x=lerp(M.shins[0].rotation.x,.25+L[1]*.3,k);M.shins[1].rotation.x=lerp(M.shins[1].rotation.x,.25+L[0]*.3,k);}}
   if(M.armR){M.armR.rotation.x=lerp(M.armR.rotation.x,L[2],k);M.armR.rotation.z=L[4]-.5*k;}if(M.armL){M.armL.rotation.x=lerp(M.armL.rotation.x,L[3],k);M.armL.rotation.z=L[5]+.5*k;}
  }
  let n=0;const m=new THREE.Matrix4();
