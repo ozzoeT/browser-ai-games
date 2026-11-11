@@ -2,7 +2,7 @@
 
 A small collection of AI-made games you can play right in your browser. Nothing too hard, just fun: made for kids, and for dads and moms who want to play together with them :)
 
-Racing, fighting, strategy, parkour and adventure, 1–2 players on one keyboard. No download, no build step: every game is a single HTML file.
+Racing, fighting, strategy, parkour, medieval battles and adventure, 1–2 players on one keyboard. No download, no build step: every game is a single HTML file.
 
 **▶ Play:** https://ozzoet.github.io/browser-ai-games/
 
@@ -15,6 +15,7 @@ Racing, fighting, strategy, parkour and adventure, 1–2 players on one keyboard
 | City Rush | Sprint racing | 1 | [`city-rush/`](city-rush/) |
 | Iron Line | Medieval battle sandbox | 1 | [`iron-line/`](iron-line/) |
 | Skyflip | First-person rooftop parkour | 1 | [`skyflip/`](skyflip/) |
+| Shield Brothers | First-person shield wall battles | 1 | [`shield-brothers/`](shield-brothers/) |
 
 All games are in English.
 
