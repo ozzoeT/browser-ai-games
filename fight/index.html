@@ -804,7 +804,7 @@ function polyPlane(x0, x1, z0, z1, nx, nz, col, vr, hfn, seed, colFn) {
 }
 
 // ============================================================ 3D: lottatori
-const TH = 46, SH = 46, TL = 60, UA = 32, FA = 30, HR = 22;
+const TH = 46, SH = 46, TL = 60, UA = 32, FA = 30, HR = 19.5;
 // ---- stile "Eroe toon": ombre a tre toni e contorno (inverted hull) sopra lo stesso scheletro snodato
 const TOON_GM = (() => { const t = new THREE.DataTexture(new Uint8Array([90, 90, 90, 255, 170, 170, 170, 255, 255, 255, 255, 255]), 3, 1); t.minFilter = t.magFilter = THREE.NearestFilter; t.needsUpdate = true; return t; })();
 const tmat = c => new THREE.MeshToonMaterial({ color: c, gradientMap: TOON_GM });
@@ -878,14 +878,14 @@ function buildRig(ch, alt) {
   const ink = matB('#1a1424'), shine = matB('#ffffff'), unit = new THREE.SphereGeometry(1, 14, 10);
   for (const zs of [1, -1]) {
     const a = .7, eye = G(); eye.position.set(1, hy + 1, 0); eye.rotation.y = Math.atan2(cos(a), zs * sin(a));
-    const pupil = at(mk(unit, ink), 0, 0, HR - 1.4); pupil.scale.set(3.8, 6, 2.4);
+    const pupil = at(mk(unit, ink), 0, 0, HR - 1.4); pupil.scale.set(3.5, 5.5, 2.4);
     const dot = at(mk(unit, shine), zs * -1.2, 2.2, HR + .7); dot.scale.setScalar(1.5);
-    const brow = at(box(8, 2.2, 2.4, m.hair), 0, 8.5, HR - .6); brow.rotation.z = zs * -.22;
+    const brow = at(box(8, 2.2, 2.4, m.hair), 0, HR * .39, HR - .6); brow.rotation.z = zs * -.22;
     pupil.userData.noLine = dot.userData.noLine = brow.userData.noLine = true;
     eye.add(pupil, dot, brow); neck.add(eye);
   }
   neck.add(at(ico(3, 0, m.skin), HR + .4, hy - 3, 0));
-  const mouth = at(box(2, 1.6, 7, m.dark), HR - .8, hy - 9.5, 0); mouth.userData.noLine = true; neck.add(mouth);
+  const mouth = at(box(2, 1.6, 7, m.dark), HR - .8, hy - HR * .43, 0); mouth.userData.noLine = true; neck.add(mouth);
   const swings = [];
   const hairCap = (sy, oy) => { const h = ico(HR + 1.6, 1, m.hair); h.scale.set(1, sy, 1.02); neck.add(at(h, -3.5, hy + oy, 0)); };
   if (id === 'kaira') {
@@ -897,7 +897,7 @@ function buildRig(ch, alt) {
     // sopracciglia gia' nel volto toon
   } else if (id === 'bruno') {
     const cap = ico(HR + 1.2, 1, m.hair); cap.scale.set(1, .55, 1); neck.add(at(cap, -2, hy + 9, 0));
-    const beard = ico(14, 0, m.hair); beard.scale.set(.9, .75, 1.15); neck.add(at(beard, 9, hy - 13, 0));
+    const beard = ico(14, 0, m.hair); beard.scale.set(.9, .75, 1.15); neck.add(at(beard, HR * .4, hy - HR * .6, 0));
   } else {
     hairCap(.95, 3.5);
     const pv = G(), tail = mk(new THREE.ConeGeometry(6.5, 44, 12), m.hair); tail.geometry.translate(0, 22, 0); tail.rotation.z = PI;
