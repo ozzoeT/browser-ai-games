@@ -79,6 +79,7 @@ Vedi `scripts/shoot.js`. Trucchi utili:
 | 2026-11 | Studio Zero | Scintille morbide, traccianti luminosi, lampi, "pop" di coriandoli, raggi di sole + pulviscolo, punti deboli e colonne obiettivo luminose | |
 | 2026-11 | Skyflip | Lens flare + bagliore sul sole basso (spento se coperto da un palazzo), pulviscolo luminoso per livello, stelle cadenti (tramonto/notte), anelli d'urto all'atterraggio | Occlusione del sole: raggio contro gli AABB di `solids` (`sunBlocked`) |
 | 2026-11 | Dino Frenzy | Alone additivo su scintille e stelle, aura turbo/super, anello d'urto all'atterraggio, raggi di sole nella giungla, braci luminose sul vulcano | `drawGlowParts()` dopo `drawParts()` |
+| 2026-11 | Dino Frenzy | Dinosauri "manichino + cartoon": gambe a due ossa con IK (`ik2`, `jointLeg`), ginocchia/caviglie/gomiti colore accento, cel shading a due toni (`TOON`, `celShade` in `blob`/`blobIn`), occhi con doppio punto luce | Bug corretto: indice `CONF[...%6]` negativo con tempo negativo bloccava il ciclo di gioco: usare `mod()` |
 
 ### Idee non ancora fatte
 - Skyflip: pioggia su un livello nuovo, scie luminose dietro le mani durante flip e spin.

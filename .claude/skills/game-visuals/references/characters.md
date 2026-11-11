@@ -80,6 +80,19 @@ Ogni occhio è un `Group` al centro della testa ruotato di `atan2(cos a, ±sin a
 davanti verso la camera); dentro: pupilla nera (sfera scalata 3.8×6×2.4), punto luce bianco,
 sopracciglio inclinato. Così con la camera laterale si vede l'occhio vicino.
 
+## Variante 2D (canvas): manichino + cartoon (Dino Frenzy)
+
+Stessa idea senza three.js:
+- **Gamba a due ossa con IK** ogni frame: dato anca e piede (dal ciclo di camminata esistente)
+  si calcola il ginocchio con la legge del coseno (`ik2(hx,hy,fx,fy,L1,L2,bend)`); `bend=-1` piega
+  in avanti (verso +x). Coscia spessa (`th*.82`), stinco sottile (`th*.6`), giuntura colorata.
+- **Cel shading**: dentro la sagoma (clip) un'ellisse scura semi-trasparente sulla parte bassa e
+  un riflesso chiaro in alto. Attivo solo mentre si disegna il personaggio (contatore `TOON`
+  incrementato da un wrapper attorno alle funzioni di disegno), solo su forme con contorno e
+  colore pieno (`fill[0]==='#'`).
+- Lunghezze delle ossa proporzionali all'altezza dell'anca (`-hy*0.6`, `-hy*0.55`) così funzionano
+  per specie diverse.
+
 ## Lezioni imparate
 
 - **Ingrandendo la testa**, gli accessori posizionati con numeri fissi finiscono dentro
