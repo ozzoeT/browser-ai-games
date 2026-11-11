@@ -804,27 +804,40 @@ function polyPlane(x0, x1, z0, z1, nx, nz, col, vr, hfn, seed, colFn) {
 }
 
 // ============================================================ 3D: lottatori
-const TH = 46, SH = 46, TL = 60, UA = 32, FA = 30, HR = 17;
+const TH = 46, SH = 46, TL = 60, UA = 32, FA = 30, HR = 22;
+// ---- stile "Eroe toon": ombre a tre toni e contorno (inverted hull) sopra lo stesso scheletro snodato
+const TOON_GM = (() => { const t = new THREE.DataTexture(new Uint8Array([90, 90, 90, 255, 170, 170, 170, 255, 255, 255, 255, 255]), 3, 1); t.minFilter = t.magFilter = THREE.NearestFilter; t.needsUpdate = true; return t; })();
+const tmat = c => new THREE.MeshToonMaterial({ color: c, gradientMap: TOON_GM });
+const INK = new THREE.MeshBasicMaterial({ color: 0x1a1424, side: THREE.BackSide });
+const OUTLINE = 1.7;
+function addOutlines(root) {
+  const list = []; root.traverse(o => { if (o.isMesh && !o.userData.noLine) list.push(o); });
+  for (const m of list) {
+    const g = m.geometry; if (!g.boundingBox) g.computeBoundingBox(); const bb = g.boundingBox, s = m.scale;
+    const k = a => 1 + OUTLINE / (Math.max(Math.abs(bb.min[a]), Math.abs(bb.max[a]), .5) * Math.abs(s[a]));
+    const h = new THREE.Mesh(g, INK); h.scale.set(k('x'), k('y'), k('z')); h.userData.noLine = true; m.add(h);
+  }
+}
 function buildRig(ch, alt) {
   const c = Object.assign({}, ch.col, alt ? ch.alt : null), b = ch.bulk, id = ch.id, mats = [];
   const m = {};
-  for (const k in c) if (k !== 'glow') { m[k] = mat(c[k]); mats.push(m[k]); }
-  m.dark = mat('#17131d'); mats.push(m.dark);
+  for (const k in c) if (k !== 'glow') { m[k] = tmat(c[k]); mats.push(m[k]); }
+  m.dark = tmat('#17131d'); mats.push(m.dark);
   const mk = (g, mt) => new THREE.Mesh(g, mt);
-  const seg = (len, r1, r2, mt) => { const g = new THREE.CylinderGeometry(r1, r2, len, 6); g.translate(0, -len / 2, 0); return mk(g, mt); };
-  const ico = (r, d, mt) => mk(new THREE.IcosahedronGeometry(r, d), mt);
+  const seg = (len, r1, r2, mt) => { const g = new THREE.CylinderGeometry(r1, r2, len, 14); g.translate(0, -len / 2, 0); return mk(g, mt); };
+  const ico = (r, d, mt) => mk(new THREE.SphereGeometry(r, 18, 14), mt);
   const box = (w, h, d, mt) => mk(new THREE.BoxGeometry(w, h, d), mt);
 
   const root = G(), spin = G(), pelvis = G(), hips = G(), torso = G(), chest = G(), neck = G();
   root.add(spin); spin.add(pelvis); pelvis.add(hips, torso); torso.add(chest, neck);
-  hips.add(at(box(19 * b, 17, 30 * b, m.pants), 0, -3, 0));
+  const hp = ico(15 * b, 0, m.pants); hp.scale.set(.8, .75, 1.15); hips.add(at(hp, 0, -3, 0));
   // busto: prisma esagonale rastremato, largo sulle spalle
-  const tg = new THREE.CylinderGeometry(19.5 * b, 12.5 * b, TL, 6); tg.scale(.7, 1, 1); tg.translate(0, TL / 2 - 2, 0);
+  const tg = new THREE.CylinderGeometry(19.5 * b, 12.5 * b, TL, 16); tg.scale(.7, 1, 1); tg.translate(0, TL / 2 - 2, 0);
   chest.add(mk(tg, m.top));
-  const bg = new THREE.CylinderGeometry(13.6 * b, 13.6 * b, 7, 6); bg.scale(.78, 1, 1);
+  const bg = new THREE.CylinderGeometry(13.6 * b, 13.6 * b, 7, 16); bg.scale(.78, 1, 1);
   chest.add(at(mk(bg, m.belt), 0, 3, 0));
   if (id !== 'bruno') {
-    const sg = new THREE.CylinderGeometry(13 * b, 16.5 * b, 15, 6); sg.scale(.8, 1, 1);
+    const sg = new THREE.CylinderGeometry(13 * b, 16.5 * b, 15, 16); sg.scale(.8, 1, 1);
     hips.add(at(mk(sg, m.top), 0, -6, 0));                              // falda della giacca
     chest.add(at(box(4, 7, 6, m.belt), 9.5 * b, 2, 3));                 // nodo cintura
     const e1 = at(box(3, 15, 4, m.belt), 10 * b, -6, 1); e1.rotation.z = .25; const e2 = at(box(3, 13, 4, m.belt), 10 * b, -5, 6); e2.rotation.z = -.1;
@@ -837,13 +850,14 @@ function buildRig(ch, alt) {
   }
   if (id === 'jin') {                                                    // fascia diagonale della tunica e collana
     const sash = at(box(3, 62, 9, m.belt), 9 * b, 30, 0); sash.rotation.x = .55; chest.add(sash);
-    const tor = mk(new THREE.TorusGeometry(11, 2.6, 4, 9), mat('#5a3a22')); mats.push(tor.material); tor.rotation.x = PI / 2; tor.rotation.y = .25; chest.add(at(tor, 2, TL - 5, 0));
+    const tor = mk(new THREE.TorusGeometry(11, 2.6, 8, 16), tmat('#5a3a22')); mats.push(tor.material); tor.rotation.x = PI / 2; tor.rotation.y = .25; chest.add(at(tor, 2, TL - 5, 0));
   }
   // gambe
   const leg = () => {
     const hip = G(), knee = G();
     hip.add(seg(TH, 11.5 * b, 8.6 * b, m.pants), knee); knee.position.y = -TH;
-    knee.add(ico(8.6 * b, 0, m.pants), seg(SH, 8.4 * b, 6 * b, m.shin), at(box(27, 10, 13 * b, m.shoe), 6, -SH - 2, 0));
+    const shoe = ico(1, 0, m.shoe); shoe.scale.set(15, 6.5, 8 * b);
+    knee.add(ico(9.4 * b, 0, m.accent), seg(SH, 8.4 * b, 6 * b, m.shin), at(shoe, 6, -SH - 2, 0));   // ginocchiera
     pelvis.add(hip); return [hip, knee];
   };
   const [hipF, kneeF] = leg(), [hipB, kneeB] = leg();
@@ -851,7 +865,7 @@ function buildRig(ch, alt) {
   const arm = sleeve => {
     const sh = G(), el = G();
     sh.add(ico(9.6 * b, 0, sleeve), seg(UA, 8.6 * b, 6.8 * b, sleeve), el); el.position.y = -UA;
-    el.add(ico(6.8 * b, 0, m.fore), seg(FA, 6.8 * b, 5.4 * b, m.fore), at(ico(8.4 * b, 0, m.glove), 0, -FA - 3, 0));
+    el.add(ico(7.6 * b, 0, m.accent), seg(FA, 6.8 * b, 5.4 * b, m.fore), at(ico(10 * b, 0, m.glove), 0, -FA - 3, 0));   // gomitiera e guanto tondo
     torso.add(sh); return [sh, el];
   };
   const [shF, elF] = arm(m.sleeveF || m.sleeve), [shB, elB] = arm(m.sleeve);
@@ -860,28 +874,38 @@ function buildRig(ch, alt) {
   neck.add(at(mk(new THREE.CylinderGeometry(5 * b, 6 * b, 9, 6), m.skin), 0, 3, 0));
   const hy = HR + 5;
   neck.add(at(ico(HR, 1, m.skin), 1, hy, 0));
-  neck.add(at(box(3, 4.5, 3.5, m.dark), HR - 2.5, hy + 2, 6.5), at(box(3, 4.5, 3.5, m.dark), HR - 2.5, hy + 2, -6.5));
-  const nose = mk(new THREE.ConeGeometry(3, 7, 4), m.skin); nose.rotation.z = -PI / 2; neck.add(at(nose, HR + 2, hy - 2, 0));
+  // occhi da cartoon: pupilla grande con punto luce, sopracciglio inclinato
+  const ink = matB('#1a1424'), shine = matB('#ffffff'), unit = new THREE.SphereGeometry(1, 14, 10);
+  for (const zs of [1, -1]) {
+    const a = .7, eye = G(); eye.position.set(1, hy + 1, 0); eye.rotation.y = Math.atan2(cos(a), zs * sin(a));
+    const pupil = at(mk(unit, ink), 0, 0, HR - 1.4); pupil.scale.set(3.8, 6, 2.4);
+    const dot = at(mk(unit, shine), zs * -1.2, 2.2, HR + .7); dot.scale.setScalar(1.5);
+    const brow = at(box(8, 2.2, 2.4, m.hair), 0, 8.5, HR - .6); brow.rotation.z = zs * -.22;
+    pupil.userData.noLine = dot.userData.noLine = brow.userData.noLine = true;
+    eye.add(pupil, dot, brow); neck.add(eye);
+  }
+  neck.add(at(ico(3, 0, m.skin), HR + .4, hy - 3, 0));
+  const mouth = at(box(2, 1.6, 7, m.dark), HR - .8, hy - 9.5, 0); mouth.userData.noLine = true; neck.add(mouth);
   const swings = [];
   const hairCap = (sy, oy) => { const h = ico(HR + 1.6, 1, m.hair); h.scale.set(1, sy, 1.02); neck.add(at(h, -3.5, hy + oy, 0)); };
   if (id === 'kaira') {
     hairCap(.92, 3.5);
     neck.add(at(ico(6.5, 0, m.hair), -HR - 2, hy + 9, 0));
-    const hb = mk(new THREE.CylinderGeometry(HR + .9, HR + .9, 5.5, 8, 1, true), m.accent); m.accent.side = THREE.DoubleSide; neck.add(at(hb, 1, hy + 6, 0));
+    const hb = mk(new THREE.CylinderGeometry(HR + .9, HR + .9, 5.5, 8, 1, true), m.accent); m.accent.side = THREE.DoubleSide; hb.userData.noLine = true; neck.add(at(hb, 1, hy + 6, 0));
     for (const z of [-3, 3]) { const pv = G(), t = at(box(26, 4.5, 1.5, m.accent), -13, 0, 0); pv.add(t); neck.add(at(pv, -HR + 1, hy + 6, z)); swings.push({ o: pv, base: z > 0 ? .35 : .6, ph: z }); }
   } else if (id === 'jin') {
-    neck.add(at(box(3, 2.5, 8, m.hair), HR - 2, hy + 7, 6.5), at(box(3, 2.5, 8, m.hair), HR - 2, hy + 7, -6.5));
+    // sopracciglia gia' nel volto toon
   } else if (id === 'bruno') {
     const cap = ico(HR + 1.2, 1, m.hair); cap.scale.set(1, .55, 1); neck.add(at(cap, -2, hy + 9, 0));
-    const beard = ico(12, 0, m.hair); beard.scale.set(.9, .8, 1.15); neck.add(at(beard, 6, hy - 10, 0));
-    neck.add(at(box(3, 3, 9, m.hair), HR - 2, hy + 6.5, 6.5), at(box(3, 3, 9, m.hair), HR - 2, hy + 6.5, -6.5));
+    const beard = ico(14, 0, m.hair); beard.scale.set(.9, .75, 1.15); neck.add(at(beard, 9, hy - 13, 0));
   } else {
     hairCap(.95, 3.5);
-    const pv = G(), tail = mk(new THREE.ConeGeometry(6.5, 44, 5), m.hair); tail.geometry.translate(0, 22, 0); tail.rotation.z = PI;
+    const pv = G(), tail = mk(new THREE.ConeGeometry(6.5, 44, 12), m.hair); tail.geometry.translate(0, 22, 0); tail.rotation.z = PI;
     pv.add(tail, ico(5, 0, m.accent));
     neck.add(at(pv, -HR - 1, hy + 11, 0)); swings.push({ o: pv, base: -.75, ph: 0 });
   }
-  root.traverse(o => { if (o.isMesh) o.castShadow = true; });
+  addOutlines(root);
+  root.traverse(o => { if (o.isMesh && o.material !== INK) o.castShadow = true; });
   return { root, spin, pelvis, hips, torso, chest, neck, hipF, kneeF, hipB, kneeB, shF, elF, shB, elB, mats, swings, b };
 }
 const RIGS = {};
