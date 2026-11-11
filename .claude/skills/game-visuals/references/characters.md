@@ -1,0 +1,92 @@
+# Personaggi ("persone")
+
+Demo animata di tutto questo: `../demos/personaggi.html`.
+
+## Concetto chiave: scheletro × pelle
+
+- **Scheletro** = gerarchia di `Group` che fanno da perni: anca → ginocchio, spalla → gomito, collo → testa.
+  Le animazioni ruotano solo i perni.
+- **Pelle** = mesh attaccate ai perni: materiali, proporzioni, faccia, contorno.
+
+Le due cose sono indipendenti: lo stesso scheletro può avere qualsiasi stile. Fight! e Iron Line
+hanno già uno scheletro; cambiare stile = cambiare solo le mesh.
+
+Convenzione nelle demo: il personaggio guarda +z; ruotare un perno di gamba di `+x` porta il piede
+indietro, quindi il ginocchio si piega con `rotation.x > 0`.
+
+## Gli 8 stili base
+
+| Stile | Teste | Tecnica | Adatto a |
+|---|---|---|---|
+| Blocchi | ~5,5 | `BoxGeometry` + sfera | folle, prototipi (Iron Line prima) |
+| Chibi toon | ~2 | `MeshToonMaterial` + gradientMap, contorno inverted hull, occhi grandi | bambini, mascotte |
+| Low-poly sfaccettato | ~6 | `flatShading`, cilindri a 5–6 lati, icosaedri | strategia, avventura |
+| Voxel | ~3,5 | cubi, faccia = `CanvasTexture` 8×8 con `NearestFilter` | sandbox, personaggi personalizzabili |
+| Fagiolo party | 1 | `CapsuleGeometry` + `MeshPhysicalMaterial` clearcoat, squash & stretch ×3 | party game, pedoni |
+| Manichino | ~7 | due segmenti per arto, giunture a sfera | combattimento, ragdoll |
+| Ritaglio di carta | ~3 | `ShapeGeometry` + bordo bianco dietro, animazione nel piano (`rotation.z`) | storie, menu |
+| Pixel sprite 2D | ~3 | canvas 24×34 ridisegnato per frame, contorno 1 px calcolato | giochi 2D |
+
+## Ibridi (scheletro del manichino + pelle di un altro stile)
+
+| Ibrido | Mix | Teste | Dove |
+|---|---|---|---|
+| Eroe toon | manichino + chibi toon | ~4 | **Fight!** (applicato) |
+| Chubby snodato | manichino + chibi, pancia tonda | ~2,5 | Studio Zero (idea) |
+| Fagiolo snodato | manichino + fagiolo, arti "a tubo di gomma" | 1 | party/pedoni (idea) |
+| Cavaliere sfaccettato | manichino + low-poly | ~6,5 | **Iron Line** (applicato) |
+
+## Ricette di codice
+
+### Arto a due segmenti (r160, unità metri)
+```js
+function limb(parent,x,y,L1,L2,r1,r2,o){ // o:{geo,mU,mL,mJ,ol,end}
+  const g=o.geo||((r,l)=>new THREE.CapsuleGeometry(r,Math.max(.01,l-r),6,14));
+  const a=new THREE.Group();a.position.set(x,y,0);parent.add(a);              // spalla / anca
+  if(o.mJ)a.add(new THREE.Mesh(new THREE.SphereGeometry(r1*1.2,14,10),o.mJ)); // giuntura visibile
+  const u=new THREE.Mesh(g(r1,L1),o.mU);u.position.y=-L1/2;a.add(u);
+  const j=new THREE.Group();j.position.y=-L1;a.add(j);                          // gomito / ginocchio
+  const l=new THREE.Mesh(g(r2,L2),o.mL||o.mU);l.position.y=-L2/2;j.add(l);
+  if(o.end)o.end(j,L2);                                                         // mano / scarpa
+  return [a,j];
+}
+// per il low-poly: geo:(r,l)=>new THREE.CylinderGeometry(r,r*.8,l,6) + material flatShading:true
+```
+
+### Toon a tre toni
+```js
+const GM=new THREE.DataTexture(new Uint8Array([90,90,90,255,170,170,170,255,255,255,255,255]),3,1);
+GM.minFilter=GM.magFilter=THREE.NearestFilter;GM.needsUpdate=true;
+const tmat=c=>new THREE.MeshToonMaterial({color:c,gradientMap:GM});
+```
+
+### Contorno "inverted hull" (copia scalata con `BackSide`)
+Usa uno spessore costante per asse calcolato dal bounding box, così arti sottili e geometrie traslate
+(es. segmenti con l'origine in alto) non diventano enormi:
+```js
+const INK=new THREE.MeshBasicMaterial({color:0x1a1424,side:THREE.BackSide});
+function addOutlines(root,T){ // T = spessore nelle unità del gioco (Fight!: 1.7, metri: ~0.025)
+  const list=[];root.traverse(o=>{if(o.isMesh&&!o.userData.noLine)list.push(o)});
+  for(const m of list){const g=m.geometry;g.computeBoundingBox();const bb=g.boundingBox,s=m.scale;
+    const k=a=>1+T/(Math.max(Math.abs(bb.min[a]),Math.abs(bb.max[a]),.5)*Math.abs(s[a]));
+    const h=new THREE.Mesh(g,INK);h.scale.set(k('x'),k('y'),k('z'));h.userData.noLine=true;m.add(h);}
+}
+```
+Escludi con `userData.noLine=true` occhi, bocca e geometrie aperte (cilindri `openEnded`).
+I contorni non devono proiettare ombre: `castShadow` solo se `o.material!==INK`.
+
+### Occhi cartoon visibili di profilo (Fight!)
+Ogni occhio è un `Group` al centro della testa ruotato di `atan2(cos a, ±sin a)` (a≈0.7 rad dal
+davanti verso la camera); dentro: pupilla nera (sfera scalata 3.8×6×2.4), punto luce bianco,
+sopracciglio inclinato. Così con la camera laterale si vede l'occhio vicino.
+
+## Lezioni imparate
+
+- **Ingrandendo la testa**, gli accessori posizionati con numeri fissi finiscono dentro
+  (la barba di Bruno è sparita). Esprimi le posizioni in funzione del raggio (`HR*.4`, `HR*.6`).
+- Testa più grande = più alta della hurtbox: in Fight! HR 22 era troppo, 19.5 va bene (originale 17).
+- **Iron Line ha fino a 420 unità**: ogni pezzo in più per soldato è una draw call in più per unità.
+  Le geometrie sono unite con `mergeParts()` e colori per vertice: mantieni questo schema.
+- `MeshLambertMaterial({vertexColors:true, flatShading:true})` dà il look low-poly a tutto
+  (anche cavalli e catapulte) senza cambiare le geometrie.
+- Pennacchio/tabarda nel **colore della squadra** rende leggibili gli eserciti da lontano.

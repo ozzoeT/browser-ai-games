@@ -1,0 +1,607 @@
+<!doctype html>
+<html lang="it">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Model Sheet Personaggi</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: un "model sheet" da studio di animazione — fogli con linee guida, una griglia di 8 personaggi vivi, poi tabelle di riferimento. */
+:root{
+  --paper:#e9eef5; --sheet:#f9fbfd; --ink:#1a2030; --muted:#576176; --guide:#8fa9d9; --accent:#d9572f; --chip:#dfe6f1; --rule:#cfd8e6;
+  --f-display:"Bricolage Grotesque",ui-rounded,system-ui,sans-serif;
+  --f-body:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#0f131b; --sheet:#161b25; --ink:#e7ebf3; --muted:#9aa5ba; --guide:#3b5687; --accent:#ff8659; --chip:#222a38; --rule:#2a3344; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0f131b; --sheet:#161b25; --ink:#e7ebf3; --muted:#9aa5ba; --guide:#3b5687; --accent:#ff8659; --chip:#222a38; --rule:#2a3344; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font:15px/1.6 var(--f-body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 64px}
+.wrap{max-width:1240px;margin:0 auto;display:flex;flex-direction:column;gap:44px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.05}
+h1{font-size:clamp(34px,5.4vw,64px);font-weight:800;letter-spacing:-.02em}
+h1 em{font-style:normal;color:var(--accent)}
+h2{font-size:clamp(24px,3vw,32px);font-weight:800}
+h3{font-size:20px;font-weight:600}
+.eyebrow{font:600 12px/1 var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.lead{max-width:66ch;color:var(--muted);margin:0;font-size:16px}
+header{display:flex;flex-direction:column;gap:14px}
+.bar{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center}
+.seg{display:inline-flex;flex-wrap:wrap;background:var(--chip);border-radius:999px;padding:4px;gap:2px}
+.seg button,.tog{font:600 13px var(--f-body);border:0;background:transparent;color:var(--ink);padding:8px 14px;border-radius:999px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.tog{border:1.5px solid var(--rule)}
+.tog[aria-pressed="true"]{border-color:var(--accent);color:var(--accent)}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.hint{font:12px var(--f-mono);color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
+@media (max-width:1100px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){.grid{grid-template-columns:minmax(0,1fr)}}
+.card{background:var(--sheet);border:1px solid var(--rule);border-radius:6px;display:flex;flex-direction:column;overflow:hidden}
+.stage{position:relative;aspect-ratio:1/1.08;max-width:100%;
+  background:
+    repeating-linear-gradient(to bottom,transparent 0 calc(12.5% - 1px),color-mix(in srgb,var(--guide) 45%,transparent) calc(12.5% - 1px) 12.5%),
+    linear-gradient(to right,transparent calc(50% - .5px),color-mix(in srgb,var(--guide) 35%,transparent) calc(50% - .5px) calc(50% + .5px),transparent calc(50% + .5px));
+  border-bottom:1px dashed var(--rule)}
+.stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:pan-y;cursor:grab}
+.stage canvas.pix{image-rendering:pixelated;cursor:default}
+.tag{position:absolute;left:10px;top:10px;font:600 11px var(--f-mono);letter-spacing:.08em;color:var(--muted);background:var(--sheet);padding:3px 6px;border-radius:3px}
+.heads{position:absolute;right:10px;top:10px;font:600 11px var(--f-mono);color:var(--accent);background:var(--sheet);padding:3px 6px;border-radius:3px}
+.info{padding:14px 16px 18px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.info p{margin:0;font-size:14px;color:var(--muted)}
+.info dl{margin:4px 0 0;display:grid;grid-template-columns:auto 1fr;gap:4px 10px;font-size:13px}
+.info dt{font:600 11px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding-top:2px}
+.info dd{margin:0;min-width:0}
+code,.mono{font:12.5px var(--f-mono)}
+section{display:flex;flex-direction:column;gap:16px}
+.tips{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px 28px;margin:0;padding:0;list-style:none}
+@media (max-width:900px){.tips{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){.tips{grid-template-columns:minmax(0,1fr)}}
+.tips li{border-top:2px solid var(--ink);padding-top:10px;font-size:14px;color:var(--muted)}
+.tips b{display:block;color:var(--ink);font-family:var(--f-display);font-size:17px;margin-bottom:2px}
+.tablewrap{overflow-x:auto;border:1px solid var(--rule);border-radius:6px;background:var(--sheet)}
+table{border-collapse:collapse;width:100%;min-width:720px;font-size:14px}
+th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font:600 11px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:var(--chip)}
+tr:last-child td{border-bottom:0}
+td b{font-weight:600}
+.lic{display:inline-block;font:600 11px var(--f-mono);padding:2px 7px;border-radius:3px;background:var(--chip);white-space:nowrap}
+.lic.free{color:var(--accent)}
+a{color:var(--accent)}
+.mcp{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+@media (max-width:900px){.mcp{grid-template-columns:minmax(0,1fr)}}
+.mcp article{background:var(--sheet);border:1px solid var(--rule);border-radius:6px;padding:16px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.mcp p{margin:0;font-size:14px;color:var(--muted)}
+.note{border-left:3px solid var(--accent);padding:6px 0 6px 14px;max-width:72ch;color:var(--muted);margin:0}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Model sheet · browser-ai-games</div>
+    <h1>Otto modi di disegnare <em>le persone</em> nei giochi da browser</h1>
+    <p class="lead">Ogni personaggio qui sotto è fatto solo di codice: nessun file da scaricare, quindi ognuno entra in un singolo HTML come i tuoi giochi. Cambia animazione, trascina per ruotarli e confronta le proporzioni (le linee orizzontali sono la griglia per contare le "teste").</p>
+    <div class="bar" role="toolbar" aria-label="Controlli animazione">
+      <div class="seg" id="modes">
+        <button type="button" id="m-still" data-m="still">Fermo</button>
+        <button type="button" id="m-idle" data-m="idle">Respira</button>
+        <button type="button" id="m-walk" data-m="walk">Cammina</button>
+        <button type="button" id="m-jump" data-m="jump">Salta</button>
+        <button type="button" id="m-wave" data-m="wave">Saluta</button>
+      </div>
+      <button type="button" class="tog" id="spin" aria-pressed="false">Giro completo</button>
+      <span class="hint">trascina un personaggio per ruotarlo</span>
+    </div>
+  </header>
+
+  <div class="grid" id="grid"></div>
+
+  <section>
+    <div class="eyebrow">Ibridi · scheletro × pelle</div>
+    <h2>Sì, il manichino si può mescolare</h2>
+    <p class="lead">Il manichino è soprattutto uno <b>scheletro</b>: spalla → gomito, anca → ginocchio. Lo stile invece è la <b>pelle</b>: materiali, proporzioni, faccia, contorno. Le due cose sono indipendenti, quindi si combinano liberamente. Ecco quattro incroci; i controlli in alto valgono anche per loro.</p>
+    <div class="grid" id="grid2"></div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Valgono per qualsiasi stile</div>
+    <h2>Sei trucchi che rendono belle le persone</h2>
+    <ul class="tips">
+      <li><b>Ombra a contatto</b>Un cerchio sfumato sotto i piedi ancora il personaggio al terreno. Costa una mesh. In ogni scheda qui sopra c'è, e si restringe nel salto.</li>
+      <li><b>Contorno o luce di taglio</b>Una linea scura (inverted hull) o una luce da dietro staccano la figura dallo sfondo, anche in mezzo alla folla.</li>
+      <li><b>Palette corta</b>Quattro o cinque colori per personaggio. Uno saturo per la squadra o il giocatore, il resto più spento.</li>
+      <li><b>Squash &amp; stretch</b>Schiacciare prima del salto e all'atterraggio dà peso. Prova "Salta" sul fagiolo: è esagerato apposta.</li>
+      <li><b>Occhi grandi con punto luce</b>Sono la prima cosa che si guarda. Pupilla grande + puntino bianco = simpatia immediata, perfetto per i bambini.</li>
+      <li><b>Luce d'ambiente</b><code>RoomEnvironment</code> di three.js o un HDRI di Poly Haven rendono i materiali più ricchi senza toccare i modelli.</li>
+    </ul>
+  </section>
+
+  <section>
+    <div class="eyebrow">Gratis e online</div>
+    <h2>Librerie e asset per i personaggi</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Risorsa</th><th>Cosa offre</th><th>Licenza</th><th>Come entra nei tuoi giochi</th></tr></thead>
+        <tbody>
+          <tr><td><b>Kenney</b><br><a href="https://kenney.nl/assets" target="_blank" rel="noopener">kenney.nl</a></td><td>Personaggi 3D animati, mini personaggi, pack 2D. Centinaia di pacchetti coerenti tra loro.</td><td><span class="lic free">CC0</span></td><td>File GLB incorporati in base64 nell'HTML, come già fa Fight!</td></tr>
+          <tr><td><b>Quaternius</b><br><a href="https://quaternius.com" target="_blank" rel="noopener">quaternius.com</a></td><td>Personaggi low-poly con animazioni pronte (corsa, salto, attacco, morte).</td><td><span class="lic free">CC0</span></td><td>Stessa strada: GLB + <code>AnimationMixer</code>.</td></tr>
+          <tr><td><b>KayKit</b><br><a href="https://kaylousberg.itch.io" target="_blank" rel="noopener">kaylousberg.itch.io</a></td><td>Avventurieri, cavalieri e scheletri stilizzati, già con scheletro.</td><td><span class="lic free">CC0</span></td><td>Molto adatti a Iron Line.</td></tr>
+          <tr><td><b>Mixamo</b><br><a href="https://www.mixamo.com" target="_blank" rel="noopener">mixamo.com</a></td><td>Rigging automatico e migliaia di animazioni di motion capture.</td><td><span class="lic">Gratis con account Adobe</span></td><td>Dai animazioni vere a qualsiasi modello. Uso nei giochi consentito; non ridistribuire i file grezzi da soli.</td></tr>
+          <tr><td><b>Poly Pizza</b><br><a href="https://poly.pizza" target="_blank" rel="noopener">poly.pizza</a></td><td>Motore di ricerca per modelli low-poly di molti autori.</td><td><span class="lic">CC0 / CC-BY</span></td><td>Controlla il singolo modello: CC-BY chiede di citare l'autore.</td></tr>
+          <tr><td><b>VRoid Studio</b> + <code>@pixiv/three-vrm</code></td><td>Editor gratuito di avatar stile anime, caricabili in three.js.</td><td><span class="lic">Gratis · licenza per modello</span></td><td>Personaggi anime dettagliati. Pesanti: meglio per 1–2 personaggi a schermo.</td></tr>
+          <tr><td><b>Universal LPC Generator</b></td><td>Sprite 2D componibili (corpo, vestiti, armi) con animazioni.</td><td><span class="lic">CC-BY-SA / GPL</span></td><td>Per i giochi 2D su canvas. Crediti obbligatori.</td></tr>
+          <tr><td><b>Poly Haven</b><br><a href="https://polyhaven.com" target="_blank" rel="noopener">polyhaven.com</a></td><td>HDRI e texture fotografiche.</td><td><span class="lic free">CC0</span></td><td>Luce d'ambiente più bella per tutti gli stili.</td></tr>
+          <tr><td><b>Librerie di codice</b></td><td><code>three/addons</code> (GLTFLoader, OutlineEffect, SkeletonUtils, RoomEnvironment), <code>postprocessing</code> di pmndrs (bloom, outline, SMAA), PixiJS per il 2D.</td><td><span class="lic free">MIT</span></td><td>Caricabili da jsDelivr/cdnjs, senza build.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Model Context Protocol</div>
+    <h2>MCP gratuiti utili per la grafica</h2>
+    <div class="mcp">
+      <article><h3>Blender MCP</h3><p>Open source. Permette a Claude di pilotare Blender: modellare, colorare, scaricare asset da Poly Haven e Sketchfab, esportare in GLB.</p><p><b>Limite:</b> serve Blender sul tuo computer e Claude Desktop o Claude Code in locale. In questa sessione cloud non è disponibile.</p></article>
+      <article><h3>Playwright MCP</h3><p>Gratuito. Apre i giochi in un browser, fa screenshot e prova i comandi per controllare il risultato visivo.</p><p><b>Qui:</b> ho già Chromium e Playwright installati, quindi posso farlo anche senza MCP.</p></article>
+      <article><h3>Generatori 3D da testo o immagine</h3><p>Meshy, Tripo, Hunyuan3D e simili hanno API o server MCP. Piani gratuiti a crediti limitati; Hunyuan3D è open source ma richiede una GPU.</p><p><b>Limite:</b> i modelli escono spesso da ripulire e senza scheletro. Buoni per prototipi.</p></article>
+    </div>
+    <p class="note">Per i tuoi giochi la strada più semplice resta quella di questa pagina: personaggi procedurali in puro codice, oppure modelli CC0 incorporati nell'HTML. Niente account, niente download per chi gioca.</p>
+  </section>
+
+  <section>
+    <div class="eyebrow">Proposta</div>
+    <h2>Quale stile per quale gioco</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Gioco</th><th>Stile consigliato</th><th>Perché</th></tr></thead>
+        <tbody>
+          <tr><td><b>Iron Line</b></td><td>Cavaliere sfaccettato (ibrido)</td><td>Restano leggeri con decine di soldati; elmi e pennacchi rendono i ruoli leggibili da lontano, e gli snodi rendono più credibili i colpi.</td></tr>
+          <tr><td><b>Fight!</b></td><td>Eroe toon (ibrido)</td><td>Si appoggia al toon che c'è già: aggiunge contorno, occhi espressivi e gomiti/ginocchia per pose di combattimento leggibili.</td></tr>
+          <tr><td><b>Studio Zero</b></td><td>Chubby snodato (ibrido) o Chibi toon</td><td>Tono giocoso, eroe minuscolo in una cucina gigante; la versione snodata si muove meglio.</td></tr>
+          <tr><td><b>City Rush · Afterglow GP</b></td><td>Fagiolo party</td><td>Ideale per piloti in cabina o pedoni: pochi poligoni, simpatici, perfetti per bambini.</td></tr>
+          <tr><td><b>Skyflip</b></td><td>Mani chibi toon</td><td>In prima persona si vedono solo le mani: guanti tondi con contorno danno carattere.</td></tr>
+          <tr><td><b>Dino Frenzy</b></td><td>Pixel sprite 2D</td><td>Gioco su canvas 2D: sprite a fotogrammi con contorno da 1 px.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
+<script>
+(function(){
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+let MODE = reduce ? 'still' : 'walk', SPIN = false;
+
+/* ---------- helpers ---------- */
+function M(geo,mat,x,y,z,parent){const m=new THREE.Mesh(geo,mat);m.position.set(x||0,y||0,z||0);if(parent)parent.add(m);return m;}
+function pivot(parent,x,y,z){const g=new THREE.Group();g.position.set(x||0,y||0,z||0);parent.add(g);return g;}
+function base(){const root=new THREE.Group();const body=pivot(root);return {root,body};}
+const Sph=(r,w,h)=>new THREE.SphereGeometry(r,w||20,h||16);
+const Box=(w,h,d)=>new THREE.BoxGeometry(w,h,d);
+const Cap=(r,l,c,rs)=>new THREE.CapsuleGeometry(r,l,c||6,rs||12);
+const Cyl=(a,b,h,s)=>new THREE.CylinderGeometry(a,b,h,s);
+
+/* ---------- 1. blocchi (stile attuale) ---------- */
+function buildBlocky(){
+  const {root,body}=base();const S=c=>new THREE.MeshStandardMaterial({color:c,roughness:.85});
+  const skin=S('#e0ac85'),tunic=S('#3f6fd8'),pants=S('#5a4632'),leather=S('#7a5233'),dark=S('#1c1c22');
+  const legL=pivot(body,.12,.86,0),legR=pivot(body,-.12,.86,0);
+  [legL,legR].forEach(l=>{M(Box(.17,.78,.2),pants,0,-.39,0,l);M(Box(.19,.12,.27),leather,0,-.8,.03,l);});
+  M(Box(.5,.6,.3),tunic,0,1.2,0,body);M(Box(.52,.08,.32),leather,0,.94,0,body);M(Box(.44,.16,.27),pants,0,.86,0,body);
+  const armL=pivot(body,.33,1.46,0),armR=pivot(body,-.33,1.46,0);
+  [armL,armR].forEach(a=>{M(Box(.14,.5,.14),tunic,0,-.22,0,a);M(Box(.12,.12,.12),skin,0,-.52,0,a);});
+  M(Box(.12,.1,.12),skin,0,1.53,0,body);
+  const head=pivot(body,0,1.7,0);M(Sph(.17),skin,0,0,0,head);
+  M(Box(.045,.045,.02),dark,.065,.02,.16,head);M(Box(.045,.045,.02),dark,-.065,.02,.16,head);
+  return {root,body,head,armL,armR,legL,legR,armRest:.05};
+}
+
+/* ---------- 2. chibi toon ---------- */
+const GM=(()=>{const t=new THREE.DataTexture(new Uint8Array([95,95,95,255,175,175,175,255,255,255,255,255]),3,1);t.minFilter=t.magFilter=THREE.NearestFilter;t.needsUpdate=true;return t;})();
+const OUT=new THREE.MeshBasicMaterial({color:0x1d1a2b,side:THREE.BackSide});
+function hull(m,k,ky){const h=new THREE.Mesh(m.geometry,OUT);h.scale.set(k,ky||k,k);m.add(h);return m;}
+function buildChibi(){
+  const {root,body}=base();const T=c=>new THREE.MeshToonMaterial({color:c,gradientMap:GM});
+  const skin=T('#ffd2b0'),shirt=T('#ff7a59'),shorts=T('#3a5bd9'),hair=T('#4b2f5c'),shoe=T('#2b2b3a');
+  const black=new THREE.MeshBasicMaterial({color:0x1a1424}),white=new THREE.MeshBasicMaterial({color:0xffffff}),blush=new THREE.MeshBasicMaterial({color:0xff8aa0,transparent:true,opacity:.55});
+  const legL=pivot(body,.12,.42,0),legR=pivot(body,-.12,.42,0);
+  [legL,legR].forEach(l=>{hull(M(Cap(.095,.16),shorts,0,-.15,0,l),1.13);const s=hull(M(Sph(.12),shoe,0,-.33,.05,l),1.1);s.scale.set(1,.7,1.3);});
+  hull(M(Cap(.24,.22,8,16),shirt,0,.72,0,body),1.07);
+  const armL=pivot(body,.27,.94,0),armR=pivot(body,-.27,.94,0);
+  [armL,armR].forEach(a=>{hull(M(Cap(.07,.18),shirt,0,-.13,0,a),1.14);hull(M(Sph(.09),skin,0,-.3,0,a),1.12);});
+  const head=pivot(body,0,1.42,0);
+  hull(M(Sph(.46,32,24),skin,0,0,0,head),1.04);
+  const hr=hull(M(new THREE.SphereGeometry(.485,32,24,0,Math.PI*2,0,Math.PI*.5),hair,0,.02,-.01,head),1.035);hr.rotation.x=-.45;
+  const tuft=M(new THREE.ConeGeometry(.08,.22,10),hair,.05,.52,-.05,head);tuft.rotation.z=-.4;hull(tuft,1.15);
+  [1,-1].forEach(s=>{
+    const e=M(Sph(.075,16,12),black,s*.16,-.04,.415,head);e.scale.set(.85,1.2,.45);
+    M(Sph(.024,10,8),white,s*.16+.025,0,.445,head);
+    const c=M(Sph(.06,12,8),blush,s*.27,-.15,.34,head);c.scale.set(1.2,.6,.3);
+  });
+  const mouth=M(new THREE.TorusGeometry(.045,.012,6,12,Math.PI),black,0,-.15,.43,head);mouth.rotation.z=Math.PI;
+  return {root,body,head,armL,armR,legL,legR,armRest:.28};
+}
+
+/* ---------- 3. low-poly sfaccettato ---------- */
+function buildLowpoly(){
+  const {root,body}=base();const F=c=>new THREE.MeshStandardMaterial({color:c,flatShading:true,roughness:.9});
+  const skin=F('#d9a27a'),coat=F('#2f8f83'),scarf=F('#e0a33a'),pants=F('#3d3a4f'),boots=F('#5b3b2a'),hat=F('#c4553b'),dark=F('#222');
+  const legL=pivot(body,.11,.9,0),legR=pivot(body,-.11,.9,0);
+  [legL,legR].forEach(l=>{M(Cyl(.085,.065,.76,5),pants,0,-.38,0,l);M(Cyl(.08,.1,.16,5),boots,0,-.82,.02,l);});
+  M(Cyl(.2,.24,.62,6),coat,0,1.22,0,body);M(Cyl(.25,.29,.22,6),coat,0,.88,0,body);
+  M(Cyl(.15,.2,.11,6),scarf,0,1.55,0,body);
+  const armL=pivot(body,.27,1.48,0),armR=pivot(body,-.27,1.48,0);
+  [armL,armR].forEach(a=>{M(Cyl(.07,.055,.52,5),coat,0,-.26,0,a);M(new THREE.IcosahedronGeometry(.065,0),skin,0,-.56,0,a);});
+  const head=pivot(body,0,1.74,0);
+  M(new THREE.IcosahedronGeometry(.17,1),skin,0,0,0,head);
+  const n=M(new THREE.ConeGeometry(.035,.08,4),skin,0,-.02,.18,head);n.rotation.x=Math.PI/2;
+  M(Box(.035,.035,.02),dark,.06,.03,.155,head);M(Box(.035,.035,.02),dark,-.06,.03,.155,head);
+  M(Cyl(.27,.27,.03,7),hat,0,.11,0,head);const cr=M(new THREE.ConeGeometry(.15,.24,6),hat,0,.24,-.02,head);cr.rotation.x=-.15;
+  return {root,body,head,armL,armR,legL,legR,armRest:.14};
+}
+
+/* ---------- 4. voxel ---------- */
+function pixTex(rows,pal){
+  const c=document.createElement('canvas');c.width=c.height=8;const x=c.getContext('2d');
+  rows.forEach((r,y)=>[...r].forEach((ch,i)=>{x.fillStyle=pal[ch];x.fillRect(i,y,1,1);}));
+  const t=new THREE.CanvasTexture(c);t.magFilter=t.minFilter=THREE.NearestFilter;t.colorSpace=THREE.SRGBColorSpace;return t;
+}
+function buildVoxel(){
+  const {root,body}=base();const V=c=>new THREE.MeshStandardMaterial({color:c,roughness:1});
+  const pal={h:'#4a2f22',s:'#e8b58f',e:'#1b1b2a',w:'#ffffff',m:'#a0573f',k:'#d99a74'};
+  const face=pixTex(['hhhhhhhh','hhhhhhhh','hssssssh','ssssssss','swessews','ssskksss','sssmmsss','ssssssss'],pal);
+  const side=pixTex(['hhhhhhhh','hhhhhhhh','hhhhhhss','hhhsssss','hhssssss','ssssssss','ssssssss','ssssssss'],pal);
+  const back=pixTex(['hhhhhhhh','hhhhhhhh','hhhhhhhh','hhhhhhhh','hhhhhhhh','hhhhhhhh','shhhhhhs','ssssssss'],pal);
+  const top=pixTex(Array(8).fill('hhhhhhhh'),pal);
+  const TM=t=>new THREE.MeshStandardMaterial({map:t,roughness:1});
+  const skin=V('#e8b58f'),hood=V('#ff8a3d'),jeans=V('#3b5bdb'),shoe=V('#26262e'),pocket=V('#e36f22');
+  const legL=pivot(body,.125,.74,0),legR=pivot(body,-.125,.74,0);
+  [legL,legR].forEach(l=>{M(Box(.24,.66,.26),jeans,0,-.33,0,l);M(Box(.25,.1,.3),shoe,0,-.69,.02,l);});
+  M(Box(.5,.6,.28),hood,0,1.04,0,body);M(Box(.3,.14,.02),pocket,0,.88,.15,body);
+  const armL=pivot(body,.37,1.28,0),armR=pivot(body,-.37,1.28,0);
+  [armL,armR].forEach(a=>{M(Box(.22,.52,.24),hood,0,-.22,0,a);M(Box(.2,.14,.22),skin,0,-.54,0,a);});
+  const head=pivot(body,0,1.34,0);
+  M(Box(.56,.56,.56),[TM(side),TM(side),TM(top),V('#e8b58f'),TM(face),TM(back)],0,.28,0,head);
+  return {root,body,head,armL,armR,legL,legR,armRest:.04};
+}
+
+/* ---------- 5. fagiolo party ---------- */
+function buildBean(){
+  const {root,body}=base();
+  const B=c=>new THREE.MeshPhysicalMaterial({color:c,roughness:.35,clearcoat:1,clearcoatRoughness:.15});
+  const pink=B('#ff5fa2'),dpink=B('#c93a7c'),white=B('#ffffff'),black=new THREE.MeshBasicMaterial({color:0x14101c});
+  M(Cap(.42,.55,12,28),pink,0,.895,0,body);
+  const legL=pivot(body,.17,.26,0),legR=pivot(body,-.17,.26,0);
+  [legL,legR].forEach(l=>{const f=M(Sph(.14),dpink,0,-.16,.05,l);f.scale.set(1,.7,1.25);});
+  const armL=pivot(body,.5,.98,0),armR=pivot(body,-.5,.98,0);
+  [armL,armR].forEach(a=>M(Sph(.12),dpink,0,-.16,0,a));
+  const head=pivot(body,0,1.3,0);
+  [1,-1].forEach(s=>{M(Sph(.11),white,s*.13,0,.34,head);M(Sph(.055,12,10),black,s*.13,0,.44,head);});
+  const sm=M(new THREE.TorusGeometry(.08,.016,8,16,Math.PI),black,0,-.2,.395,head);sm.rotation.z=Math.PI;
+  return {root,body,head,armL,armR,legL,legR,armRest:.25,squash:3};
+}
+
+/* ---------- 6. manichino ---------- */
+function buildMannequin(){
+  const {root,body}=base();
+  const wood=new THREE.MeshStandardMaterial({color:'#c99a68',roughness:.5}),joint=new THREE.MeshStandardMaterial({color:'#5b4636',roughness:.35,metalness:.1});
+  const p=M(Sph(.16),wood,0,1.0,0,body);p.scale.set(1.15,.7,.8);
+  M(Cyl(.05,.05,.16,10),joint,0,1.13,0,body);
+  const ch=M(Cap(.17,.22,8,16),wood,0,1.38,0,body);ch.scale.set(1.15,1,.75);
+  M(Cyl(.04,.045,.14,10),joint,0,1.7,0,body);
+  const head=pivot(body,0,1.86,0);const hd=M(Sph(.13,24,18),wood,0,0,0,head);hd.scale.set(.9,1.2,1);
+  const legL=pivot(body,.1,.98,0),legR=pivot(body,-.1,.98,0),kneeL=pivot(legL,0,-.47,0),kneeR=pivot(legR,0,-.47,0);
+  [[legL,kneeL],[legR,kneeR]].forEach(([l,k])=>{M(Sph(.07),joint,0,0,0,l);M(Cap(.07,.28),wood,0,-.24,0,l);M(Sph(.055),joint,0,0,0,k);M(Cap(.055,.3),wood,0,-.23,0,k);M(Box(.1,.06,.22),wood,0,-.46,.05,k);});
+  const armL=pivot(body,.25,1.58,0),armR=pivot(body,-.25,1.58,0),elL=pivot(armL,0,-.34,0),elR=pivot(armR,0,-.34,0);
+  [[armL,elL],[armR,elR]].forEach(([a,e])=>{M(Sph(.06),joint,0,0,0,a);M(Cap(.055,.2),wood,0,-.17,0,a);M(Sph(.045),joint,0,0,0,e);M(Cap(.045,.18),wood,0,-.15,0,e);const h=M(Sph(.05),wood,0,-.31,0,e);h.scale.set(.8,1.2,.6);});
+  return {root,body,head,armL,armR,legL,legR,kneeL,kneeR,elL,elR,armRest:.12};
+}
+
+/* ---------- 7. ritaglio di carta ---------- */
+function rrShape(w,h,r,top){
+  const s=new THREE.Shape(),x=-w/2,y=top?-h:-h/2;
+  s.moveTo(x+r,y);s.lineTo(x+w-r,y);s.quadraticCurveTo(x+w,y,x+w,y+r);s.lineTo(x+w,y+h-r);s.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+  s.lineTo(x+r,y+h);s.quadraticCurveTo(x,y+h,x,y+h-r);s.lineTo(x,y+r);s.quadraticCurveTo(x,y,x+r,y);return new THREE.ShapeGeometry(s,6);
+}
+function buildPaper(){
+  const {root,body}=base();
+  const P=c=>new THREE.MeshStandardMaterial({color:c,roughness:1,side:THREE.DoubleSide});
+  const W=P('#ffffff'),shirt=P('#5a7cff'),pants=P('#2d2f4a'),shoe=P('#f25f5c'),skin=P('#ffcfa8');
+  function piece(geo,mat,x,y,z,parent,border){const g=pivot(parent,x,y,z);M(geo,mat,0,0,0,g);const b=M(geo,W,0,0,-.012,g);b.scale.setScalar(border||1.18);return g;}
+  const legL=pivot(body,.11,.72,-.04),legR=pivot(body,-.11,.72,-.04);
+  [legL,legR].forEach(l=>{piece(rrShape(.15,.64,.07,true),pants,0,0,0,l,1.14);piece(rrShape(.24,.1,.05),shoe,.03,-.66,.006,l,1.25);});
+  piece(rrShape(.5,.62,.13),shirt,0,1.0,0,body,1.1);
+  const armL=pivot(body,.29,1.24,-.035),armR=pivot(body,-.29,1.24,-.035);
+  [armL,armR].forEach(a=>{piece(rrShape(.13,.5,.065,true),shirt,0,0,0,a,1.15);piece(new THREE.CircleGeometry(.075,20),skin,0,-.52,.004,a,1.3);});
+  const c=document.createElement('canvas');c.width=c.height=256;const x=c.getContext('2d');
+  x.fillStyle='#ffcfa8';x.fillRect(0,0,256,256);
+  x.fillStyle='#3a2a44';x.beginPath();x.arc(128,118,128,Math.PI*1.02,Math.PI*1.98);x.fill();x.fillRect(0,40,30,90);x.fillRect(226,40,30,90);
+  x.fillStyle='#1d1a2b';[96,160].forEach(e=>{x.beginPath();x.ellipse(e,140,13,17,0,0,7);x.fill();});
+  x.fillStyle='#fff';[101,165].forEach(e=>{x.beginPath();x.arc(e,133,5,0,7);x.fill();});
+  x.fillStyle='rgba(255,120,140,.5)';[70,186].forEach(e=>{x.beginPath();x.ellipse(e,178,20,11,0,0,7);x.fill();});
+  x.strokeStyle='#1d1a2b';x.lineWidth=7;x.lineCap='round';x.beginPath();x.arc(128,170,22,.2*Math.PI,.8*Math.PI);x.stroke();
+  const ft=new THREE.CanvasTexture(c);ft.colorSpace=THREE.SRGBColorSpace;
+  const head=pivot(body,0,1.56,.012);
+  piece(new THREE.CircleGeometry(.3,40),new THREE.MeshStandardMaterial({map:ft,roughness:1,side:THREE.DoubleSide}),0,0,0,head,1.13);
+  return {root,body,head,armL,armR,legL,legR,armRest:.18,planar:true};
+}
+
+/* ---------- ibridi: scheletro del manichino + pelle di altri stili ---------- */
+function limb(parent,x,y,L1,L2,r1,r2,o){
+  const g=o.geo||((r,l)=>Cap(r,Math.max(.01,l-r),6,14));
+  const a=pivot(parent,x,y,0);
+  if(o.mJ){const s=M(Sph(r1*1.2,14,10),o.mJ,0,0,0,a);if(o.ol)hull(s,1+o.ol/(r1*1.2));}
+  const u=M(g(r1,L1),o.mU,0,-L1/2,0,a);if(o.ol)hull(u,1+o.ol/r1,1+o.ol*2/(L1+r1));
+  const j=pivot(a,0,-L1,0);
+  if(o.mJ){const s=M(Sph(r2*1.25,14,10),o.mJ,0,0,0,j);if(o.ol)hull(s,1+o.ol/(r2*1.25));}
+  const l=M(g(r2,L2),o.mL||o.mU,0,-L2/2,0,j);if(o.ol)hull(l,1+o.ol/r2,1+o.ol*2/(L2+r2));
+  if(o.end)o.end(j,L2);
+  return [a,j];
+}
+function toonFace(head,R,s,col){
+  const black=new THREE.MeshBasicMaterial({color:0x1a1424}),white=new THREE.MeshBasicMaterial({color:0xffffff}),blush=new THREE.MeshBasicMaterial({color:0xff8aa0,transparent:true,opacity:.5});
+  [1,-1].forEach(k=>{
+    const x=k*R*.35,y=-R*.05,z=Math.sqrt(R*R-x*x-y*y)-.005;
+    const e=M(Sph(R*s,16,12),black,x,y,z,head);e.scale.set(.85,1.25,.45);
+    M(Sph(R*s*.32,10,8),white,x+R*.05,y+R*.09,z+.02,head);
+    if(col){const c=M(Sph(R*.13,12,8),blush,k*R*.58,-R*.32,Math.sqrt(R*R-(R*.58)**2-(R*.32)**2)-.01,head);c.scale.set(1.2,.6,.3);}
+  });
+  const m=M(new THREE.TorusGeometry(R*.1,R*.025,6,12,Math.PI),black,0,-R*.34,Math.sqrt(R*R-(R*.34)**2)-.005,head);m.rotation.z=Math.PI;
+}
+function buildToonHero(){
+  const {root,body}=base();const T=c=>new THREE.MeshToonMaterial({color:c,gradientMap:GM});
+  const skin=T('#f5c6a0'),suit=T('#2b59c3'),pad=T('#ffcc33'),glove=T('#ffffff'),boot=T('#e04848'),hair=T('#2a2238'),ol=.022;
+  const dark=new THREE.MeshBasicMaterial({color:0x1a1424});
+  const [legL,kneeL]=limb(body,.11,.9,.42,.42,.075,.065,{mU:suit,mL:boot,mJ:pad,ol,end:(j,L)=>{const b=hull(M(Sph(.085,16,12),boot,0,-L,.03,j),1.25);b.scale.set(1,.75,1.45);}});
+  const [legR,kneeR]=limb(body,-.11,.9,.42,.42,.075,.065,{mU:suit,mL:boot,mJ:pad,ol,end:(j,L)=>{const b=hull(M(Sph(.085,16,12),boot,0,-L,.03,j),1.25);b.scale.set(1,.75,1.45);}});
+  const pe=hull(M(Sph(.17,20,14),suit,0,.97,0,body),1.1);pe.scale.set(1.1,.75,.85);
+  const ch=hull(M(Cap(.2,.26,8,18),suit,0,1.25,0,body),1.08);ch.scale.set(1.15,1,.8);
+  const bl=M(Cyl(.215,.215,.07,20),pad,0,1.0,0,body);bl.scale.z=.85;
+  const hand=(j,L)=>hull(M(Sph(.075,14,10),glove,0,-L-.02,0,j),1.28);
+  const [armL,elL]=limb(body,.3,1.45,.3,.28,.065,.055,{mU:suit,mJ:pad,ol,end:hand});
+  const [armR,elR]=limb(body,-.3,1.45,.3,.28,.065,.055,{mU:suit,mJ:pad,ol,end:hand});
+  M(Cyl(.06,.07,.12,12),skin,0,1.6,0,body);
+  const head=pivot(body,0,1.8,0);hull(M(Sph(.25,28,20),skin,0,0,0,head),1.08);
+  const hr=hull(M(new THREE.SphereGeometry(.265,28,20,0,Math.PI*2,0,Math.PI*.5),hair,0,.01,-.01,head),1.06);hr.rotation.x=-.45;
+  [[-.12,.2,-.6],[0,.25,-.1],[.12,.21,.5],[0,.14,-1.9]].forEach(([x,y,r])=>{const c=M(new THREE.ConeGeometry(.07,.2,8),hair,x,y,-.05,head);c.rotation.set(r<-1?-1.2:-.3,0,r<-1?0:r);hull(c,1.2);});
+  toonFace(head,.25,.18,false);
+  [1,-1].forEach(k=>{const b=M(Box(.08,.018,.02),dark,k*.09,.085,.225,head);b.rotation.z=k*.22;});
+  return {root,body,head,armL,armR,legL,legR,kneeL,kneeR,elL,elR,armRest:.15};
+}
+function buildChubby(){
+  const {root,body}=base();const T=c=>new THREE.MeshToonMaterial({color:c,gradientMap:GM});
+  const skin=T('#ffd9bd'),shirt=T('#7ac74f'),over=T('#3d6fd6'),hat=T('#e4513c'),shoe=T('#4a3b35'),patch=T('#f0b429'),ol=.025;
+  const shoeEnd=(j,L)=>{const s=hull(M(Sph(.12,16,12),shoe,0,-L,.04,j),1.2);s.scale.set(1,.7,1.35);};
+  const [legL,kneeL]=limb(body,.14,.5,.2,.22,.1,.09,{mU:over,mJ:patch,ol,end:shoeEnd});
+  const [legR,kneeR]=limb(body,-.14,.5,.2,.22,.1,.09,{mU:over,mJ:patch,ol,end:shoeEnd});
+  const bel=hull(M(Sph(.36,28,20),shirt,0,.8,0,body),1.06);bel.scale.set(1.05,1,.92);
+  const lo=M(new THREE.SphereGeometry(.368,28,20,0,Math.PI*2,Math.PI*.5,Math.PI*.5),over,0,.84,0,body);lo.scale.set(1.05,1.05,.92);
+  M(Box(.26,.22,.05),over,0,1.0,.3,body);
+  [1,-1].forEach(k=>M(Sph(.025,10,8),patch,k*.09,1.07,.33,body));
+  const hand=(j,L)=>hull(M(Sph(.09,14,10),skin,0,-L,0,j),1.25);
+  const [armL,elL]=limb(body,.36,1.02,.18,.17,.085,.075,{mU:shirt,mL:skin,mJ:shirt,ol,end:hand});
+  const [armR,elR]=limb(body,-.36,1.02,.18,.17,.085,.075,{mU:shirt,mL:skin,mJ:shirt,ol,end:hand});
+  const head=pivot(body,0,1.45,0);hull(M(Sph(.38,32,24),skin,0,0,0,head),1.05);
+  const bn=hull(M(new THREE.SphereGeometry(.4,32,24,0,Math.PI*2,0,Math.PI*.5),hat,0,.02,-.01,head),1.04);bn.rotation.x=-.35;
+  hull(M(Sph(.08,14,10),hat,0,.42,-.08,head),1.25);
+  toonFace(head,.38,.17,true);
+  return {root,body,head,armL,armR,legL,legR,kneeL,kneeR,elL,elR,armRest:.35};
+}
+function buildBeanJointed(){
+  const {root,body}=base();
+  const B=c=>new THREE.MeshPhysicalMaterial({color:c,roughness:.35,clearcoat:1,clearcoatRoughness:.15});
+  const teal=B('#2ec4b6'),white=B('#ffffff'),shoe=B('#ff9f1c'),hose=new THREE.MeshStandardMaterial({color:'#1f2a44',roughness:.6}),black=new THREE.MeshBasicMaterial({color:0x14101c});
+  M(Cap(.36,.45,12,28),teal,0,1.085,0,body);
+  const shoeEnd=(j,L)=>{const s=M(Sph(.12,16,12),shoe,0,-L,.05,j);s.scale.set(1.1,.65,1.4);};
+  const [legL,kneeL]=limb(body,.14,.56,.26,.25,.04,.04,{mU:hose,end:shoeEnd});
+  const [legR,kneeR]=limb(body,-.14,.56,.26,.25,.04,.04,{mU:hose,end:shoeEnd});
+  const glove=(j,L)=>M(Sph(.1,16,12),white,0,-L-.05,0,j);
+  const [armL,elL]=limb(body,.37,1.12,.22,.2,.035,.035,{mU:hose,end:glove});
+  const [armR,elR]=limb(body,-.37,1.12,.22,.2,.035,.035,{mU:hose,end:glove});
+  const head=pivot(body,0,1.38,0);
+  [1,-1].forEach(s=>{M(Sph(.1),white,s*.11,0,.31,head);M(Sph(.05,12,10),black,s*.11,0,.4,head);});
+  const sm=M(new THREE.TorusGeometry(.07,.015,8,16,Math.PI),black,0,-.17,.355,head);sm.rotation.z=Math.PI;
+  return {root,body,head,armL,armR,legL,legR,kneeL,kneeR,elL,elR,armRest:.5,squash:2.5};
+}
+function buildKnight(){
+  const {root,body}=base();
+  const F=(c,m)=>new THREE.MeshStandardMaterial({color:c,flatShading:true,roughness:m?.4:.9,metalness:m?.55:0});
+  const steel=F('#a7b0bb',1),leather=F('#3b2f2a'),tabard=F('#b8323a'),gold=F('#d8a93a',1),plume=F('#e84a3c');
+  const geo=(r,l)=>Cyl(r,r*.8,l,6);
+  const foot=(j,L)=>M(Box(.13,.08,.24),steel,0,-L-.02,.04,j);
+  const [legL,kneeL]=limb(body,.11,.94,.44,.44,.085,.07,{geo,mU:steel,mJ:leather,end:foot});
+  const [legR,kneeR]=limb(body,-.11,.94,.44,.44,.085,.07,{geo,mU:steel,mJ:leather,end:foot});
+  M(Cyl(.25,.19,.5,6),steel,0,1.3,0,body);M(Cyl(.25,.31,.5,6),tabard,0,1.04,0,body);M(Cyl(.23,.23,.06,6),gold,0,1.1,0,body);
+  [1,-1].forEach(k=>M(new THREE.IcosahedronGeometry(.12,0),steel,k*.28,1.52,0,body));
+  const gaunt=(j,L)=>M(new THREE.IcosahedronGeometry(.065,0),leather,0,-L-.04,0,j);
+  const [armL,elL]=limb(body,.3,1.48,.3,.28,.07,.06,{geo,mU:steel,mJ:leather,end:gaunt});
+  const [armR,elR]=limb(body,-.3,1.48,.3,.28,.07,.06,{geo,mU:steel,mJ:leather,end:gaunt});
+  M(Cyl(.07,.08,.1,6),leather,0,1.6,0,body);
+  const head=pivot(body,0,1.8,0);
+  M(Cyl(.15,.16,.3,7),steel,0,0,0,head);M(new THREE.ConeGeometry(.155,.1,7),steel,0,.2,0,head);
+  M(Box(.2,.03,.04),leather,0,.03,.14,head);M(Box(.025,.12,.03),leather,0,-.04,.15,head);
+  const pl=M(new THREE.ConeGeometry(.05,.3,5),plume,0,.32,-.04,head);pl.rotation.x=-.4;
+  return {root,body,head,armL,armR,legL,legR,kneeL,kneeR,elL,elR,armRest:.12};
+}
+
+/* ---------- animazione comune ---------- */
+function animate(r,t,mode){
+  const sq=r.squash||1,pl=r.planar,rest=r.armRest||0;
+  const sw=(o,a)=>{if(pl)o.rotation.z=a;else o.rotation.x=a;};
+  [r.legL,r.legR,r.armL,r.armR].forEach(o=>o.rotation.set(0,0,0));
+  if(r.kneeL){[r.kneeL,r.kneeR,r.elL,r.elR].forEach(o=>o.rotation.set(0,0,0));}
+  r.head.rotation.set(0,0,0);r.body.rotation.set(0,0,0);
+  r.armL.rotation.z=rest;r.armR.rotation.z=-rest;
+  let y=0,sy=1;
+  if(mode==='idle'){
+    sy=1+Math.sin(t*2.2)*.018*sq;r.armL.rotation.z=rest+Math.sin(t*2.2)*.04;r.armR.rotation.z=-rest-Math.sin(t*2.2)*.04;
+    r.head.rotation.y=Math.sin(t*.7)*.25;r.head.rotation.z=Math.sin(t*1.1)*.04;
+  }else if(mode==='walk'){
+    const s=Math.sin(t*7);sw(r.legL,s*.6);sw(r.legR,-s*.6);sw(r.armL,-s*.55);sw(r.armR,s*.55);
+    if(pl){r.armL.rotation.z=rest-s*.4;r.armR.rotation.z=-rest-s*.4;}
+    y=Math.abs(Math.cos(t*7))*.05*sq;sy=1-Math.abs(Math.sin(t*7))*.015*sq;r.body.rotation.z=s*.03;
+    if(r.kneeL){r.kneeL.rotation.x=Math.max(0,s)*.9;r.kneeR.rotation.x=Math.max(0,-s)*.9;r.elL.rotation.x=-.35;r.elR.rotation.x=-.35;}
+  }else if(mode==='jump'){
+    const T=1.15,p=(t%T)/T;let k=0;
+    if(p<.18){sy=1-.1*sq*Math.sin(p/.18*Math.PI);}
+    else if(p<.82){const q=(p-.18)/.64;y=Math.sin(q*Math.PI)*.42;k=Math.sin(q*Math.PI);sy=1+.05*sq*Math.sin(q*Math.PI*2)*(q<.5?1:-.5);}
+    else{sy=1-.08*sq*Math.sin((p-.82)/.18*Math.PI);}
+    r.armL.rotation.z=rest+k*2.4;r.armR.rotation.z=-rest-k*2.4;
+    if(!pl){r.legL.rotation.x=-k*.35;r.legR.rotation.x=-k*.35;}
+    if(r.kneeL){r.kneeL.rotation.x=k*.8;r.kneeR.rotation.x=k*.8;}
+  }else if(mode==='wave'){
+    r.armR.rotation.z=-2.55+Math.sin(t*9)*.32;r.armL.rotation.z=rest;
+    if(r.elR)r.elR.rotation.z=Math.sin(t*9)*.25;
+    r.head.rotation.z=.08;r.body.rotation.z=.04;sy=1+Math.sin(t*4.5)*.01*sq;
+  }
+  r.root.position.y=y;const w=1+(1-sy)*.6;r.root.scale.set(w,sy,w);
+  return y;
+}
+
+/* ---------- carte 3D ---------- */
+const shadowTex=(()=>{const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d');const g=x.createRadialGradient(32,32,0,32,32,32);g.addColorStop(0,'rgba(0,0,0,.55)');g.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=g;x.fillRect(0,0,64,64);return new THREE.CanvasTexture(c);})();
+const cards=[];
+function card3D(canvas,build){
+  const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setClearColor(0,0);
+  renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;
+  const scene=new THREE.Scene(),cam=new THREE.PerspectiveCamera(30,1,.1,50);cam.position.set(0,1.15,5.7);cam.lookAt(0,1.05,0);
+  scene.add(new THREE.HemisphereLight(0xffffff,0x8090b0,1.5));
+  const key=new THREE.DirectionalLight(0xfff1e0,2.6);key.position.set(2.5,4,3.5);scene.add(key);
+  const rim=new THREE.DirectionalLight(0xa8c8ff,2.2);rim.position.set(-3,2.5,-4);scene.add(rim);
+  const sh=new THREE.Mesh(new THREE.PlaneGeometry(1.3,1.3),new THREE.MeshBasicMaterial({map:shadowTex,transparent:true,depthWrite:false}));sh.rotation.x=-Math.PI/2;sh.position.y=.002;scene.add(sh);
+  const rig=build();scene.add(rig.root);
+  const st={yaw:0,drag:null,visible:true};
+  canvas.addEventListener('pointerdown',e=>{st.drag=e.clientX;canvas.setPointerCapture(e.pointerId);canvas.style.cursor='grabbing';});
+  canvas.addEventListener('pointermove',e=>{if(st.drag!==null){st.yaw+=(e.clientX-st.drag)*.012;st.drag=e.clientX;if(MODE==='still'||reduce)draw(lastT);}});
+  const up=()=>{st.drag=null;canvas.style.cursor='';};canvas.addEventListener('pointerup',up);canvas.addEventListener('pointercancel',up);
+  function size(){const w=canvas.clientWidth,h=canvas.clientHeight;if(!w||!h)return;renderer.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix();}
+  function draw(t){
+    const y=animate(rig,t,MODE);
+    rig.root.rotation.y=st.yaw+(SPIN?t*.6:(reduce||MODE==='still'?.45:.45*Math.sin(t*.35)));
+    const s=1-y*.9;sh.scale.set(s,s,1);sh.material.opacity=.5+.5*s;
+    renderer.render(scene,cam);
+  }
+  return {el:canvas,size,draw,st};
+}
+
+/* ---------- 8. pixel sprite 2D ---------- */
+function cardPixel(canvas){
+  const ctx=canvas.getContext('2d'),off=document.createElement('canvas');off.width=24;off.height=34;const o=off.getContext('2d',{willReadFrequently:true});
+  const C={h:'#3b2a44',s:'#f2c19b',e:'#1a1424',w:'#ffffff',t:'#2fbf8f',td:'#1f8f69',p:'#3a4a8f',b:'#7a4a2a',sh:'#e8463c'};
+  const st={visible:true};
+  function px(x,y,w,h,c){o.fillStyle=C[c];o.fillRect(x,y,w,h);}
+  function sprite(t){
+    o.clearRect(0,0,24,34);let dy=0,legA=0,legB=0,armL=0,armR=0,wave=false,tuck=false;
+    const f=Math.floor(t*8)%4;
+    if(MODE==='idle')dy=Math.floor(t*2)%2;
+    if(MODE==='walk'){dy=f%2;legA=[0,-1,0,1][f];legB=-legA;armL=[1,0,-1,0][f];armR=-armL;}
+    if(MODE==='jump'){const p=(t%1.15)/1.15;dy=(p>.18&&p<.82)?-Math.round(Math.sin((p-.18)/.64*Math.PI)*7):(p<.18||p>.9?1:0);tuck=dy<-2;}
+    if(MODE==='wave')wave=true;
+    const Y=dy+2;
+    // capelli e testa
+    px(7,Y,10,3,'h');px(6,Y+2,12,2,'h');px(7,Y+4,10,7,'s');px(6,Y+4,1,4,'h');px(17,Y+4,1,4,'h');px(7,Y+3,10,1,'h');
+    px(9,Y+6,1,2,'e');px(14,Y+6,1,2,'e');px(9,Y+6,1,1,'w');px(14,Y+6,1,1,'w');px(11,Y+9,2,1,'b');
+    // busto
+    px(7,Y+11,10,8,'t');px(7,Y+11,10,1,'td');px(11,Y+12,2,6,'td');px(7,Y+19,10,1,'b');
+    // braccia
+    px(5,Y+12+armL,2,6,'t');px(5,Y+18+armL,2,2,'s');
+    if(wave){const k=Math.floor(t*6)%2;px(17+k,Y+5,2,7,'t');px(17+k,Y+3,2,2,'s');}
+    else{px(17,Y+12+armR,2,6,'t');px(17,Y+18+armR,2,2,'s');}
+    // gambe
+    const lh=tuck?4:7;
+    px(8,Y+20+Math.min(0,legA),3,lh,'p');px(13,Y+20+Math.min(0,legB),3,lh,'p');
+    px(7,Y+20+lh+Math.min(0,legA),4,2,'sh');px(13,Y+20+lh+Math.min(0,legB),4,2,'sh');
+    // contorno da 1 px
+    const d=o.getImageData(0,0,24,34),a=d.data,out=o.createImageData(24,34),b=out.data;
+    for(let y=0;y<34;y++)for(let x=0;x<24;x++){const i=(y*24+x)*4;if(a[i+3])continue;
+      if((x>0&&a[i-1])||(x<23&&a[i+7])||(y>0&&a[i-24*4+3])||(y<33&&a[i+24*4+3])){b[i]=26;b[i+1]=20;b[i+2]=36;b[i+3]=255;}}
+    const tmp=document.createElement('canvas');tmp.width=24;tmp.height=34;tmp.getContext('2d').putImageData(out,0,0);o.drawImage(tmp,0,0);
+    return dy;
+  }
+  function size(){const w=canvas.clientWidth,h=canvas.clientHeight;if(!w)return;const r=Math.min(devicePixelRatio,2);canvas.width=Math.round(w*r);canvas.height=Math.round(h*r);}
+  function draw(t){
+    const dy=sprite(t),W=canvas.width,H=canvas.height;ctx.clearRect(0,0,W,H);ctx.imageSmoothingEnabled=false;
+    const s=Math.max(2,Math.floor(H*.72/34)),sw=24*s,sh=34*s,x=Math.round((W-sw)/2),floor=Math.round(H*.86);
+    ctx.fillStyle='rgba(0,0,0,.22)';const shw=Math.round((14+Math.min(0,dy))*s/2)*2;ctx.fillRect(Math.round(W/2-shw/2),floor-s,shw,s*2);
+    ctx.drawImage(off,0,0,24,34,x,floor-sh+s,sw,sh);
+  }
+  return {el:canvas,size,draw,st};
+}
+
+/* ---------- dati delle schede ---------- */
+const STYLES=[
+ {id:'blocky',name:'Blocchi',tag:'ATTUALE',heads:'≈ 5,5 teste',build:buildBlocky,
+  text:'Lo stile di Iron Line oggi: cubi e sfere. Leggerissimo, ma anonimo da vicino.',
+  fit:'Eserciti, folle, prototipi',tech:'BoxGeometry + MeshStandardMaterial'},
+ {id:'chibi',name:'Chibi toon',tag:'CARTOON',heads:'≈ 2 teste',build:buildChibi,
+  text:'Testa enorme, occhi grandi, ombre a tre toni e contorno nero. Il più adatto ai bambini.',
+  fit:'Studio Zero, mascotte, giochi per famiglie',tech:'MeshToonMaterial + gradientMap, contorno inverted hull'},
+ {id:'lowpoly',name:'Low-poly sfaccettato',tag:'AVVENTURA',heads:'≈ 6 teste',build:buildLowpoly,
+  text:'Pochi poligoni lasciati a vista con ombreggiatura piatta. Elegante e veloce anche con molti personaggi.',
+  fit:'Strategia, Iron Line, mondi aperti',tech:'flatShading, cilindri a 5–6 lati, icosaedri'},
+ {id:'voxel',name:'Voxel',tag:'COSTRUZIONE',heads:'≈ 3,5 teste',build:buildVoxel,
+  text:'Tutto a cubi, la faccia è una texture 8×8. Cambiare un personaggio vuol dire cambiare qualche pixel.',
+  fit:'Sandbox, personaggi personalizzabili',tech:'CanvasTexture 8×8 + NearestFilter'},
+ {id:'bean',name:'Fagiolo party',tag:'PARTY',heads:'1 testa',build:buildBean,
+  text:'Un corpo-testa lucido con mani che fluttuano. Lo squash &amp; stretch esagerato lo rende buffo.',
+  fit:'Party game a 2 giocatori, pedoni, piloti',tech:'CapsuleGeometry + MeshPhysicalMaterial clearcoat'},
+ {id:'mannequin',name:'Manichino',tag:'AZIONE',heads:'≈ 7 teste',build:buildMannequin,
+  text:'Proporzioni realistiche e giunture visibili. Le pose si leggono benissimo: gomiti e ginocchia piegano davvero.',
+  fit:'Fight!, ragdoll, parkour',tech:'gerarchia a due livelli: spalla→gomito, anca→ginocchio'},
+ {id:'paper',name:'Ritaglio di carta',tag:'STORIA',heads:'≈ 3 teste',build:buildPaper,
+  text:'Sagome piatte con bordo bianco in un mondo 3D. Attiva "Giro completo": quando si gira si vede che è carta.',
+  fit:'Giochi narrativi, menu, avventure',tech:'ShapeGeometry + volto disegnato su canvas'},
+ {id:'pixel',name:'Pixel sprite 2D',tag:'2D',heads:'≈ 3 teste',pixel:true,
+  text:'Sprite 24×34 pixel ridisegnato a ogni fotogramma, con contorno da 1 px calcolato in automatico.',
+  fit:'Dino Frenzy e giochi su canvas 2D',tech:'canvas 2D + imageSmoothingEnabled=false'},
+ {id:'toonhero',g:2,name:'Eroe toon',tag:'IBRIDO',heads:'≈ 4 teste',build:buildToonHero,mix:'Manichino + Chibi toon',
+  text:'Ombre a tre toni, contorno e occhi del chibi, ma con gomiti e ginocchia veri. Le ginocchiere gialle mostrano gli snodi.',
+  fit:'Fight!, eroi d\'azione per bambini',tech:'limb() a due segmenti + MeshToonMaterial + hull'},
+ {id:'chubby',g:2,name:'Chubby snodato',tag:'IBRIDO',heads:'≈ 2,5 teste',build:buildChubby,mix:'Manichino + Chibi toon',
+  text:'Pancia tonda, salopette e cuffia, testa grande. Gambe corte ma piegabili: cammina e salta in modo più credibile del chibi.',
+  fit:'Studio Zero, giochi per famiglie',tech:'stesso scheletro, proporzioni più corte'},
+ {id:'beanj',g:2,name:'Fagiolo snodato',tag:'IBRIDO',heads:'1 testa',build:buildBeanJointed,mix:'Manichino + Fagiolo party',
+  text:'Corpo-fagiolo lucido con braccia e gambe sottili "a tubo di gomma", guanti bianchi e scarpe grandi.',
+  fit:'Party game, piloti, pedoni buffi',tech:'arti sottili + squash &amp; stretch'},
+ {id:'knight',g:2,name:'Cavaliere sfaccettato',tag:'IBRIDO',heads:'≈ 6,5 teste',build:buildKnight,mix:'Manichino + Low-poly',
+  text:'Armatura a facce piatte su uno scheletro snodato in cuoio. Pennacchio e tabarda danno il colore della squadra.',
+  fit:'Iron Line, battaglie medievali',tech:'cilindri a 6 lati per i segmenti + flatShading'},
+];
+const grid2=document.getElementById('grid2');
+
+const grid=document.getElementById('grid');
+STYLES.forEach(s=>{
+  const a=document.createElement('article');a.className='card';
+  a.innerHTML=`<div class="stage"><canvas id="cv-${s.id}" class="${s.pixel?'pix':''}" aria-label="Personaggio in stile ${s.name}"></canvas><span class="tag">${s.tag}</span><span class="heads">${s.heads}</span></div>
+  <div class="info"><h3>${s.name}</h3><p>${s.text}</p><dl>${s.mix?`<dt>Mix</dt><dd><b>${s.mix}</b></dd>`:''}<dt>Ideale per</dt><dd>${s.fit}</dd><dt>Tecnica</dt><dd class="mono">${s.tech}</dd></dl></div>`;
+  (s.g===2?grid2:grid).appendChild(a);
+  const cv=a.querySelector('canvas');
+  try{cards.push(s.pixel?cardPixel(cv):card3D(cv,s.build));}catch(err){a.querySelector('.stage').insertAdjacentHTML('beforeend','<p style="position:absolute;inset:auto 12px 12px;font-size:13px;color:var(--muted)">WebGL non disponibile in questo browser.</p>');}
+});
+
+/* ---------- controlli e ciclo ---------- */
+const btns=[...document.querySelectorAll('#modes button')];
+function setMode(m){MODE=m;btns.forEach(b=>b.setAttribute('aria-pressed',b.dataset.m===m));drawAll(lastT);}
+btns.forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.m)));
+const spin=document.getElementById('spin');
+spin.addEventListener('click',()=>{SPIN=!SPIN;spin.setAttribute('aria-pressed',SPIN);});
+const io=new IntersectionObserver(es=>es.forEach(e=>{const c=cards.find(c=>c.el===e.target);if(c)c.st.visible=e.isIntersecting;}));
+cards.forEach(c=>io.observe(c.el));
+function sizeAll(){cards.forEach(c=>c.size());}
+addEventListener('resize',()=>{sizeAll();drawAll(lastT);});
+let lastT=0;const t0=performance.now();
+function drawAll(t){cards.forEach(c=>c.draw(t));}
+function loop(now){
+  const t=(now-t0)/1000;
+  if(!(reduce&&!SPIN&&MODE==='still')){lastT=t;cards.forEach(c=>{if(c.st.visible)c.draw(t);});}
+  requestAnimationFrame(loop);
+}
+sizeAll();setMode(MODE);requestAnimationFrame(loop);
+})();
+</script>
