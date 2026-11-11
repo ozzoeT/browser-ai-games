@@ -534,6 +534,7 @@ function applyHit(att, def, h, dir, px, py) {
     att.meter = Math.min(100, att.meter + base * .5); def.meter = Math.min(100, def.meter + base * .4);
     g.hitstop = Math.max(g.hitstop, 4);
     burst(px, py, 6, '#e8eef8', 6); g.fx.push({ type: 'star', x: px, y: py, t: 0, max: 7, col: '#dfe8f5', r: 30, a: rand(0, TAU), n: 6 });
+    fxHit(px, py, 3, '#cfe0ff', true);
     sfx('block');
     return true;
   }
@@ -544,13 +545,13 @@ function applyHit(att, def, h, dir, px, py) {
     if (dm.sup) return false;
     if (!(att.move && att.move.special)) {
       def.hp = Math.max(1, def.hp - base * .5); def.flash = 4;
-      g.hitstop = Math.max(g.hitstop, 5); burst(px, py, 8, '#ffd84a', 7); sfx('block');
+      g.hitstop = Math.max(g.hitstop, 5); burst(px, py, 8, '#ffd84a', 7); fxHit(px, py, 5, '#ffd84a', true); sfx('block');
       att.meter = Math.min(100, att.meter + base * .5); return true;
     }
   }
   if (def.armor > 0 && def.state === 'attack' && !h.sup) {
     def.armor--; def.hp = Math.max(1, def.hp - base * .7); def.flash = 4;
-    g.hitstop = Math.max(g.hitstop, 5); burst(px, py, 8, '#ffd84a', 7); sfx('block'); sfx('hit');
+    g.hitstop = Math.max(g.hitstop, 5); burst(px, py, 8, '#ffd84a', 7); fxHit(px, py, 5, '#ffd84a', true); sfx('block'); sfx('hit');
     att.meter = Math.min(100, att.meter + base); return true;
   }
   const inCombo = def.state === 'hit' || def.state === 'down';
@@ -575,6 +576,7 @@ function applyHit(att, def, h, dir, px, py) {
   att.meter = Math.min(100, att.meter + dmg * 1.5); def.meter = Math.min(100, def.meter + dmg * .9);
   burst(px, py, 7 + dmg * .7 | 0, '#ffffff', 8 + dmg * .4);
   burst(px, py, 5, '#ffd84a', 6);
+  fxHit(px, py, dmg, att.ch.col.glow, false);
   g.fx.push({ type: 'star', x: px, y: py, t: 0, max: 8, col: '#ffffff', r: 34 + dmg * 2.6, a: rand(0, TAU), n: 8 });
   g.fx.push({ type: 'star', x: px, y: py, t: -1, max: 9, col: '#ffcf3a', r: 22 + dmg * 2, a: rand(0, TAU), n: 6 });
   sfx(dmg > 8 ? 'hit2' : 'hit');
@@ -858,17 +860,19 @@ function buildRig(ch, alt) {
     hip.add(seg(TH, 11.5 * b, 8.6 * b, m.pants), knee); knee.position.y = -TH;
     const shoe = ico(1, 0, m.shoe); shoe.scale.set(15, 6.5, 8 * b);
     knee.add(ico(9.4 * b, 0, m.accent), seg(SH, 8.4 * b, 6 * b, m.shin), at(shoe, 6, -SH - 2, 0));   // ginocchiera
-    pelvis.add(hip); return [hip, knee];
+    const foot = at(G(), 10, -SH - 2, 0); knee.add(foot);                 // punto di riferimento per le scie
+    pelvis.add(hip); return [hip, knee, foot];
   };
-  const [hipF, kneeF] = leg(), [hipB, kneeB] = leg();
+  const [hipF, kneeF, footF] = leg(), [hipB, kneeB, footB] = leg();
   // braccia
   const arm = sleeve => {
     const sh = G(), el = G();
     sh.add(ico(9.6 * b, 0, sleeve), seg(UA, 8.6 * b, 6.8 * b, sleeve), el); el.position.y = -UA;
     el.add(ico(7.6 * b, 0, m.accent), seg(FA, 6.8 * b, 5.4 * b, m.fore), at(ico(10 * b, 0, m.glove), 0, -FA - 3, 0));   // gomitiera e guanto tondo
-    torso.add(sh); return [sh, el];
+    const hand = at(G(), 0, -FA - 3, 0); el.add(hand);
+    torso.add(sh); return [sh, el, hand];
   };
-  const [shF, elF] = arm(m.sleeveF || m.sleeve), [shB, elB] = arm(m.sleeve);
+  const [shF, elF, handF] = arm(m.sleeveF || m.sleeve), [shB, elB, handB] = arm(m.sleeve);
   // collo e testa
   neck.position.set(0, TL - 3, 0);
   neck.add(at(mk(new THREE.CylinderGeometry(5 * b, 6 * b, 9, 6), m.skin), 0, 3, 0));
@@ -906,7 +910,7 @@ function buildRig(ch, alt) {
   }
   addOutlines(root);
   root.traverse(o => { if (o.isMesh && o.material !== INK) o.castShadow = true; });
-  return { root, spin, pelvis, hips, torso, chest, neck, hipF, kneeF, hipB, kneeB, shF, elF, shB, elB, mats, swings, b };
+  return { root, spin, pelvis, hips, torso, chest, neck, hipF, kneeF, hipB, kneeB, shF, elF, shB, elB, mats, swings, b, handF, handB, footF, footB, glow: new THREE.Color(c.glow || '#ffffff') };
 }
 const RIGS = {};
 function getRig(slot, ci, alt) {
@@ -1099,6 +1103,118 @@ function setStage(i) {
   sunL.color.set(e.sun[0]); sunL.intensity = e.sun[1];
 }
 
+// ============================================================ 3D: effetti (scie, scintille, lampo d'impatto, aura delle super)
+// coordinate: x = posizione sul piano di gioco, y = altezza (GROUND - y dello schermo), z verso la camera
+const FXT = { last: 0 };
+const fxTex = draw => { const c = document.createElement('canvas'); c.width = c.height = 128; draw(c.getContext('2d')); return new THREE.CanvasTexture(c); };
+const DOT_TEX = fxTex(x => { const g = x.createRadialGradient(64, 64, 0, 64, 64, 64); g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(.35, 'rgba(255,255,255,.55)'); g.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g; x.fillRect(0, 0, 128, 128); });
+const GLYPH_TEX = fxTex(x => {
+  x.translate(64, 64); x.strokeStyle = '#fff'; x.lineWidth = 3; x.beginPath(); x.arc(0, 0, 60, 0, TAU); x.stroke(); x.lineWidth = 2; x.beginPath(); x.arc(0, 0, 49, 0, TAU); x.stroke();
+  for (let i = 0; i < 24; i++) { x.save(); x.rotate(i * TAU / 24); x.beginPath(); x.moveTo(0, -49); x.lineTo(0, i % 2 ? -54 : -58); x.stroke(); x.restore(); }
+  for (const r of [0, PI]) { x.beginPath(); for (let i = 0; i < 3; i++) { const a = r + i * TAU / 3 - PI / 2; x.lineTo(cos(a) * 45, sin(a) * 45); } x.closePath(); x.stroke(); }
+  x.beginPath(); x.arc(0, 0, 17, 0, TAU); x.stroke();
+});
+class Particles {
+  constructor(max) {
+    this.max = max; this.list = [];
+    this.pos = new Float32Array(max * 3); this.cl = new Float32Array(max * 3); this.al = new Float32Array(max); this.sz = new Float32Array(max);
+    const g = this.geo = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(this.pos, 3)); g.setAttribute('pcol', new THREE.BufferAttribute(this.cl, 3));
+    g.setAttribute('palpha', new THREE.BufferAttribute(this.al, 1)); g.setAttribute('psize', new THREE.BufferAttribute(this.sz, 1));
+    this.mat = new THREE.ShaderMaterial({
+      uniforms: { map: { value: DOT_TEX }, scale: { value: 400 } }, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+      vertexShader: 'attribute vec3 pcol; attribute float palpha; attribute float psize; uniform float scale; varying vec3 vC; varying float vA;\nvoid main(){ vC = pcol; vA = palpha; vec4 mv = modelViewMatrix * vec4(position, 1.0); gl_PointSize = psize * scale / max(1.0, -mv.z); gl_Position = projectionMatrix * mv; }',
+      fragmentShader: 'uniform sampler2D map; varying vec3 vC; varying float vA;\nvoid main(){ vec4 t = texture2D(map, gl_PointCoord); gl_FragColor = vec4(vC, t.a * vA); }'
+    });
+    const pts = new THREE.Points(g, this.mat); pts.frustumCulled = false; pts.renderOrder = 5; scene.add(pts);
+  }
+  emit(p) { if (this.list.length >= this.max) return; p.t = 0; p.grav = p.grav || 0; p.drag = p.drag || 0; p.c0 = new THREE.Color(p.c0); p.c1 = new THREE.Color(p.c1 || p.c0); this.list.push(p); }
+  update(dt) {
+    const L = this.list; let n = 0;
+    for (let i = L.length - 1; i >= 0; i--) {
+      const p = L[i]; p.t += dt; if (p.t >= p.life) { L.splice(i, 1); continue; }
+      const d = Math.exp(-p.drag * dt); p.vx *= d; p.vy *= d; p.vz *= d; p.vy += p.grav * dt;
+      p.x += p.vx * dt; p.y += p.vy * dt; p.z += p.vz * dt; if (p.y < 1) { p.y = 1; p.vy *= -.3; }
+    }
+    for (const p of L) {
+      const k = p.t / p.life;
+      this.pos[n * 3] = p.x; this.pos[n * 3 + 1] = p.y; this.pos[n * 3 + 2] = p.z;
+      this.cl[n * 3] = lerp(p.c0.r, p.c1.r, k); this.cl[n * 3 + 1] = lerp(p.c0.g, p.c1.g, k); this.cl[n * 3 + 2] = lerp(p.c0.b, p.c1.b, k);
+      this.al[n] = k < .1 ? k / .1 : 1 - (k - .1) / .9; this.sz[n] = lerp(p.s0, p.s1, k); n++;
+    }
+    this.geo.setDrawRange(0, n); for (const a of ['position', 'pcol', 'palpha', 'psize']) this.geo.attributes[a].needsUpdate = true;
+  }
+}
+const sparks3 = new Particles(320), aura3 = new Particles(420);
+const hitL = new THREE.PointLight(0xffd9a0, 0, 560, 2); scene.add(hitL);
+const auraL = new THREE.PointLight(0x8a6bff, 0, 620, 2); scene.add(auraL);
+const glyph = new THREE.Mesh(new THREE.PlaneGeometry(300, 300), new THREE.MeshBasicMaterial({ map: GLYPH_TEX, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }));
+glyph.rotation.x = -PI / 2; glyph.position.y = 2; glyph.renderOrder = 4; scene.add(glyph);
+function fxHit(px, py, power, col, blocked) {
+  const y = GROUND - py, n = blocked ? 9 : 12 + power * 2.2 | 0;
+  for (let i = 0; i < n; i++) {
+    const a = rand(0, TAU), e = rand(-1, 1), s = rand(260, 700) * (blocked ? .7 : 1);
+    sparks3.emit({ x: px, y, z: 40, vx: cos(a) * s * Math.sqrt(1 - e * e), vy: sin(a) * s * Math.sqrt(1 - e * e) + 120, vz: e * s * .6,
+      life: rand(.18, .45), s0: rand(7, 11), s1: 2, c0: '#ffffff', c1: col, drag: 3, grav: -900 });
+  }
+  if (!blocked) { hitL.color.set(col).lerp(new THREE.Color('#ffffff'), .45); hitL.position.set(px, y, 90); hitL.intensity = Math.min(3.6, 1.3 + power * .14); }
+}
+// scie: un nastro rivolto alla camera che segue mani e piedi quando si muovono veloci in un attacco
+const TRN = 9, _tw = new THREE.Vector3();
+function mkTrail() {
+  const pos = new Float32Array(TRN * 6), col = new Float32Array(TRN * 6), idx = [];
+  for (let i = 0; i < TRN - 1; i++) { const a = i * 2; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('color', new THREE.BufferAttribute(col, 3)); g.setIndex(idx);
+  const mesh = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
+  mesh.frustumCulled = false; mesh.visible = false; mesh.renderOrder = 3; scene.add(mesh);
+  return { mesh, g, pos, col, pts: [], prev: null };
+}
+function updTrail(tr, marker, active, c, w0) {
+  marker.getWorldPosition(_tw);
+  const fast = tr.prev && tr.prev.distanceTo(_tw) > 7;
+  if (tr.pts.length && tr.pts[0].distanceTo(_tw) > 110) tr.pts.length = 0;   // un salto improvviso spezza la scia
+  if (active && fast) tr.pts.unshift(_tw.clone()); else if (tr.pts.length) tr.pts.pop();
+  if (tr.pts.length > TRN) tr.pts.pop();
+  tr.prev = (tr.prev || new THREE.Vector3()).copy(_tw);
+  const n = tr.pts.length; tr.mesh.visible = n > 1; if (n < 2) return;
+  for (let i = 0; i < TRN; i++) {
+    const j = Math.min(i, n - 1), q = tr.pts[j], a = tr.pts[Math.max(0, j - 1)], b = tr.pts[Math.min(n - 1, j + 1)];
+    const dx = a.x - b.x, dy = a.y - b.y, l = Math.hypot(dx, dy) || 1, k = 1 - i / (TRN - 1), w = w0 * k, nx = -dy / l * w, ny = dx / l * w, f = Math.pow(k, 1.6) * .55;
+    tr.pos.set([q.x + nx, q.y + ny, q.z + 20, q.x - nx, q.y - ny, q.z + 20], i * 6);
+    tr.col.set([c.r * f, c.g * f, c.b * f, c.r * f * .5 + .5 * f, c.g * f * .5 + .5 * f, c.b * f * .5 + .5 * f], i * 6);
+  }
+  tr.g.attributes.position.needsUpdate = true; tr.g.attributes.color.needsUpdate = true;
+}
+let auraOwner = null;
+function fxFighter(r, f, dt) {
+  if (!r.trails) r.trails = [[r.handF, 6], [r.handB, 6], [r.footF, 8], [r.footB, 8]].map(([m, w]) => Object.assign(mkTrail(), { m, w }));
+  const g = game, still = g.paused || g.hitstop > 0 || g.freeze > 0;
+  for (const t of r.trails) { if (still) t.mesh.visible = t.pts.length > 1; else updTrail(t, t.m, f.state === 'attack', r.glow, t.w * f.ch.scale); }
+  const sup = f.state === 'attack' && f.move && f.move.sup, frz = g.freeze > 0 && g.freezeBy === f, ready = g.screen === 'fight' && f.meter >= 100;
+  if (sup || frz) auraOwner = { f, c: r.glow };
+  const rate = frz ? 320 : sup ? 170 : ready ? 16 : 0, s = f.ch.scale, cx = f.x, cy = -f.y;
+  f.auraAcc = (f.auraAcc || 0) + rate * dt;
+  while (f.auraAcc >= 1) {
+    f.auraAcc--; const a = rand(0, TAU), rr = rand(30, 55) * s * f.ch.bulk;
+    aura3.emit({ x: cx + cos(a) * rr, y: cy + rand(0, 175 * s), z: sin(a) * rr, vx: -sin(a) * (ready && !sup ? 20 : 90), vy: rand(110, 260), vz: cos(a) * 60,
+      life: rand(.4, .65), s0: ready && !sup && !frz ? rand(7, 11) : rand(16, 26), s1: 3, c0: '#ffffff', c1: '#' + r.glow.getHexString() });
+  }
+}
+function fxUpdate() {
+  const now = performance.now(), dt = game.paused ? 0 : Math.min(.05, (now - FXT.last) / 1000 || 0); FXT.last = now;
+  const sc = renderer.domElement.height / (2 * Math.tan(camera.fov * PI / 360));
+  sparks3.mat.uniforms.scale.value = aura3.mat.uniforms.scale.value = sc;
+  sparks3.update(dt); aura3.update(dt);
+  hitL.intensity *= Math.exp(-dt * 11);
+  const o = auraOwner, on = o ? (game.freeze > 0 ? 1 : .7) : 0;
+  glyph.material.opacity += (on * .85 - glyph.material.opacity) * Math.min(1, dt * 8);
+  auraL.intensity += (on * 2.4 - auraL.intensity) * Math.min(1, dt * 8);
+  if (o) { glyph.position.x = o.f.x; glyph.material.color.copy(o.c); auraL.color.copy(o.c); auraL.position.set(o.f.x, -o.f.y + 120, 140); }
+  glyph.rotation.z += dt * (.6 + on * 1.4); glyph.scale.setScalar(1 + .04 * sin(now * .006));
+  glyph.visible = glyph.material.opacity > .01;
+  auraOwner = null;
+}
+
 // ---- ritratti per la selezione (renderizzati una volta all'avvio)
 const PORT = [];
 function makePortraits() {
@@ -1155,11 +1271,13 @@ function scene3d() {
   ZK = W / CAM.w;
   const sd = STAGES[curStage].env.sun[2];
   sunL.position.set(CAM.x + sd[0], sd[1], sd[2]); sunL.target.position.set(CAM.x, 0, 0);
-  for (const key in RIGS) RIGS[key].root.visible = false;
+  for (const key in RIGS) { RIGS[key].root.visible = false; if (RIGS[key].trails) for (const t of RIGS[key].trails) t.mesh.visible = false; }
+  const fdt = game.paused ? 0 : Math.min(.05, (performance.now() - FXT.last) / 1000 || 0);
   list.forEach((f, i) => {
     const r = getRig(f.idx, f.ci, f.idx === 1 && list.length > 1 && list[0].ci === f.ci);
-    r.root.visible = true; applyPose(r, f);
+    r.root.visible = true; applyPose(r, f); r.root.updateMatrixWorld(true); fxFighter(r, f, fdt);
   });
+  fxUpdate();
   renderer.render(scene, camera);
 }
 
