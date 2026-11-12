@@ -35,6 +35,7 @@ indietro, quindi il ginocchio si piega con `rotation.x > 0`.
 | Chubby snodato | manichino + chibi, pancia tonda | ~2,5 | Studio Zero (idea) |
 | Fagiolo snodato | manichino + fagiolo, arti "a tubo di gomma" | 1 | party/pedoni (idea) |
 | Cavaliere sfaccettato | manichino + low-poly | ~6,5 | **Iron Line** (applicato) |
+| Guerriero liscio PBR | manichino + forme lisce + metallo per vertice | ~6,5 | **Shield Brothers** (applicato) |
 
 ## Ricette di codice
 
@@ -94,6 +95,14 @@ Stessa idea senza three.js:
   per specie diverse.
 
 ## Lezioni imparate
+
+- **Metallo per vertice in un'unica mesh unita** (Shield Brothers): attributo `metal` scritto da
+  `mergeParts()` in base al colore della parte, letto in `onBeforeCompile` al posto di
+  `metalnessmap_fragment`/`roughnessmap_fragment`. Senza una `scene.environment` (PMREM) il metallo è nero:
+  anche il renderer delle icone ne ha bisogno. Riflettendo l'erba le lame diventano verdi: nell'ambiente
+  mescola il terreno con un grigio.
+- **LOD semplice**: costruisci le geometrie due volte con un moltiplicatore globale dei segmenti
+  e cambia `mesh.geometry` in base alla distanza; nessuna ricompilazione degli shader.
 
 - **Ingrandendo la testa**, gli accessori posizionati con numeri fissi finiscono dentro
   (la barba di Bruno è sparita). Esprimi le posizioni in funzione del raggio (`HR*.4`, `HR*.6`).
