@@ -2,6 +2,9 @@
 
 Demo animata di tutto questo: `../demos/effetti.html`.
 
+Per bloom, grade, cielo, ombre delle nuvole, vento, particelle con rotazione/stellina, palla di fuoco e camera
+dinamica vedi anche `rendering.md`.
+
 ## 1. Sistema di particelle (three.js)
 
 Un unico `THREE.Points` con `ShaderMaterial`: per ogni particella posizione, colore, alfa e dimensione
@@ -30,7 +33,7 @@ void main(){vec4 t=texture2D(map,gl_PointCoord);gl_FragColor=vec4(vC,t.a*vA);
 ## 2. Ricette
 
 ### Esplosione (Iron Line `explosionFX`)
-Sei strati, tutti a costo fisso:
+Sei strati (più la palla di fuoco `fireballFX`, vedi `rendering.md` §5), tutti a costo fisso:
 1. **Lampo di luce**: una `PointLight` presa da un pool di 2–3 creato all'avvio, intensità alta
    che decade con `*=exp(-dt*9)`.
 2. **Palla di fuoco** additiva: ~35 particelle, velocità 2–6, dimensione 1.2→3.4, colore `#fff3c4`→`#ff3a12`, `drag 3`, leggera spinta verso l'alto.

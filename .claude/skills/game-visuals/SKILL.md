@@ -1,6 +1,6 @@
 ---
 name: game-visuals
-description: Stile dei personaggi ed effetti speciali per i giochi di browser-ai-games (three.js e canvas 2D in un singolo HTML). Usala quando si chiede di rendere un gioco più bello o accattivante, cambiare l'aspetto delle persone/personaggi, aggiungere luci, esplosioni, scintille, scie, aure, fuoco, neon, meteo, giorno/notte, bagliori o riflessi del sole, oppure di creare un nuovo gioco con una grafica curata.
+description: Stile dei personaggi, effetti speciali e pipeline di luce/colore (bloom, color grading, cielo, nuvole, vento) per i giochi di browser-ai-games (three.js e canvas 2D in un singolo HTML). Usala quando si chiede di rendere un gioco più bello o accattivante, cambiare l'aspetto delle persone/personaggi, aggiungere luci, esplosioni, scintille, scie, aure, fuoco, neon, meteo, giorno/notte, bagliori o riflessi del sole, oppure di creare un nuovo gioco con una grafica curata. Prima di iniziare propone all'utente un breve questionario sullo stile desiderato.
 ---
 
 # Grafica dei giochi: personaggi ed effetti
@@ -9,6 +9,38 @@ Questa skill raccoglie lo stile visivo già applicato ai giochi del repo e le ri
 È pensata per crescere: ogni volta che applichi o migliori un effetto, aggiorna la sezione
 **Registro** in fondo e, se hai imparato qualcosa, la reference giusta.
 
+## Questionario di stile (prima di iniziare)
+
+Quando si crea un gioco nuovo o si chiede di "renderlo più bello" senza dire cosa, **chiedi all'utente lo stile**
+con `AskUserQuestion` (massimo 4 domande), in parole semplici, **niente termini tecnici**. Adatta le opzioni al
+genere: togli quelle che non c'entrano (niente "sensazione di velocità" in un gioco di strategia) e metti come
+prima, con "(Consigliato)", quella che sta meglio al gioco. Se l'utente ha già detto cosa vuole, salta le domande
+già risposte. Poi traduci le risposte con la tabella sotto.
+
+Domande base (riformulale sul gioco concreto):
+1. **"Che luce vuoi nel gioco?"** Cartone solare · Tramonto caldo · Cinematografico · Notte magica.
+2. **"Quanto devono brillare fuoco, scintille e magie?"** Poco · Morbido · Tanto, stile sala giochi.
+3. **"Cosa rende il mondo più vivo?"** (scelta multipla) Nuvole che passano e fanno ombra · Alberi ed erba
+   mossi dal vento · Acqua che luccica · Meteo e pulviscolo nell'aria.
+4. **"Quanto deve farsi sentire l'azione?"** (scelta multipla, a seconda del genere) Lo schermo trema ai colpi
+   forti · Sensazione di velocità · Esplosioni grandi e piene · Oggetti lucidi come giocattoli.
+
+| Risposta | Cosa fare (vedi `references/rendering.md` ed `effects.md`) |
+|---|---|
+| Cartone solare | Sole alto-medio (~40°), colori pieni, grade neutro (sat 1.05–1.1), spalla morbida, vignetta leggera |
+| Tramonto caldo | Sole basso (15–25°), luce arancio, cielo con orizzonte caldo, calore del grade più alto, lens flare, ombre lunghe |
+| Cinematografico | Più contrasto, vignetta .35–.45, prospettiva aerea blu in lontananza, bloom più largo |
+| Notte magica | Cielo scuro con stelle, luci puntiformi e neon, bloom forte, lucciole/pulviscolo |
+| Brillare: poco / morbido / tanto | `POST` bloom .3 / .55 / .9; soglia 1.1 (alzala su sfondi chiari) |
+| Nuvole con ombra | `patchMat` (ombre nuvole) + nuvole nello shader del cielo, copertura per bioma |
+| Vento | `patchMat` con `wind` su chiome ed erba instanziate |
+| Acqua che luccica | Shader dell'acqua (fresnel, riflesso del sole, scintillii, schiuma) |
+| Meteo / pulviscolo | `setWeather`, pulviscolo nei raggi di sole (`effects.md`) |
+| Schermo trema | Scossa in base alla distanza; rispetta "effetti ridotti" |
+| Velocità | FOV dinamico, linee di velocità, rollio in curva |
+| Esplosioni piene | `fireballFX` + ricetta esplosione a 6 strati |
+| Giocattoli lucidi | envMap "da studio" su canvas + `MeshPhysicalMaterial` con clearcoat |
+
 ## Prima di toccare un gioco
 
 1. **Capisci il motore del gioco.** Non sono tutti uguali:
@@ -16,7 +48,7 @@ Questa skill raccoglie lo stile visivo già applicato ai giochi del repo e le ri
    |---|---|---|
    | `pop-gallery/` | three.js **r160 da cdnjs** | Camera fissa con leggero ondeggiamento verso il mirino; colpi = raggio contro sfere (`rayHit`), niente raycast sulle mesh. Fucile a tappi in `vmScene`. |
 | `fight/` | three.js **r149 incorporato** nel file | Niente `colorspace_fragment` negli shader; luci "legacy" (intensità ~1–4). Unità ≈ pixel (personaggio alto ~190). |
-   | `iron-line/`, `shield-brothers/`, `studio-zero/`, `skyflip/` | three.js **r160 da cdnjs** (UMD, `three.min.js`) | Negli `ShaderMaterial` aggiungi `#include <colorspace_fragment>`. Unità = metri. Gli addons (EffectComposer, GLTFLoader…) **non** sono nel build UMD. |
+   | `iron-line/`, `shield-brothers/`, `studio-zero/`, `skyflip/` | three.js **r160 da cdnjs** (UMD, `three.min.js`) | Negli `ShaderMaterial` aggiungi `#include <colorspace_fragment>`. Unità = metri. Gli addons (EffectComposer, GLTFLoader…) **non** sono nel build UMD: Iron Line ha bloom e grade **fatti a mano** (`POST`), copiali da lì. |
    | `city-drive/` (Afterglow GP), `city-rush/` | **motore 3D fatto a mano su canvas 2D** (poligoni proiettati, ordinati per z) | Effetti con `globalCompositeOperation='lighter'` e sprite di bagliore; niente depth buffer. |
    | `dino-frenzy/` | canvas 2D | Come sopra, in 2D puro. Particelle in `parts` con forme (`spark`, `star`, `ring`, `conf`…). |
 
@@ -42,6 +74,9 @@ Questa skill raccoglie lo stile visivo già applicato ai giochi del repo e le ri
 
 ## Reference
 
+- `references/rendering.md` — la pipeline che rende un gioco "accattivante": bloom + color grading fatti a mano,
+  cielo con sole e nuvole, `patchMat` (ombre delle nuvole, vento), ombre nitide, particelle migliori, palla di
+  fuoco, camera che si sente, acqua. Ricette prese da Turbo Kart Rally, Wild Fields 1648 e Claude-of-Tanks (MIT).
 - `references/characters.md` — stili per le persone (8 base + ibridi con lo scheletro del manichino),
   proporzioni, codice di `limb()`, toon + contorno, faccia cartoon, lezioni imparate.
 - `references/effects.md` — sistema di particelle, esplosione, scintille + lampo di luce, scie,
@@ -87,9 +122,12 @@ Vedi `scripts/shoot.js`. Trucchi utili:
 | 2026-11 | Pop Gallery | Nuovo tiro a segno in prima persona (fermo): 3 mondi (luna park, valle dei dinosauri da sfamare, galassia giocattolo), coriandoli + scintille + anelli d'urto, tappi volanti con scia, bersagli cartoon con occhioni, cuoricini (`heartFX`) quando un dinosauro mangia, uova che si schiudono | Su schermi verticali la tenda dello stand viene nascosta (copre troppo). Fumo con texture `DOT` morbida: con un disco pieno sembrava fatto di cerchi piatti |
 | 2026-11 | Pop Gallery | Dinosauri "chibi toon": `MeshToonMaterial` a 3 toni chiari (175/225/255), contorno inverted hull (`addOutlines`, 0.022 m), occhioni con iride colorata + 2 punti luce + bordo scuro, guance rosa, dentini, bocca che si apre scalando un gruppo (`openM`), pigiama col berretto per il dinosauro che dorme | Con la rampa toon scura (120) i colori diventavano fangosi. Pupilla e punti luce vanno ben davanti all'iride (z ≥ 0.5·r), altrimenti si intersecano e sembrano frastagliati |
 
+| 2026-11 | Iron Line | Pipeline nuova (pilota di `rendering.md`): bloom vero + grade fatti a mano (`POST`, spento con `?fx=low` e su telefoni piccoli), cielo shader con sole e nuvole, ombre delle nuvole su tutto (`patchMat`), vento su chiome ed erba, sole più basso (ombre lunghe), particelle con rotazione, scintille a stella che brillano, fumo gonfio, palla di fuoco a icosfera nelle esplosioni | Soglia bloom 1.0 faceva brillare la neve e i fiocchi vicini: 1.1. ACES scartato: spegneva i colori |
+
 ### Idee non ancora fatte
+- Portare `POST` + `patchMat` + cielo su Shield Brothers, Studio Zero, Skyflip e Pop Gallery (stesso three r160).
+- Prospettiva aerea e rimbalzo di luce dal terreno (`rendering.md` §8).
 - Skyflip: pioggia su un livello nuovo, scie luminose dietro le mani durante flip e spin.
 - Dino Frenzy: aurora più viva e neve con alone sul ghiacciaio, lava che illumina il terreno.
 - Iron Line: bioma "tempesta" con pioggia e fulmini e torce (già fatti in Shield Brothers: copiare `fxUpdate`/`torches`).
 - Afterglow GP: gara notturna (cielo scuro + lampioni più forti), scie luminose delle luci posteriori.
-- Bloom vero con `EffectComposer` (richiede moduli ES / importmap invece di `three.min.js`).
