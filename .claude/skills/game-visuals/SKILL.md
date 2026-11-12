@@ -124,6 +124,8 @@ Vedi `scripts/shoot.js`. Trucchi utili:
 
 | 2026-11 | Iron Line | Pipeline nuova (pilota di `rendering.md`): bloom vero + grade fatti a mano (`POST`, spento con `?fx=low` e su telefoni piccoli), cielo shader con sole e nuvole, ombre delle nuvole su tutto (`patchMat`), vento su chiome ed erba, sole più basso (ombre lunghe), particelle con rotazione, scintille a stella che brillano, fumo gonfio, palla di fuoco a icosfera nelle esplosioni | Soglia bloom 1.0 faceva brillare la neve e i fiocchi vicini: 1.1. ACES scartato: spegneva i colori |
 
+| 2026-11 | Iron Line | Soldati rifiniti "alla Wild Fields" (busto e arti torniti, testa con mascella/orecchie/sopracciglia/capelli, barbe, stivali col piede, AO per vertice); il Berserker diventa **Variago** (elmo conico con nasale, cotta di maglia lunga, scudo dipinto sulla schiena, barba, fasce alle gambe, ascia danese a due mani con posa `two`); esplosioni dei massi più piccole (`explosionFX(...,.6)`, raggio del danno invariato) | Variago: armatura .05→.2, velocità 4.2→3.6, portata 1.3→1.4 (più fedele a un guerriero in maglia con ascia lunga) |
+
 ### Idee non ancora fatte
 - Portare `POST` + `patchMat` + cielo su Shield Brothers, Studio Zero, Skyflip e Pop Gallery (stesso three r160).
 - Prospettiva aerea e rimbalzo di luce dal terreno (`rendering.md` §8).

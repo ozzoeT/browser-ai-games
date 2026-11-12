@@ -165,16 +165,16 @@ const TYPES={
   desc:'Long reach. Deals triple damage to knights and stops their charge.'},
  archer:{name:'Archer',cost:60,hp:65,dmg:20,reach:1,cd:1.45,speed:3.1,r:.38,mass:.9,armor:0,block:0,arrowBlock:0,knock:1.5,height:1.95,dur:.8,hitAt:.6,sp:1.2,
   ranged:'arrow',range:34,meleeDmg:6,desc:'Shoots arrows from long range. Keep them behind a wall of men.'},
- berserker:{name:'Berserker',cost:95,hp:150,dmg:28,reach:1.3,cd:.8,speed:4.2,r:.42,mass:1.4,armor:.05,block:0,arrowBlock:0,knock:5,height:1.95,dur:.5,hitAt:.5,sp:1.25,
-  cleave:true,desc:'Fast and furious, with two axes that hit several enemies at once. No armour.'},
+ varangian:{name:'Varangian',cost:95,hp:150,dmg:28,reach:1.4,cd:.8,speed:3.6,r:.42,mass:1.4,armor:.2,block:0,arrowBlock:0,knock:5,height:1.95,dur:.5,hitAt:.5,sp:1.25,
+  cleave:true,desc:'Elite guard in mail with a long two-handed Dane axe: each swing hits several enemies at once.'},
  knight:{name:'Knight',cost:160,hp:340,dmg:38,reach:1.7,cd:0.95,speed:7.2,r:.85,mass:4,armor:0.35,block:.25,arrowBlock:.4,knock:6,height:2.6,dur:.6,hitAt:.5,sp:2.3,
   cav:true,desc:'Heavy cavalry. Tramples and scatters enemies at full gallop.'},
  catapult:{name:'Catapult',cost:220,hp:220,dmg:70,reach:0,cd:6,speed:0,r:1.3,mass:20,armor:.4,block:0,arrowBlock:0,knock:0,height:2.2,dur:1.6,hitAt:.25,sp:4,
   ranged:'rock',range:70,minRange:9,static:true,desc:'Throws boulders that send whole squads flying. Cannot move.'}
 };
-const ORDER=['peasant','sword','shield','spear','archer','berserker','knight','catapult'];
+const ORDER=['peasant','sword','shield','spear','archer','varangian','knight','catapult'];
 const POSE={peasant:{r:-.25,l:.15,s:'thrust'},sword:{r:-.45,l:-.55,s:'swing'},shield:{r:-.45,l:-.28,s:'swing'},spear:{r:-.2,l:-.5,s:'thrust'},
- archer:{r:-1.45,l:-1.5,s:'bow'},berserker:{r:-.5,l:-.5,s:'dual'},knight:{r:-.12,l:-.5,s:'thrust'},catapult:{s:'cata'}};
+ archer:{r:-1.45,l:-1.5,s:'bow'},varangian:{r:-.65,l:-.65,s:'two'},knight:{r:-.12,l:-.5,s:'thrust'},catapult:{s:'cata'}};
 
 /* ---------------- Renderer & scene ---------------- */
 const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
@@ -269,12 +269,14 @@ const sph=(r,w=10,h=8,ts=0,tl=PI)=>new THREE.SphereGeometry(r,w,h,0,PI*2,ts,tl);
 const cone=(r,h,s=8)=>new THREE.ConeGeometry(r,h,s);
 const _v=new THREE.Vector3(),_q=new THREE.Quaternion(),_e=new THREE.Euler(),_s=new THREE.Vector3();
 function P(g,c,x=0,y=0,z=0,rx=0,ry=0,rz=0,sx=1,sy=1,sz=1){return{g,c,m:new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz)),new THREE.Vector3(sx,sy,sz))};}
-function mergeParts(parts){
+function mergeParts(parts,shade){ // shade(x,y,z) -> brightness (fake AO); every face also gets a tiny brightness jitter
  let total=0;const list=[];
  for(const p of parts){const g=p.g.index?p.g.toNonIndexed():p.g.clone();g.applyMatrix4(p.m);list.push([g,new THREE.Color(p.c)]);total+=g.attributes.position.count;p.g.dispose();}
  const pos=new Float32Array(total*3),nor=new Float32Array(total*3),col=new Float32Array(total*3);let o=0;
  for(const[g,c]of list){const n=g.attributes.position.count;pos.set(g.attributes.position.array,o*3);nor.set(g.attributes.normal.array,o*3);
-  for(let i=0;i<n;i++){col[(o+i)*3]=c.r;col[(o+i)*3+1]=c.g;col[(o+i)*3+2]=c.b;}o+=n;g.dispose();}
+  const pa=g.attributes.position.array;
+  for(let i=0;i<n;i++){const tri=((o+i)/3)|0,j=1+((Math.imul(tri+1,2654435761)>>>0)%1000/1000-.5)*.07,k=j*(shade?shade(pa[i*3],pa[i*3+1],pa[i*3+2]):1);
+   col[(o+i)*3]=c.r*k;col[(o+i)*3+1]=c.g*k;col[(o+i)*3+2]=c.b*k;}o+=n;g.dispose();}
  const out=new THREE.BufferGeometry();out.setAttribute('position',new THREE.BufferAttribute(pos,3));out.setAttribute('normal',new THREE.BufferAttribute(nor,3));out.setAttribute('color',new THREE.BufferAttribute(col,3));
  out.computeBoundingSphere();return out;
 }
@@ -289,16 +291,35 @@ function axe(){return[P(cyl(.03,.03,.8,5),C.wood,0,-.57,.3,PI/2),P(box(.04,.28,.
 // stile "cavaliere sfaccettato": corpo low poly a facce piatte su uno scheletro snodato (anche, ginocchia, spalle, gomiti)
 const ico=(r,d=0)=>new THREE.IcosahedronGeometry(r,d);
 const SHIN_Y=-.43;
+// rifiniture "alla Wild Fields": corpo e arti torniti (LatheGeometry), testa con mascella, naso, orecchie, occhi, sopracciglia e capelli,
+// stivali con risvolto e piede, ombreggiatura finta per vertice (più scuro in basso) — sempre a facce piatte
+const lathe=(prof,seg=8)=>new THREE.LatheGeometry(prof.map(([r,y])=>new THREE.Vector2(Math.max(r,1e-4),y)),seg);
+const TORSO_P=[[0,.86],[.2,.865],[.215,.93],[.205,1.04],[.222,1.18],[.258,1.33],[.27,1.42],[.245,1.5],[.16,1.545],[0,1.555]];
 function human(team,o){
- const tc=TEAM[team],tun=o.tunic??tc.main,jn=o.joint??C.leather;
- const torso=[P(cyl(.27,.2,.6,6),tun,0,1.2,0,0,PI/6,0,1,1,.62),P(cyl(.235,.235,.08,6),C.leather,0,.94,0,0,PI/6,0,1,1,.66),P(cyl(.22,.25,.18,6),o.pants,0,.84,0,0,PI/6,0,1,1,.62),
-  P(cyl(.065,.075,.1,6),C.skin,0,1.53,0),P(ico(.17,1),C.skin,0,1.7,0),P(box(.045,.045,.02),C.dark,-.065,1.72,.155),P(box(.045,.045,.02),C.dark,.065,1.72,.155),
-  P(cone(.03,.07,4),C.skin,0,1.68,.18,PI/2),P(ico(.085),jn,-.33,1.45,0),P(ico(.085),jn,.33,1.45,0),...(o.head||[]),...(o.torsoX||[])];
- const leg=[P(cyl(.095,.075,.42,6),o.pants,0,-.21,0)];
- const shin=[P(ico(.08),jn,0,0,0),P(cyl(.075,.06,.3,6),o.shin??o.pants,0,-.17,0),P(cyl(.075,.095,.14,6),o.boots??C.leather,0,-.36,0),P(box(.13,.07,.12),o.boots??C.leather,0,-.395,.09)];
- const arm=sl=>[P(cyl(.07,.06,.27,6),sl,0,-.135,0),P(ico(.06),jn,0,-.29,0),P(cyl(.06,.05,.24,6),sl,0,-.42,0),P(ico(.068),o.hand??C.skin,0,-.57,0)];
- return{torso,leg,shin,legPiv:[[-.12,.86,0],[.12,.86,0]],armR:[...arm(o.sleeveR??o.sleeve??o.tunic??tc.main),...(o.armR||[])],armRPiv:[-.33,1.45,0],armL:[...arm(o.sleeveL??o.sleeve??o.tunic??tc.main),...(o.armL||[])],armLPiv:[.33,1.45,0]};
+ const tc=TEAM[team],tun=o.tunic??tc.main,jn=o.joint??C.leather,hair=o.hair??C.hair,sk=C.skin,pants=o.pants,boots=o.boots??C.leather;
+ const head=[P(lathe([[.075,1.5],[.066,1.56],[.068,1.62]],7),sk),
+  P(sph(.16,10,8),sk,0,1.73,0,0,0,0,.95,1.06,1),P(sph(.122,8,6),sk,0,1.645,.03,0,0,0,1,.78,1),
+  ...(o.face===false?[]:[P(cone(.032,.08,4),sk,0,1.7,.18,PI/2)]),P(sph(.035,6,4),sk,-.155,1.71,0,0,0,0,.5,1,.8),P(sph(.035,6,4),sk,.155,1.71,0,0,0,0,.5,1,.8),
+  ...(o.face===false?[]:[P(sph(.026,6,4),C.dark,-.058,1.735,.143),P(sph(.026,6,4),C.dark,.058,1.735,.143),
+  P(box(.075,.022,.025),hair,-.06,1.776,.15,0,0,.12),P(box(.075,.022,.025),hair,.06,1.776,.15,0,0,-.12)])];
+ if(o.hairCap!==false)head.push(P(sph(.165,10,6,0,PI*.55),hair,0,1.735,-.012,-.5,0,0,1,1.08,1.04));
+ if(o.beard)head.push(P(sph(.13,8,6,PI*.42,PI*.58),o.beard,0,1.67,.035,0,0,0,1,1.1,1),P(cone(.085,.17,6),o.beard,0,1.52,.09,PI-.25),P(box(.13,.025,.03),o.beard,0,1.67,.17));
+ const torso=[P(lathe(TORSO_P,8),tun,0,0,0,0,PI/8,0,1,1,.64),P(cyl(.235,.235,.08,8),o.belt??C.leather,0,.94,0,0,PI/8,0,1,1,.66),P(box(.07,.07,.03),C.gold,0,.945,.16),
+  P(lathe([[.25,.75],[.25,.79],[.23,.93]],8),pants,0,0,0,0,PI/8,0,1,1,.62),...head,P(ico(.085),jn,-.33,1.45,0),P(ico(.085),jn,.33,1.45,0),...(o.head||[]),...(o.torsoX||[])];
+ const leg=[P(lathe([[0,-.43],[.075,-.42],[.09,-.3],[.1,-.15],[.1,-.03],[0,.03]],7),pants)];
+ const shin=[P(ico(.075),jn,0,0,0),P(lathe([[0,-.24],[.06,-.235],[.07,-.12],[.072,-.04],[0,.02]],7),o.shin??pants),
+  P(lathe([[0,-.42],[.06,-.415],[.064,-.3],[.068,-.22],[.08,-.2],[.079,-.17],[0,-.17]],7),boots),P(sph(.065,8,6),boots,0,-.395,.065,0,0,0,.85,.55,1.6),
+  ...(o.wraps?[-.06,-.11,-.16].map(y=>P(cyl(.074,.074,.022,7),o.wraps,0,y,0,.18)):[])];
+ const arm=(sl,cuff)=>[P(lathe([[0,-.3],[.055,-.29],[.062,-.2],[.07,-.08],[.075,-.02],[0,.04]],7),sl),P(ico(.058),jn,0,-.29,0),
+  P(lathe([[0,-.53],[.047,-.52],[.052,-.44],[.06,-.34],[.055,-.3],[0,-.29]],7),sl),...(cuff?[P(lathe([[.055,-.51],[.062,-.5],[.064,-.43],[.057,-.42]],7),cuff)]:[]),
+  P(sph(.06,7,5),o.hand??sk,0,-.575,.005,0,0,0,.8,1.1,1)];
+ const slv=o.sleeve??o.tunic??tc.main;
+ return{torso,leg,shin,legPiv:[[-.12,.86,0],[.12,.86,0]],armR:[...arm(o.sleeveR??slv,o.cuff),...(o.armR||[])],armRPiv:[-.33,1.45,0],armL:[...arm(o.sleeveL??slv,o.cuff),...(o.armL||[])],armLPiv:[.33,1.45,0]};
 }
+// Dane axe: long haft held in both hands, broad crescent blade (edge toward -y, the chopping direction)
+function daneAxe(){const sh=new THREE.Shape();sh.moveTo(-.05,.025);sh.lineTo(.07,.025);sh.lineTo(.11,-.03);sh.quadraticCurveTo(.21,-.2,.11,-.35);sh.lineTo(.02,-.28);sh.quadraticCurveTo(-.03,-.13,-.05,-.03);sh.closePath();
+ const g=new THREE.ExtrudeGeometry(sh,{depth:.022,bevelEnabled:false,curveSegments:5});g.translate(0,0,-.011);g.scale(1.3,1.3,1);g.rotateY(-PI/2);
+ return[P(cyl(.022,.027,1.55,6),C.wood,.1,-.57,.45,PI/2),P(g,C.metal,.1,-.57,1.06),P(box(.035,.035,.06),C.dmetal,.1,-.57,1.24),P(box(.05,.05,.05),C.leather,.1,-.57,0)];}
 function bowParts(){const arc=1.1,R=.9;const g=new THREE.TorusGeometry(R,.025,4,12,arc);g.rotateZ(PI/2-arc/2);
  return[P(g,C.dwood,0,R-.57,0,PI,PI/2,0),P(box(.008,.008,2*R*Math.sin(arc/2)),C.cloth,0,R-.57-R*Math.cos(arc/2),0)];}
 const SPEC={
@@ -307,7 +328,7 @@ const SPEC={
   ...[-.11,0,.11].map(x=>P(box(.025,.025,.3),C.dmetal,x,-.57,1.75))]}),
  sword:t=>human(t,{pants:0x4a4a52,sleeve:C.dmetal,shin:C.dmetal,joint:C.dmetal,head:[P(sph(.195,7,4,0,PI/2),C.metal,0,1.73,0),P(box(.035,.13,.03),C.metal,0,1.7,.185),P(cone(.05,.28,5),TEAM[t].main,0,2.0,-.06,-.45)],
   torsoX:[P(box(.54,.12,.33),C.dmetal,0,1.48,0),P(ico(.13),C.metal,-.3,1.5,0),P(ico(.13),C.metal,.3,1.5,0)],armR:sword(),armL:roundShield(t)}),
- shield:t=>human(t,{tunic:C.metal,pants:C.dmetal,sleeve:C.metal,boots:C.dmetal,shin:C.metal,joint:C.dark,head:[P(cyl(.2,.21,.32,7),C.metal,0,1.74,0),P(cone(.205,.1,7),C.metal,0,1.95,0),P(box(.26,.035,.02),C.dark,0,1.77,.2),P(box(.03,.14,.02),C.dark,0,1.7,.2),P(cone(.05,.3,5),TEAM[t].main,0,2.12,-.05,-.4)],
+ shield:t=>human(t,{face:false,hairCap:false,tunic:C.metal,pants:C.dmetal,sleeve:C.metal,boots:C.dmetal,shin:C.metal,joint:C.dark,head:[P(cyl(.2,.21,.32,7),C.metal,0,1.74,0),P(cone(.205,.1,7),C.metal,0,1.95,0),P(box(.26,.035,.02),C.dark,0,1.77,.2),P(box(.03,.14,.02),C.dark,0,1.7,.2),P(cone(.05,.3,5),TEAM[t].main,0,2.12,-.05,-.4)],
   torsoX:[P(cyl(.25,.3,.5,6),TEAM[t].main,0,1.04,0,0,PI/6,0,1,1,.66),P(box(.6,.14,.36),C.metal,0,1.48,0),P(ico(.14),C.metal,-.31,1.52,0),P(ico(.14),C.metal,.31,1.52,0)],armR:sword(.55),
   armL:[P(box(.72,1.12,.07),TEAM[t].main,.04,-.52,.2),P(box(.78,1.18,.04),C.dmetal,.04,-.52,.165),P(box(.12,.62,.08),TEAM[t].light,.04,-.48,.24),P(box(.4,.12,.08),TEAM[t].light,.04,-.36,.24)]}),
  spear:t=>human(t,{pants:0x55452f,head:[P(cyl(.13,.3,.07,12),C.metal,0,1.86,0),P(sph(.15,8,4,0,PI/2),C.metal,0,1.86,0)],
@@ -315,8 +336,15 @@ const SPEC={
  archer:t=>human(t,{pants:0x4b5a35,head:[P(sph(.2,10,8,0,PI*.62),TEAM[t].dark,0,1.72,-.02)],
   torsoX:[P(box(.46,.6,.04),TEAM[t].dark,0,1.25,-.17),P(cyl(.07,.07,.62,8),C.leather,.12,1.32,-.21,.25,0,.25),...[0,1,2].map(i=>P(box(.05,.1,.02),0xeeeeee,.17+i*.03-.03,1.66,-.12))],
   armL:bowParts(),armR:[]}),
- berserker:t=>human(t,{tunic:C.fur,pants:TEAM[t].dark,sleeve:C.skin,head:[P(sph(.19,10,5,0,PI/2),C.dmetal,0,1.74,0),P(cone(.05,.26,6),C.cloth,-.2,1.88,0,0,0,.8),P(cone(.05,.26,6),C.cloth,.2,1.88,0,0,0,-.8),P(box(.22,.18,.08),0xb5651d,0,1.58,.15)],
-  torsoX:[P(box(.6,.14,.36),0x6e5236,0,1.5,0),P(box(.56,.1,.33),TEAM[t].main,0,1.2,0,0,0,.6)],armR:axe(),armL:axe()}),
+ varangian:t=>{const tc=TEAM[t],mail=0x8b929a,mailD=0x6c737b;
+  const wedge=i=>P(new THREE.CylinderGeometry(.36,.36,.04,12,1,false,i*PI/2,PI/2),i%2?tc.main:tc.light,0,1.2,-.25,PI/2);
+  return human(t,{tunic:mail,pants:0x4f4436,sleeve:tc.main,shin:0xb5a07a,wraps:0x6e5a3e,cuff:C.leather,hair:0xa8783e,beard:0xb07a3c,joint:mailD,
+   head:[P(cone(.2,.3,8),C.metal,0,1.93,0),P(cyl(.205,.205,.05,8),C.dmetal,0,1.785,0),P(box(.035,.1,.03),C.dmetal,0,1.745,.2),P(sph(.025,6,4),C.dmetal,0,2.08,0),
+    P(lathe([[.16,1.5],[.13,1.6]],8),mail)], // conical nasal helm over a mail collar
+   torsoX:[P(lathe([[.3,.58],[.255,.8],[.218,.97]],8),mail,0,0,0,0,PI/8,0,1,1,.74),P(lathe([[.315,.52],[.302,.6]],8),tc.main,0,0,0,0,PI/8,0,1,1,.74), // mail skirt over the tunic hem
+    P(box(.06,.78,.025),C.leather,0,1.22,.185,0,0,.62), // shield strap across the chest
+    wedge(0),wedge(1),wedge(2),wedge(3),P(cyl(.375,.375,.03,16),C.dmetal,0,1.2,-.235,PI/2),P(sph(.075,8,6,0,PI/2),C.metal,0,1.2,-.27,-PI/2)], // painted round shield slung on the back
+   armR:[P(lathe([[.082,-.2],[.084,.03]],7),mail),...daneAxe()],armL:[P(lathe([[.082,-.2],[.084,.03]],7),mail)]});},
  knight:t=>{const tc=TEAM[t];
   const torso=[P(box(.55,.6,1.5),C.horse,0,1.25,0),P(box(.6,.42,1.32),tc.main,0,1.08,0),P(box(.62,.08,1.34),tc.light,0,1.28,0),P(box(.3,.62,.36),C.horse,0,1.62,.82,.55),
    P(box(.26,.28,.56),C.horse,0,1.92,1.12,.15),P(box(.18,.16,.2),0x5a3520,0,1.86,1.42),P(box(.06,.5,.34),C.hair,0,1.78,.72,.55),P(box(.1,.6,.1),C.hair,0,1.2,-.85,-.5),
@@ -341,7 +369,7 @@ const MODEL_CACHE={};
 function modelGeos(type,team){
  const k=type+team;if(MODEL_CACHE[k])return MODEL_CACHE[k];
  const s=SPEC[type](team);
- const g={torso:mergeParts(s.torso),leg:s.leg?mergeParts(s.leg):null,shin:s.shin?mergeParts(s.shin):null,legPiv:s.legPiv,armR:s.armR?mergeParts(s.armR):null,armRPiv:s.armRPiv,armL:s.armL?mergeParts(s.armL):null,armLPiv:s.armLPiv,
+ const g={torso:mergeParts(s.torso,(x,y)=>.8+.2*clamp((y-.6)/.9,0,1)),leg:s.leg?mergeParts(s.leg,(x,y)=>.9+.1*clamp(1+y/.45,0,1)):null,shin:s.shin?mergeParts(s.shin,(x,y)=>.84+.16*clamp(1+y/.43,0,1)):null,legPiv:s.legPiv,armR:s.armR?mergeParts(s.armR):null,armRPiv:s.armRPiv,armL:s.armL?mergeParts(s.armL):null,armLPiv:s.armLPiv,
   cata:s.cata?mergeParts(s.cata):null,cataPiv:s.cataPiv};
  return MODEL_CACHE[k]=g;
 }
@@ -355,7 +383,7 @@ function buildModel(type,team,mat=unitMat,shadow=true){
  if(armR&&shadow)armR.castShadow=true;
  const M={root,torso,legs,shins,armR,armL,carm};restPose(M,type);return M;
 }
-function restPose(M,type){const p=POSE[type];if(M.armR){M.armR.rotation.x=p.r;}if(M.armL)M.armL.rotation.x=p.l;if(M.carm)M.carm.rotation.x=-1.25;}
+function restPose(M,type){const p=POSE[type];if(M.armR){M.armR.rotation.x=p.r;}if(M.armL)M.armL.rotation.x=p.l;if(p.s==='two'){M.armR.rotation.z=.42;M.armL.rotation.z=-.42;}if(M.carm)M.carm.rotation.x=-1.25;}
 
 /* ---------------- Arrows (instanced) ---------------- */
 const arrowGeo=mergeParts([P(cyl(.012,.012,.78,4),C.wood,0,0,-.35,PI/2),P(cone(.03,.1,4),C.dmetal,0,0,.06,PI/2),P(box(.005,.06,.13),0xf0f0f0,0,0,-.68),P(box(.06,.005,.13),0xf0f0f0,0,0,-.68)]);
@@ -438,7 +466,7 @@ function explosionFX(x,z,s=1){
  for(let i=0;i<34*s;i++){const[a,b,c]=sphereDir(.1),v=rand(2,6)*s;fireFX.emit({x:x+a*.3,y:.6+b*.3,z:z+c*.3,vx:a*v,vy:b*v,vz:c*v,life:rand(.4,.8),s0:rand(1.2,1.8)*s,s1:rand(2.4,3.6)*s,c0:0xfff3c4,c1:0xff3a12,drag:3.2,grav:1.5});}
  for(let i=0;i<16*s;i++){const[a,b,c]=sphereDir(.15),v=rand(1.5,4.5)*s;smokeFX.emit({x:x+a*.3,y:.7+b*.3,z:z+c*.3,vx:a*v,vy:b*v,vz:c*v,life:rand(.35,.6),s0:rand(1,1.5)*s,s1:rand(2,2.8)*s,c0:0xffb347,c1:0xb8300c,a:.9,drag:3,grav:1.2});}   // nucleo pieno: resta arancione anche sulla neve
  for(let i=0;i<20*s;i++){const[a,b,c]=sphereDir(.25),v=rand(.8,2.2);smokeFX.emit({x:x+a*.5,y:.9,z:z+c*.5,vx:a*v,vy:b*v,vz:c*v,life:rand(1.8,3.2),s0:1.6*s,s1:rand(4,5.5)*s,c0:0x5a5550,c1:0x2a2826,a:.55,drag:1.4,grav:.9});}
- for(let i=0;i<38*s;i++){const[a,b,c]=sphereDir(-.1),v=rand(5,12);sparkFX.emit({x,y:.7,z,vx:a*v,vy:b*v,vz:c*v,life:rand(.5,1.1),s0:.28,s1:.06,c0:0xfff2a8,c1:0xff6a00,drag:.6,grav:-9.8});}
+ for(let i=0;i<38*s;i++){const[a,b,c]=sphereDir(-.1),v=rand(5,12)*(.45+.55*s);sparkFX.emit({x,y:.7,z,vx:a*v,vy:b*v,vz:c*v,life:rand(.5,1.1),s0:.28,s1:.06,c0:0xfff2a8,c1:0xff6a00,drag:.6,grav:-9.8});}
  const r=ringFX[ringI++%ringFX.length];r.position.set(x,.08,z);r.userData.t=0;r.userData.s=s;r.visible=true;
  const m=scorchFX[scorchI++%scorchFX.length];m.position.set(x,.03+(scorchI%7)*.002,z);m.scale.setScalar(rand(1.6,2.1)*s);m.rotation.y=rand(0,6);m.userData.t=0;m.visible=true;
 }
@@ -692,8 +720,8 @@ function updateRocks(dt){
  }
 }
 function explode(r){
- const R=3.6;sfx('boom',1,r.x,r.z);explosionFX(r.x,r.z);puff(r.x,.3,r.z,26,0xb9ab90,5,.55,1.3,-.6,.7);puff(r.x,.3,r.z,12,0x6d5a40,6,.15,.9,9,1.4);
- shake=Math.max(shake,.5*clamp(1.4-Math.hypot(r.x-cam.tx,r.z-cam.tz)/60,0,1));
+ const R=3.6;sfx('boom',1,r.x,r.z);explosionFX(r.x,r.z,.6);puff(r.x,.3,r.z,16,0xb9ab90,3.5,.38,1.1,-.6,.7);puff(r.x,.3,r.z,8,0x6d5a40,4.5,.12,.8,9,1.4);
+ shake=Math.max(shake,.35*clamp(1.4-Math.hypot(r.x-cam.tx,r.z-cam.tz)/60,0,1));
  const hits=[];query(r.x,r.z,R+1,o=>{if(o.team===r.team||!o.alive)return;const d=Math.hypot(o.x-r.x,o.z-r.z);if(d<R+o.T.r)hits.push([o,d]);});
  for(const[o,d]of hits){const k=1-clamp(d/R,0,1);const dx=(o.x-r.x)||rand(-.1,.1),dz=(o.z-r.z)||rand(-.1,.1);const l=Math.hypot(dx,dz);
   const dmg=r.dmg*(.35+.65*k)*(1-o.T.armor*.5);o.hp-=dmg;const kn=(4+10*k)*Math.min(o.T.mass,2.5),up=(3+9*k)*Math.min(o.T.mass,2.5);
@@ -793,10 +821,11 @@ function animate(dt){
   if(p.s==='bow'){const aim=u.aim;rr=lerp(-.2,p.r,aim);rl=lerp(-.3,p.l,aim);if(a>=0&&aim>.5){pz=a<T.hitAt?-.28*ease(Math.min(1,a/T.hitAt*1.3)):-.28*(1-ease((a-T.hitAt)/(1-T.hitAt)));}
    else if(a>=0){rr=a<.5?lerp(-.3,-2.4,ease(a/.5)):lerp(-2.4,-.3,ease((a-.5)/.5));}}
   else if(a>=0){
-   if(p.s==='swing'||p.s==='dual'){const h=T.hitAt;rr=a<h-.15?lerp(p.r,-2.7,ease(a/(h-.15))):a<h+.05?lerp(-2.7,-.1,(a-h+.15)/.2):lerp(-.1,p.r,ease((a-h-.05)/(1-h-.05)));
+   if(p.s==='swing'||p.s==='dual'||p.s==='two'){const h=T.hitAt;rr=a<h-.15?lerp(p.r,-2.7,ease(a/(h-.15))):a<h+.05?lerp(-2.7,-.1,(a-h+.15)/.2):lerp(-.1,p.r,ease((a-h-.05)/(1-h-.05)));
     if(p.s==='dual'){const b=(a+.5)%1;rl=b<.35?lerp(p.l,-2.6,ease(b/.35)):b<.55?lerp(-2.6,-.1,(b-.35)/.2):lerp(-.1,p.l,ease((b-.55)/.45));}}
    else if(p.s==='thrust'){const h=T.hitAt;pz=a<h-.1?-.25*ease(a/(h-.1)):a<h+.05?lerp(-.25,.6,(a-h+.1)/.15):lerp(.6,0,ease((a-h-.05)/(1-h-.05)));}
   }else if(!T.cav&&spd>.3){rr+=Math.sin(u.phase)*.25*sw;if(p.s!=='bow')rl-=Math.sin(u.phase)*.2*sw;}
+  if(p.s==='two')rl=rr; // both hands on the haft
   if(u.blockT>0)rl-=.35;
   if(M.armR){M.armR.rotation.x=rr;M.armR.position.z=rz+pz;}if(M.armL)M.armL.rotation.x=rl;
  }
@@ -952,12 +981,12 @@ const LEVELS=[
   army:()=>[...block('shield',0,-11,14,1),...block('archer',0,-15,10,1)]},
  {name:'Storm of Arrows',biome:'desert',budget:1900,hint:'So many archers! Shields stop arrows from the front.',
   army:()=>[...block('shield',0,-10,6,1),...block('archer',-9,-14,7,2),...block('archer',9,-14,7,2)]},
- {name:'The Northmen',biome:'snow',budget:1750,hint:'Berserkers hit hard and fast. Hold them with a solid line.',
-  army:()=>[...block('berserker',0,-10,7,2),...block('spear',0,-14,12,1)]},
+ {name:'The Northmen',biome:'snow',budget:1750,hint:'Varangian axemen hit hard and cut through lines. Hold them with a solid wall of spears.',
+  army:()=>[...block('varangian',0,-10,7,2),...block('spear',0,-14,12,1)]},
  {name:'Siege Camp',biome:'desert',budget:2600,hint:'Catapults behind a wall of shields. Knights are fast enough to reach them.',
   army:()=>[...block('shield',0,-10,12,1),...block('shield',0,-11.3,4,1),...block('archer',0,-15,12,1),...block('catapult',0,-26,3,1,8)]},
  {name:'The Great Host',biome:'autumn',budget:7600,hint:'The enemy’s whole army is here. Use everything you’ve learned.',
-  army:()=>[...block('shield',0,-9,12,1),...block('sword',0,-10.3,16,1),...block('sword',0,-11.5,8,1),...block('spear',0,-13,16,1),...block('berserker',-22,-11,5,2),
+  army:()=>[...block('shield',0,-9,12,1),...block('sword',0,-10.3,16,1),...block('sword',0,-11.5,8,1),...block('spear',0,-13,16,1),...block('varangian',-22,-11,5,2),
    ...block('archer',0,-17,20,1),...block('knight',22,-12,3,2),...block('catapult',0,-28,2,1,10)]}
 ];
 
@@ -1011,7 +1040,7 @@ function demoBattle(){
  clearAll();setBiome('grass');state.campaign=false;
  const mk=(t,arr)=>arr.forEach(s=>addUnit(s.type,t,s.x,t?s.z:-s.z));
  mk(1,[...block('shield',0,-10,10,1),...block('sword',0,-11.3,10,1),...block('archer',0,-15,10,1),...block('knight',-16,-12,2,2)]);
- mk(0,[...block('sword',0,-10,12,1),...block('spear',0,-11.3,12,1),...block('archer',0,-15,10,1),...block('berserker',16,-11,3,2),...block('catapult',0,-24,1,1)]);
+ mk(0,[...block('sword',0,-10,12,1),...block('spear',0,-11.3,12,1),...block('archer',0,-15,10,1),...block('varangian',16,-11,3,2),...block('catapult',0,-24,1,1)]);
  state.mode='demo';state.battleTime=0;cam.tx=0;cam.tz=0;cam.dist=46;cam.pitch=.5;
 }
 
@@ -1068,7 +1097,7 @@ $('btnClear').onclick=()=>{for(const u of units.slice())if(u.team===state.team)r
 $('btnTeam').onclick=()=>{setTeam(1-state.team);sfx('click');};
 $('btnRandom').onclick=()=>{for(const u of units.slice())if(u.team===1)removeUnit(u);let budget=2000;const pool=ORDER;
  const rows=[[-10,'front'],[-11.3,'front'],[-13,'mid'],[-16,'back'],[-24,'art']];
- for(const[z,k]of rows){if(budget<=0)break;const opts=k==='front'?['sword','shield','peasant','berserker']:k==='mid'?['spear','sword','knight','berserker']:k==='back'?['archer','archer','spear']:['catapult'];
+ for(const[z,k]of rows){if(budget<=0)break;const opts=k==='front'?['sword','shield','peasant','varangian']:k==='mid'?['spear','sword','knight','varangian']:k==='back'?['archer','archer','spear']:['catapult'];
   if(k==='art'&&Math.random()<.5)continue;const t=opts[Math.floor(Math.random()*opts.length)];const T=TYPES[t];const n=Math.min(Math.floor(budget*.45/T.cost),Math.floor(70/T.sp));if(n<1)continue;
   for(const s of block(t,0,z,Math.min(n,Math.floor(72/T.sp)),1))if(freeSpot(s.x,s.z,t)&&units.length<MAX_UNITS){addUnit(t,1,s.x,s.z);budget-=T.cost;}}
  sfx('place');updateDeployUI();};

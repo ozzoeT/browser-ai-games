@@ -81,6 +81,24 @@ Ogni occhio è un `Group` al centro della testa ruotato di `atan2(cos a, ±sin a
 davanti verso la camera); dentro: pupilla nera (sfera scalata 3.8×6×2.4), punto luce bianco,
 sopracciglio inclinato. Così con la camera laterale si vede l'occhio vicino.
 
+### Rifiniture "alla Wild Fields" su low poly a facce piatte (Iron Line `human()`)
+Da Wild Fields 1648 (MIT): stessa silhouette e stesse ossa, ma ogni pezzo è più "scolpito".
+- **Busto e arti torniti** con `LatheGeometry` da un profilo `[[raggio, y], ...]` dal basso all'alto (vita stretta,
+  petto, spalle arrotondate; bicipite con deltoide, avambraccio che si assottiglia), 7–8 segmenti, schiacciato in z.
+  Con `flatShading` resta lo stile sfaccettato.
+- **Testa**: cranio (sfera leggermente allungata) + mascella (sfera schiacciata più in basso e in avanti) + naso a cono +
+  orecchie + occhi sferici scuri + sopracciglia (box inclinati) + **calotta di capelli** (mezza sfera inclinata
+  indietro di 0.5 rad: copre nuca e cima, lascia libera la fronte). Barba opzionale: mezza sfera sotto la mascella +
+  cono verso il basso + baffi. Per elmi chiusi passa `face:false` (il naso buca l'elmo) e `hairCap:false`.
+- **Stivali**: gambale tornito con risvolto + piede da sfera allungata in avanti (`scale .85,.55,1.6`). Fasce
+  mollettiere: anelli sottili inclinati.
+- **Ombreggiatura finta** in `mergeParts(parts, shade)`: luminosità per vertice in base all'altezza
+  (busto .8 in basso → 1 alle spalle, gambe più scure in basso) e una variazione ±3.5% per faccia (hash del triangolo).
+- Costo: da ~1k a ~2.2k triangoli per soldato (2.9k il variago). Con 420 unità ~1M triangoli: ok su PC;
+  se rallenta su telefono, abbassa i segmenti delle sfere della testa.
+- Arma a due mani: lama da `Shape` estrusa (il filo verso −y locale del braccio, la direzione del colpo), braccia
+  ruotate in z verso l'interno (±0.42) a riposo e `rl = rr` nell'animazione così entrambe le mani restano sull'asta.
+
 ## Variante 2D (canvas): manichino + cartoon (Dino Frenzy)
 
 Stessa idea senza three.js:
