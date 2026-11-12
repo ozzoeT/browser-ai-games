@@ -11,35 +11,50 @@ Questa skill raccoglie lo stile visivo già applicato ai giochi del repo e le ri
 
 ## Questionario di stile (prima di iniziare)
 
-Quando si crea un gioco nuovo o si chiede di "renderlo più bello" senza dire cosa, **chiedi all'utente lo stile**
-con `AskUserQuestion` (massimo 4 domande), in parole semplici, **niente termini tecnici**. Adatta le opzioni al
-genere: togli quelle che non c'entrano (niente "sensazione di velocità" in un gioco di strategia) e metti come
-prima, con "(Consigliato)", quella che sta meglio al gioco. Se l'utente ha già detto cosa vuole, salta le domande
-già risposte. Poi traduci le risposte con la tabella sotto.
+La skill **non impone uno stile**: ogni gioco sceglie il suo. Le scelte fatte su un gioco (es. Iron Line) sono
+esempi nel Registro, non regole. Quando si crea un gioco nuovo o si chiede di "renderlo più bello" senza dire
+cosa, **chiedi all'utente** con `AskUserQuestion`, in parole semplici, **niente termini tecnici**.
 
-Domande base (riformulale sul gioco concreto):
-1. **"Che luce vuoi nel gioco?"** Cartone solare · Tramonto caldo · Cinematografico · Notte magica.
-2. **"Quanto devono brillare fuoco, scintille e magie?"** Poco · Morbido · Tanto, stile sala giochi.
-3. **"Cosa rende il mondo più vivo?"** (scelta multipla) Nuvole che passano e fanno ombra · Alberi ed erba
-   mossi dal vento · Acqua che luccica · Meteo e pulviscolo nell'aria.
-4. **"Quanto deve farsi sentire l'azione?"** (scelta multipla, a seconda del genere) Lo schermo trema ai colpi
-   forti · Sensazione di velocità · Esplosioni grandi e piene · Oggetti lucidi come giocattoli.
+Come:
+- Scegli dal banco qui sotto **le 4 domande più utili per quel gioco** (massimo 4 per volta; se serve, un secondo giro).
+- Riformula domanda e opzioni sul gioco concreto ("Come cade il masso della catapulta?" invece di "tipo di impatto").
+- Metti per prima, con "(Consigliato)", l'opzione che sta meglio al genere e al pubblico, ma lascia sempre le alternative.
+- Salta quello che l'utente ha già detto. Tieni fuori le opzioni che col gioco non c'entrano.
+- Scrivi le scelte nel Registro, così le modifiche successive allo stesso gioco restano coerenti.
 
-| Risposta | Cosa fare (vedi `references/rendering.md` ed `effects.md`) |
+### Banco di domande
+
+| Tema | Domanda (da adattare) | Opzioni tipiche |
+|---|---|---|
+| Luce | "Che luce vuoi nel gioco?" | Cartone solare · Tramonto caldo · Cinematografico · Notte magica · Nuvoloso/tempesta |
+| Bagliori | "Quanto devono brillare fuoco, scintille e magie?" | Poco · Morbido · Tanto, stile sala giochi |
+| Colori | "Che colori preferisci?" | Pieni e vivaci (cartone) · Naturali · Caldi e antichi (pergamena) · Freddi e cupi |
+| Colpi ed esplosioni | "Come devono essere i colpi forti / le esplosioni?" | Fuoco ed esplosione · Impatto di terra e polvere · Magico (stelle, coriandoli, anelli) · Leggero (scintille e un po' di fumo) · Elettrico/energia · Spruzzo d'acqua o neve |
+| Grandezza effetti | "Quanto grandi?" | Piccoli e precisi · Medi · Enormi e spettacolari |
+| Mondo vivo | "Cosa rende il mondo più vivo?" (multipla) | Nuvole che fanno ombra · Vento su alberi ed erba · Acqua che luccica · Meteo · Pulviscolo/lucciole |
+| Azione | "Quanto deve farsi sentire l'azione?" (multipla) | Schermo che trema · Sensazione di velocità · Fermo-immagine sui colpi · Scie dietro armi e mani |
+| Personaggi | "Come vuoi le persone?" | Uno degli stili di `characters.md` (cartone, sfaccettato, liscio, chibi…) · Livello di dettaglio: semplice · rifinito · molto dettagliato |
+| Materiali | "Che aspetto per metallo e veicoli?" | Opachi · Lucidi come giocattoli · Realistici con riflessi del cielo |
+
+### Da risposta a ricetta
+
+| Risposta | Cosa fare (vedi `references/rendering.md`, `effects.md`, `characters.md`) |
 |---|---|
-| Cartone solare | Sole alto-medio (~40°), colori pieni, grade neutro (sat 1.05–1.1), spalla morbida, vignetta leggera |
-| Tramonto caldo | Sole basso (15–25°), luce arancio, cielo con orizzonte caldo, calore del grade più alto, lens flare, ombre lunghe |
-| Cinematografico | Più contrasto, vignetta .35–.45, prospettiva aerea blu in lontananza, bloom più largo |
+| Cartone solare | Sole medio-alto (35–50°), colori pieni, grade neutro (sat 1.05–1.1), tone mapping a spalla morbida, vignetta leggera |
+| Tramonto caldo | Sole basso (15–25°), luce arancio, orizzonte caldo, grade caldo, lens flare, ombre lunghe |
+| Cinematografico | ACES o spalla più forte, contrasto, vignetta .35–.45, prospettiva aerea blu, bloom più largo |
 | Notte magica | Cielo scuro con stelle, luci puntiformi e neon, bloom forte, lucciole/pulviscolo |
-| Brillare: poco / morbido / tanto | `POST` bloom .3 / .55 / .9; soglia 1.1 (alzala su sfondi chiari) |
-| Nuvole con ombra | `patchMat` (ombre nuvole) + nuvole nello shader del cielo, copertura per bioma |
-| Vento | `patchMat` con `wind` su chiome ed erba instanziate |
-| Acqua che luccica | Shader dell'acqua (fresnel, riflesso del sole, scintillii, schiuma) |
+| Nuvoloso/tempesta | Copertura nuvole alta, ombre delle nuvole marcate, pioggia/fulmini, grade freddo |
+| Bagliori poco / morbido / tanto | Bloom .3 / .55 / .9; soglia ~1.0–1.2 (più alta su sfondi chiari) |
+| Colori naturali / antichi / cupi | Saturazione .95–1 / calore + leggera desaturazione / grade freddo e vignetta forte |
+| Colpi: una delle famiglie | `effects.md` §2 "Impatti ed esplosioni": scegli la famiglia e la taglia (`s`) |
+| Nuvole con ombra / vento | `patchMat` (`rendering.md` §3) |
+| Acqua che luccica | Shader dell'acqua (`rendering.md` §7) |
 | Meteo / pulviscolo | `setWeather`, pulviscolo nei raggi di sole (`effects.md`) |
-| Schermo trema | Scossa in base alla distanza; rispetta "effetti ridotti" |
-| Velocità | FOV dinamico, linee di velocità, rollio in curva |
-| Esplosioni piene | `fireballFX` + ricetta esplosione a 6 strati |
-| Giocattoli lucidi | envMap "da studio" su canvas + `MeshPhysicalMaterial` con clearcoat |
+| Schermo che trema / velocità | `rendering.md` §6; rispetta "effetti ridotti" |
+| Fermo-immagine, scie | `effects.md` (hit-stop, scie) |
+| Personaggi rifiniti / molto dettagliati | `characters.md`: rifiniture con lathe; per "molto dettagliati" il sistema a parti instanziate di Wild Fields |
+| Materiali lucidi / realistici | envMap "da studio" + clearcoat / cielo → PMREM → `scene.environment` con `MeshStandardMaterial` |
 
 ## Prima di toccare un gioco
 
@@ -48,7 +63,7 @@ Domande base (riformulale sul gioco concreto):
    |---|---|---|
    | `pop-gallery/` | three.js **r160 da cdnjs** | Camera fissa con leggero ondeggiamento verso il mirino; colpi = raggio contro sfere (`rayHit`), niente raycast sulle mesh. Fucile a tappi in `vmScene`. |
 | `fight/` | three.js **r149 incorporato** nel file | Niente `colorspace_fragment` negli shader; luci "legacy" (intensità ~1–4). Unità ≈ pixel (personaggio alto ~190). |
-   | `iron-line/`, `shield-brothers/`, `studio-zero/`, `skyflip/` | three.js **r160 da cdnjs** (UMD, `three.min.js`) | Negli `ShaderMaterial` aggiungi `#include <colorspace_fragment>`. Unità = metri. Gli addons (EffectComposer, GLTFLoader…) **non** sono nel build UMD: Iron Line ha bloom e grade **fatti a mano** (`POST`), copiali da lì. |
+   | `iron-line/`, `shield-brothers/`, `studio-zero/`, `skyflip/` | three.js **r160 da cdnjs** (UMD, `three.min.js`) | Negli `ShaderMaterial` aggiungi `#include <colorspace_fragment>`. Unità = metri. Gli addons (EffectComposer, GLTFLoader…) **non** sono nel build UMD: Iron Line ha bloom e grade **fatti a mano** (`POST`): è un'implementazione di riferimento, i valori vanno scelti per ogni gioco. |
    | `city-drive/` (Afterglow GP), `city-rush/` | **motore 3D fatto a mano su canvas 2D** (poligoni proiettati, ordinati per z) | Effetti con `globalCompositeOperation='lighter'` e sprite di bagliore; niente depth buffer. |
    | `dino-frenzy/` | canvas 2D | Come sopra, in 2D puro. Particelle in `parts` con forme (`spark`, `star`, `ring`, `conf`…). |
 

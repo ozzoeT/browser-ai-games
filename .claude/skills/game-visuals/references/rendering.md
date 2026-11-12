@@ -8,7 +8,7 @@ three r160 UMD da cdnjs, niente addon):
 La lezione principale: l'effetto "wow" viene soprattutto dalla **pipeline** (HDR → bloom → grade, cielo
 che illumina e si riflette, ombre nitide), più che dal numero di particelle.
 
-Implementazione di riferimento completa: **`iron-line/index.html`**, blocco
+Implementazione di riferimento completa (i valori sono quelli scelti per Iron Line, non regole): **`iron-line/index.html`**, blocco
 `/* Look: shared uniforms, cloud noise, material patch ... post-processing */` (`U`, `patchMat`, `POST`)
 più `sky`, `FXP`, `fireballFX`. Copia da lì.
 
@@ -20,15 +20,16 @@ Quindi bastano ~60 righe con `WebGLRenderTarget`:
 
 1. Scena in un target **HalfFloat con MSAA** (`samples:4`): i colori possono superare 1.0 (sole, fuoco, scintille).
 2. **Bright pass** a metà risoluzione: tiene solo l'eccesso sopra la soglia `th` con un "ginocchio" morbido.
-   `th=1.1`: con 1.0 neve, bandiere bianche e fiocchi si mettono a brillare.
+   Soglia `th` tra 1.0 e 1.2: più bassa = brilla di più. Su sfondi chiari (neve) alzala, altrimenti brillano
+   anche neve, bandiere bianche e fiocchi (in Iron Line 1.1).
 3. **4 livelli di blur** (½, ¼, ⅛, 1/16): downsample → blur orizzontale → blur verticale (5 campioni
    con il trucco del campionamento lineare: offset 1.385 e 3.231, pesi .227/.316/.070).
 4. **Composito** su schermo:
    - *sharpen* leggero (c + (c − media dei 4 vicini)·0.22): ridà nitidezza dopo MSAA e bloom (Wild Fields);
    - bloom sommato (pesi .9/.75/.6/.5 per livello, intensità .55);
    - esposizione, calore (`×(1.025,1,.965)`), saturazione 1.08;
-   - **spalla morbida** invece di ACES: identica sotto 0.78, sopra comprime dolcemente. ACES scurisce e
-     desatura i mezzitoni: i nostri colori "da cartone" diventerebbero spenti;
+   - **tone mapping a scelta**: *spalla morbida* (identica sotto 0.78, sopra comprime dolcemente: tiene i colori
+     pieni da cartone, usata in Iron Line) oppure *ACES* (più cinematografico: scurisce e desatura i mezzitoni);
    - vignettatura leggera;
    - `#include <colorspace_fragment>` alla fine (converte in sRGB).
 - I materiali normali disegnati nel target restano lineari (three applica sRGB solo sullo schermo): nessun cambio.
@@ -117,4 +118,4 @@ texture di profondità; schiuma a bande animate vicino a riva `sin(depth*70 - t*
 
 - Prima di cambiare la pipeline fai uno screenshot "prima" con le stesse inquadrature, per confrontare.
 - Su sfondi chiari (neve) controlla che il bloom non trasformi tutto in nebbia: alza la soglia.
-- La spalla morbida tiene i colori dei giochi per bambini; ACES li spegne.
+- Spalla morbida o ACES è una scelta di stile (questionario): la prima tiene i colori pieni, la seconda è più "film".

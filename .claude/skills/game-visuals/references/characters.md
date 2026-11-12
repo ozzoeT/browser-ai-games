@@ -99,6 +99,33 @@ Da Wild Fields 1648 (MIT): stessa silhouette e stesse ossa, ma ogni pezzo è pi�
 - Arma a due mani: lama da `Shape` estrusa (il filo verso −y locale del braccio, la direzione del colpo), braccia
   ruotate in z verso l'interno (±0.42) a riposo e `rl = rr` nell'animazione così entrambe le mani restano sull'asta.
 
+### Livello "molto dettagliato": il sistema a parti di Wild Fields 1648 (MIT, `src/r_units.js`)
+Come fa un RTS ad avere centinaia di soldati dettagliati e animati bene. Cinque idee che lavorano insieme:
+1. **Ogni pezzo è modellato a mano in metri, una volta sola**, con profili `LatheGeometry` molto curati (busto con
+   13 punti di profilo, coscia, gambale, avambraccio con polsino) e piccoli dettagli veri: bottoni sferici in fila,
+   fusciacca a righe, colletto, bandoliera con le cariche, corazza con la costola centrale, ali da ussaro con
+   32 piume, cappelli diversi (paglia, kalpak col pennacchio, feltro con la piuma, morione, elmo con le lamelle).
+2. **I dettagli sono "dipinti" sui vertici** con una funzione `paint(geo, (x,y,z) => [r,g,b,tint])`: orbite degli
+   occhi più scure, bordo degli stivali, costure del cappotto, la tunica che diventa gilet dietro un certo angolo,
+   rumore leggero per vertice (`noiseK`) che fa sembrare stoffa e paglia. Niente texture.
+3. **Una sola mesh instanziata per tipo di pezzo** (testa, coscia, busto, cappello…): tutti i soldati sullo
+   schermo con lo stesso pezzo = **un draw call**. Ogni frame si scrive la matrice di ogni pezzo di ogni soldato.
+   Il dettaglio costa triangoli, non draw call.
+4. **Maschera `tint` per vertice**: nel pezzo, le zone con `tint=1` prendono il colore dell'istanza (colore della
+   squadra, pelle, mantello del cavallo), quelle con `tint=0` tengono il colore dipinto (bottoni d'ottone, cintura
+   nera). Così un solo busto instanziato fa tutte le squadre. Iniezione: in `color_vertex`
+   `vColor.xyz *= mix(vec3(1.), instanceColor.xyz, tint);`.
+5. **Scheletro procedurale con IK a due ossa**: niente animazioni registrate. Per ogni posa si decidono bacino,
+   busto (inclinazione, torsione), punti dei piedi e delle mani; `ik2` calcola ginocchia e gomiti. Le armi a due
+   mani si mettono con `place(p, direzione, su)` e le mani vanno *sull'arma* (`aL`, `aR` presi lungo l'asta).
+   Colpi e lavori sono interpolazioni tra due "prese" (`chopHold`: carica → colpo → ritorno). Il passo (`gaitLegs`)
+   e l'inattività (peso che si sposta) sono formule. Morendo, i cappelli cadono nell'erba e l'arma resta accanto.
+In più: teste ingrandite del 10% (`HS=1.1`) perché si leggano dalla camera RTS, ombra a macchia sotto i piedi,
+metallo con `MeshStandardMaterial` lucido (metalness .85) separato dalla stoffa opaca, varianti di pelle e di
+pantaloni per tipo, `PART_CAP` per dimensionare ogni pool.
+Costo: tanti triangoli ma pochissimi draw call; aggiornare le matrici di 900 soldati × ~12 pezzi è lavoro JS.
+Quando usarlo: giochi con molte unità uguali (strategia, battaglie). Per pochi personaggi grandi basta un rig a gruppi.
+
 ## Variante 2D (canvas): manichino + cartoon (Dino Frenzy)
 
 Stessa idea senza three.js:

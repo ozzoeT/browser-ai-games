@@ -32,24 +32,35 @@ void main(){vec4 t=texture2D(map,gl_PointCoord);gl_FragColor=vec4(vC,t.a*vA);
 
 ## 2. Ricette
 
-### Esplosione (Iron Line `explosionFX`)
-Sei strati (più la palla di fuoco `fireballFX`, vedi `rendering.md` §5), tutti a costo fisso:
-1. **Lampo di luce**: una `PointLight` presa da un pool di 2–3 creato all'avvio, intensità alta
-   che decade con `*=exp(-dt*9)`.
-2. **Palla di fuoco** additiva: ~35 particelle, velocità 2–6, dimensione 1.2→3.4, colore `#fff3c4`→`#ff3a12`, `drag 3`, leggera spinta verso l'alto.
-3. **Nucleo pieno** (fusione normale, `#ffb347`→`#b8300c`): senza, su sfondi chiari il fuoco è bianco.
-4. **Fumo** normale: ~20, vita 1.8–3.2 s, cresce 1.6→5, sale lentamente.
-5. **Scintille**: ~40, veloci, gravità −9.8, rimbalzano a terra.
-6. **Anello d'urto** (`RingGeometry(.92,1)` additivo che scala ×7 in 0.55 s) + **cratere**
-   (cerchio scuro trasparente che svanisce dopo ~6 s). Entrambi da un pool.
+### Impatti ed esplosioni: un menu, non una scelta fissa
+Ogni gioco sceglie la **famiglia** (con l'utente, vedi il questionario) e la **taglia** `s` (moltiplica numero,
+dimensione e velocità delle particelle, raggio dell'anello, cratere, scossa). Gli strati sono mattoncini: si
+combinano (es. un masso infuocato = terra + un po' di fuoco). Tutti a costo fisso, da pool creati all'avvio.
 
-### Impatto di un masso (Iron Line `rockImpactFX`) — "terra", non "bomba"
-Niente fuoco, palla di fuoco o lampo di luce. Colori presi dal bioma (terra, sabbia, neve):
-1. **Anello di polvere radente**: ~18 sbuffi `FX_SMOKE` in cerchio, velocità radiale 5–8 quasi orizzontale, `drag 3.2`.
-2. **Nuvola che sale** piano: ~12 sbuffi più grandi (1→4), vita 1.6–2.6 s.
-3. **Zolle, erba/neve e schegge di pietra** (cubetti instanziati con gravità e rimbalzo), lanciati ad arco.
-4. 4–5 scintille fredde e corte (pietra contro pietra), **cratere** scuro del colore del terreno, scossa della camera.
-Il masso poi rotola: è lui a raccontare l'impatto.
+Mattoncini disponibili:
+- **Lampo di luce**: `PointLight` da un pool di 2–3 (intensità che decade con `*=exp(-dt*9)`).
+- **Fuoco additivo**: ~35·s particelle, vel 2–6, dimensione 1.2→3.4, `#fff3c4`→`#ff3a12`, `drag 3`, spinta in su.
+- **Nucleo pieno** a fusione normale (`#ffb347`→`#b8300c`): serve su sfondi chiari, altrimenti il fuoco è bianco.
+- **Palla di fuoco** a icosfera (`fireballFX`, `rendering.md` §5).
+- **Fumo scuro**: ~20·s, vita 1.8–3.2 s, cresce 1.6→5, sale lento.
+- **Polvere radente**: ~18 sbuffi in cerchio, velocità radiale 5–8 quasi orizzontale, `drag 3.2`, colore del terreno.
+- **Nuvola chiara che sale**: ~12 sbuffi grandi (1→4), vita 1.6–2.6 s, colore del terreno/sabbia/neve.
+- **Detriti**: cubetti instanziati con gravità e rimbalzo (zolle, erba, neve, schegge di pietra, legno).
+- **Scintille calde** (veloci, gravità, rimbalzo) o **fredde e corte** (pietra contro pietra/metallo).
+- **Stelline e coriandoli** (forma a stella nello shader, `effects` di Pop Gallery/Dino Frenzy), cuoricini.
+- **Anello d'urto** (`RingGeometry(.92,1)` additivo che scala ×7·s in 0.55 s) o anello di polvere.
+- **Cratere/segno**: cerchio scuro trasparente del colore del terreno (bruciatura nera solo per il fuoco).
+- **Scossa camera** proporzionale a `s` e alla distanza.
+
+Famiglie (ricette pronte):
+| Famiglia | Strati | Esempio nel repo |
+|---|---|---|
+| Fuoco / esplosione | lampo, fuoco, nucleo, palla di fuoco, fumo scuro, scintille calde, anello, bruciatura | Iron Line `explosionFX` (non più usata dai massi, ma pronta) |
+| Impatto di terra | polvere radente, nuvola chiara, detriti, poche scintille fredde, cratere color terreno, scossa | Iron Line `rockImpactFX` |
+| Magico / cartone | anello colorato, stelline, coriandoli, piccolo lampo colorato, niente fumo scuro | Pop Gallery, Dino Frenzy |
+| Leggero | 6–10 scintille, uno sbuffo di fumo | Shield Brothers (blocchi) |
+| Elettrico / energia | lampo azzurro, scintille fredde a stella, anello additivo, archi (fulmine a spostamento del punto medio) | demo pioggia/fulmini |
+| Acqua / neve | spruzzo di gocce con gravità, anello sull'acqua, polvere bianca | (da fare) |
 
 ### Colpo: scintille + luce (Fight! `fxHit`)
 Scintille additive bianche→colore del lottatore con gravità, più una `PointLight` d'impatto
