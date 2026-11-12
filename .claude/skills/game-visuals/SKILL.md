@@ -14,7 +14,8 @@ Questa skill raccoglie lo stile visivo già applicato ai giochi del repo e le ri
 1. **Capisci il motore del gioco.** Non sono tutti uguali:
    | Gioco | Motore | Note |
    |---|---|---|
-   | `fight/` | three.js **r149 incorporato** nel file | Niente `colorspace_fragment` negli shader; luci "legacy" (intensità ~1–4). Unità ≈ pixel (personaggio alto ~190). |
+   | `pop-gallery/` | three.js **r160 da cdnjs** | Camera fissa con leggero ondeggiamento verso il mirino; colpi = raggio contro sfere (`rayHit`), niente raycast sulle mesh. Fucile a tappi in `vmScene`. |
+| `fight/` | three.js **r149 incorporato** nel file | Niente `colorspace_fragment` negli shader; luci "legacy" (intensità ~1–4). Unità ≈ pixel (personaggio alto ~190). |
    | `iron-line/`, `shield-brothers/`, `studio-zero/`, `skyflip/` | three.js **r160 da cdnjs** (UMD, `three.min.js`) | Negli `ShaderMaterial` aggiungi `#include <colorspace_fragment>`. Unità = metri. Gli addons (EffectComposer, GLTFLoader…) **non** sono nel build UMD. |
    | `city-drive/` (Afterglow GP), `city-rush/` | **motore 3D fatto a mano su canvas 2D** (poligoni proiettati, ordinati per z) | Effetti con `globalCompositeOperation='lighter'` e sprite di bagliore; niente depth buffer. |
    | `dino-frenzy/` | canvas 2D | Come sopra, in 2D puro. Particelle in `parts` con forme (`spark`, `star`, `ring`, `conf`…). |
@@ -81,6 +82,7 @@ Vedi `scripts/shoot.js`. Trucchi utili:
 | 2026-11 | Dino Frenzy | Alone additivo su scintille e stelle, aura turbo/super, anello d'urto all'atterraggio, raggi di sole nella giungla, braci luminose sul vulcano | `drawGlowParts()` dopo `drawParts()` |
 | 2026-11 | Dino Frenzy | Dinosauri "manichino + cartoon": gambe a due ossa con IK (`ik2`, `jointLeg`), ginocchia/caviglie/gomiti colore accento, cel shading a due toni (`TOON`, `celShade` in `blob`/`blobIn`), occhi con doppio punto luce | Bug corretto: indice `CONF[...%6]` negativo con tempo negativo bloccava il ciclo di gioco: usare `mod()` |
 | 2026-11 | Shield Brothers | Nuovo gioco in prima persona sul motore di Iron Line: stessi soldati sfaccettati (4 culture × 4 ruoli, scudi tondi/ovali/a goccia/scutum come mesh separate che si alzano in guardia), scintille + lampo sui blocchi, rottura della guardia, braci/fumo delle torce, pioggia + fulmini nel bioma tempesta, bagliore del sole, pulviscolo | Braccia e armi in prima persona in una seconda scena (`vmScene`) disegnata dopo `clearDepth()`: non entrano mai nei corpi vicini. Scala le mesh delle armi (~0.6), non il gruppo: scalare il gruppo attorno alla camera non cambia nulla in prospettiva |
+| 2026-11 | Pop Gallery | Nuovo tiro a segno in prima persona (fermo): 3 mondi (luna park, giardino spettrale, galassia giocattolo), coriandoli + scintille + anelli d'urto, tappi volanti con scia, bersagli cartoon con occhioni | Su schermi verticali la tenda dello stand viene nascosta (copre troppo). Fumo con texture `DOT` morbida: con un disco pieno sembrava fatto di cerchi piatti |
 
 ### Idee non ancora fatte
 - Skyflip: pioggia su un livello nuovo, scie luminose dietro le mani durante flip e spin.

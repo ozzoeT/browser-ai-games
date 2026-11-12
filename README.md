@@ -16,6 +16,7 @@ Racing, fighting, strategy, parkour, medieval battles and adventure, 1–2 playe
 | Iron Line | Medieval battle sandbox | 1 | [`iron-line/`](iron-line/) |
 | Skyflip | First-person rooftop parkour | 1 | [`skyflip/`](skyflip/) |
 | Shield Brothers | First-person shield wall battles | 1 | [`shield-brothers/`](shield-brothers/) |
+| Pop Gallery | First-person shooting gallery for kids | 1–2 (take turns) | [`pop-gallery/`](pop-gallery/) |
 
 All games are in English.
 
