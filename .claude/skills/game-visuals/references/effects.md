@@ -43,6 +43,14 @@ Sei strati (più la palla di fuoco `fireballFX`, vedi `rendering.md` §5), tutti
 6. **Anello d'urto** (`RingGeometry(.92,1)` additivo che scala ×7 in 0.55 s) + **cratere**
    (cerchio scuro trasparente che svanisce dopo ~6 s). Entrambi da un pool.
 
+### Impatto di un masso (Iron Line `rockImpactFX`) — "terra", non "bomba"
+Niente fuoco, palla di fuoco o lampo di luce. Colori presi dal bioma (terra, sabbia, neve):
+1. **Anello di polvere radente**: ~18 sbuffi `FX_SMOKE` in cerchio, velocità radiale 5–8 quasi orizzontale, `drag 3.2`.
+2. **Nuvola che sale** piano: ~12 sbuffi più grandi (1→4), vita 1.6–2.6 s.
+3. **Zolle, erba/neve e schegge di pietra** (cubetti instanziati con gravità e rimbalzo), lanciati ad arco.
+4. 4–5 scintille fredde e corte (pietra contro pietra), **cratere** scuro del colore del terreno, scossa della camera.
+Il masso poi rotola: è lui a raccontare l'impatto.
+
 ### Colpo: scintille + luce (Fight! `fxHit`)
 Scintille additive bianche→colore del lottatore con gravità, più una `PointLight` d'impatto
 davanti al punto colpito: illumina davvero i personaggi. Parate: scintille fredde, niente luce.
@@ -101,6 +109,9 @@ Pulviscolo: `Points` additivi minuscoli che ondeggiano lentamente dentro i raggi
 di notte accendi emissive di finestre/lampioni, `PointLight` del lampione, stelle e luna.
 
 ## 3. Lezioni imparate
+
+- **Opacità sempre tra 0 e 1** (`clamp`): con il post-processing HDR un'opacità > 1 dà colori negativi (il
+  cratere di Iron Line diventava viola). Senza HDR lo stesso bug si vede solo come "nero pieno".
 
 - **Additivo su sfondi chiari satura a bianco** (neve di Iron Line, cucina di Studio Zero):
   aggiungi uno strato a fusione normale con il colore pieno.

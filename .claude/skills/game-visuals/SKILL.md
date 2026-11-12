@@ -126,6 +126,8 @@ Vedi `scripts/shoot.js`. Trucchi utili:
 
 | 2026-11 | Iron Line | Soldati rifiniti "alla Wild Fields" (busto e arti torniti, testa con mascella/orecchie/sopracciglia/capelli, barbe, stivali col piede, AO per vertice); il Berserker diventa **Variago** (elmo conico con nasale, cotta di maglia lunga, scudo dipinto sulla schiena, barba, fasce alle gambe, ascia danese a due mani con posa `two`); esplosioni dei massi più piccole (`explosionFX(...,.6)`, raggio del danno invariato) | Variago: armatura .05→.2, velocità 4.2→3.6, portata 1.3→1.4 (più fedele a un guerriero in maglia con ascia lunga) |
 
+| 2026-11 | Iron Line | Impatto del masso della catapulta: da esplosione di fuoco a impatto di terra (`rockImpactFX`: anello di polvere radente, nuvola, zolle e schegge, cratere color terreno, colori per bioma) | Bug vecchio corretto: opacità del cratere fino a 1.3, con l'HDR diventava viola |
+
 ### Idee non ancora fatte
 - Portare `POST` + `patchMat` + cielo su Shield Brothers, Studio Zero, Skyflip e Pop Gallery (stesso three r160).
 - Prospettiva aerea e rimbalzo di luce dal terreno (`rendering.md` §8).
