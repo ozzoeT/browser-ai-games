@@ -528,7 +528,7 @@ function applyHit(att, def, h, dir, px, py) {
   if (canBlock) {
     def.crouching = def.state === 'crouch' || (def.state === 'block' && def.crouching);
     setState(def, 'block'); def.stun = h.bs || 13; def.facing = -dir;
-    def.hp = Math.max(1, def.hp - (h.chip ? Math.max(1, base * .2) : base * .08));
+    def.hp = Math.max(Math.min(1, def.hp), def.hp - (h.chip ? Math.max(1, base * .2) : base * .08));
     def.vx = dir * (h.kb || 5) * .9;
     if (att.y >= 0 && !rush) att.vx = -dir * 3;
     att.meter = Math.min(100, att.meter + base * .5); def.meter = Math.min(100, def.meter + base * .4);
@@ -544,13 +544,13 @@ function applyHit(att, def, h, dir, px, py) {
   if (dm && dm.special && def.stateT < dm.su + dm.ac + 2) {
     if (dm.sup) return false;
     if (!(att.move && att.move.special)) {
-      def.hp = Math.max(1, def.hp - base * .5); def.flash = 4;
+      def.hp = Math.max(Math.min(1, def.hp), def.hp - base * .5); def.flash = 4;
       g.hitstop = Math.max(g.hitstop, 5); burst(px, py, 8, '#ffd84a', 7); fxHit(px, py, 5, '#ffd84a', true); sfx('block');
       att.meter = Math.min(100, att.meter + base * .5); return true;
     }
   }
   if (def.armor > 0 && def.state === 'attack' && !h.sup) {
-    def.armor--; def.hp = Math.max(1, def.hp - base * .7); def.flash = 4;
+    def.armor--; def.hp = Math.max(Math.min(1, def.hp), def.hp - base * .7); def.flash = 4;
     g.hitstop = Math.max(g.hitstop, 5); burst(px, py, 8, '#ffd84a', 7); fxHit(px, py, 5, '#ffd84a', true); sfx('block'); sfx('hit');
     att.meter = Math.min(100, att.meter + base); return true;
   }
@@ -671,7 +671,7 @@ function fightTick() {
   if (g.paused) {
     if (navU() || navD()) { g.pmenu = 1 - g.pmenu; sfx('blip'); }
     if (navBack()) { g.paused = false; sfx('back'); }
-    else if (navOK()) { sfx('ok'); if (g.pmenu === 0) g.paused = false; else { g.screen = 'title'; g.menu = 0; } }
+    else if (navOK()) { sfx('ok'); if (g.pmenu === 0) g.paused = false; else { g.screen = 'title'; g.menu = 0; g.paused = false; g.hitstop = 0; g.freeze = 0; } }
     return;
   }
   if (pressed('Escape', 'Enter')) { g.paused = true; g.pmenu = 0; sfx('blip'); return; }
@@ -705,7 +705,7 @@ function fightTick() {
   // colpi (raccolti prima, così gli scambi sono possibili)
   const hits = [];
   for (const at of F) {
-    if (at.state !== 'attack') continue;
+    if (at.state !== 'attack' || g.phase === 'ko') continue;
     const m = at.move, t = at.stateT - 1, df = F[1 - at.idx];
     if (!m.hb || !inAct(m, t)) continue;
     let h = m;
