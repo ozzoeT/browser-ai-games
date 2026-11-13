@@ -64,11 +64,13 @@ function shade(hex, f) {
 
 // ============================================================ input
 const keys = {}, just = new Set();
+// tasti d'attacco premuti e non ancora letti dal lottatore: sopravvivono a hitstop, freeze del super e fotogrammi saltati
+const latch = new Set();
 const BLOCKED = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space', 'Backspace', 'Enter']);
 window.addEventListener('keydown', e => {
   if (BLOCKED.has(e.code)) e.preventDefault();
   initAudio();
-  if (!e.repeat) { just.add(e.code); if (e.code === 'KeyM') mute = !mute; }
+  if (!e.repeat) { just.add(e.code); latch.add(e.code); if (e.code === 'KeyM') mute = !mute; }
   keys[e.code] = true;
 });
 window.addEventListener('keyup', e => { keys[e.code] = false; });
@@ -86,8 +88,9 @@ function playerInput(i) {
   for (const m of maps) {
     o.left = o.left || !!keys[m.left]; o.right = o.right || !!keys[m.right];
     o.up = o.up || !!keys[m.up]; o.down = o.down || !!keys[m.down];
-    for (const b of BTN) o[b] = o[b] || just.has(m[b]);
+    for (const b of BTN) o[b] = o[b] || latch.has(m[b]);
   }
+  for (const m of maps) for (const b of BTN) latch.delete(m[b]);
   return o;
 }
 const navL = () => pressed('ArrowLeft', 'KeyA'), navR = () => pressed('ArrowRight', 'KeyD');
@@ -385,7 +388,7 @@ function startMove(f, m) {
   if (!m.air && f.y >= 0) f.vx = 0;
 }
 // tasti premuti insieme (entro CHORD fotogrammi): pugno+calcio = speciale 1, calcio+terzo tasto = speciale 2, tutti e tre = super
-const CHORD = 8;
+const CHORD = 10;
 function chordOf(r) {
   const n = (r.p > 0) + (r.k > 0) + (r.h > 0);
   return n === 3 ? 'u' : n < 2 ? null : r.p > 0 && r.k > 0 ? 'n' : 'd';
@@ -435,7 +438,7 @@ function updF(f, inp, o) {
       if (m.on) m.on(f, t, o);
       // il secondo tasto arriva mentre il colpo semplice sta partendo (o dopo che è andato a segno): diventa la speciale
       if (chord && f.y >= 0 && !m.air) {
-        const ok = !m.special ? t <= Math.min(m.su, 6) || (m.cancel && f.moveHit) : chord === 'u' && !m.sup && f.meter >= 100 && t <= 5;
+        const ok = !m.special ? t <= 8 || (m.cancel && f.moveHit) : chord === 'u' && !m.sup && f.meter >= 100 && t <= 5;
         if (ok && trySpecial(f, chord)) break;
       }
       if (m.chain && f.buf.p && t >= m.su + m.ac && f.y >= 0) { f.buf.p = 0; startMove(f, ch.nm.p2); break; }
@@ -1629,6 +1632,7 @@ function frame(now) {
   if (!last) last = now;
   acc += Math.min(100, now - last); last = now;
   while (acc >= STEP) { game.T++; TICK[game.screen](); just.clear(); acc -= STEP; }
+  if (game.screen !== 'fight' || game.paused || game.phase !== 'fight') latch.clear();
   scene3d();
   ctx.setTransform(SC, 0, 0, SC, 0, 0);
   ctx.globalAlpha = 1; ctx.clearRect(0, 0, W, H);
