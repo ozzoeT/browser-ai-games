@@ -17,9 +17,9 @@ Racing, fighting, strategy, parkour, medieval battles and adventure, 1–2 playe
 | Skyflip | First-person rooftop parkour | 1 | [`skyflip/`](skyflip/) |
 | Shield Brothers | First-person shield wall battles | 1 | [`shield-brothers/`](shield-brothers/) |
 | Pop Gallery | First-person shooting gallery for kids | 1–2 (take turns) | [`pop-gallery/`](pop-gallery/) |
-| Abissi | Endless deep-sea swim (Italian UI) | 1 | [`abissi/`](abissi/) |
+| Abissi | Endless deep-sea swim | 1 | [`abissi/`](abissi/) |
 
-All games are in English, except Abissi (Italian).
+All games are in English.
 
 ## Run locally
 Open `index.html` in a browser, or serve the folder: `python -m http.server 8000` → http://localhost:8000
