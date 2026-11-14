@@ -21,6 +21,11 @@ Racing, fighting, strategy, parkour, medieval battles and adventure, 1–2 playe
 
 All games are in English.
 
+## Custom games & support
+Want a custom browser game (a birthday game for your kid, a game for a class or an event)? Write to **datasciencepv@gmail.com**.
+
+If you enjoy the games, you can support them with a donation on [PayPal](https://paypal.me/teoargentieri) ☕
+
 ## Run locally
 Open `index.html` in a browser, or serve the folder: `python -m http.server 8000` → http://localhost:8000
 

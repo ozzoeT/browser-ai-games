@@ -24,6 +24,13 @@ h2{margin:0;font-size:24px;letter-spacing:-.5px}
 .about{max-width:820px;margin:0 auto;padding:8px 24px 48px;color:var(--mute);font-size:14.5px;line-height:1.75}
 .about h2{color:var(--text);font-size:26px;margin:0 0 12px}.about h3{color:var(--text);font-size:18px;margin:28px 0 10px}.about strong{color:var(--text)}
 .about details{border-top:1px solid var(--line);padding:12px 0}.about summary{cursor:pointer;color:var(--text);font-weight:700}.about details p{margin:8px 0 0}
+.extra{max-width:1180px;margin:0 auto;padding:0 24px 40px;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:22px}
+.box{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:24px 26px;display:flex;flex-direction:column;gap:10px}
+.box .genre{--c:var(--acc)}.box h2{font-size:22px}.box p{margin:0;color:var(--mute);font-size:14px;line-height:1.65;flex:1}
+.btn{align-self:flex-start;margin-top:6px;display:inline-flex;gap:8px;align-items:center;padding:12px 18px;border-radius:12px;font-weight:700;font-size:14px;text-decoration:none;transition:transform .15s,box-shadow .15s}
+.btn:hover,.btn:focus-visible{transform:translateY(-2px);box-shadow:0 8px 24px #0007;outline:none}
+.btn.main{background:var(--acc);color:#172227}.btn.pp{background:#ffc439;color:#14213d}
+.box small{color:#7f8d99;font-size:12px}
 footer{text-align:center;color:#6c7a86;font-size:12px;padding:0 24px 40px}
 @media(max-width:400px){main{grid-template-columns:1fr}header{padding-top:36px}}
 </style></head><body>
@@ -74,6 +81,13 @@ footer{text-align:center;color:#6c7a86;font-size:12px;padding:0 24px 40px}
  <details><summary>Can two players play on the same computer?</summary><p>Yes. Afterglow GP, Dino Frenzy and Fight! support 2 players on one keyboard, and gamepads work too.</p></details>
  <details><summary>Do the games work on phones and tablets?</summary><p>Pop Gallery, Abyss, Dino Frenzy, City Rush, Iron Line, Shield Brothers and single-player Afterglow GP have touch controls. Fight!, Studio Zero and Skyflip are best on a computer.</p></details>
 </section>
+<section class="extra" id="contact">
+ <div class="box"><div class="genre" style="--c:#edff9c">CUSTOM GAMES</div><h2>Want a game made just for you?</h2><p>A birthday game starring your kid, a game for a school class, an event or your brand… I can build a custom browser game, ready to play on any device.</p>
+  <a class="btn main" id="mail" href="mailto:" rel="nofollow">✉ Get in touch</a><small id="mailtxt">datasciencepv [at] gmail [dot] com</small></div>
+ <div class="box"><div class="genre" style="--c:#ffc439">SUPPORT</div><h2>Enjoying the games?</h2><p>Every game here is free, with no ads and no in-game purchases. If you and your kids had fun, a small donation helps me make more of them.</p>
+  <a class="btn pp" href="https://paypal.me/teoargentieri" target="_blank" rel="noopener">☕ Donate with PayPal</a><small>Any amount, via paypal.me · secure payment by PayPal</small></div>
+</section>
+<script>(()=>{const a=['datasciencepv','gmail.com'].join('@'),m=document.getElementById('mail');m.href='mailto:'+a+'?subject='+encodeURIComponent('Custom game request');document.getElementById('mailtxt').textContent=a})()</script>
 <footer>Made with passion and a bit of AI · Use your browser's Back button to return here</footer>
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"ItemList","name":"Browser AI Games","url":"https://ozzoet.github.io/browser-ai-games/","itemListElement":[
