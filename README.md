@@ -17,7 +17,7 @@ Racing, fighting, strategy, parkour, medieval battles and adventure, 1–2 playe
 | Skyflip | First-person rooftop parkour | 1 | [`skyflip/`](skyflip/) |
 | Shield Brothers | First-person shield wall battles | 1 | [`shield-brothers/`](shield-brothers/) |
 | Pop Gallery | First-person shooting gallery for kids | 1–2 (take turns) | [`pop-gallery/`](pop-gallery/) |
-| Abissi | Endless deep-sea swim | 1 | [`abissi/`](abissi/) |
+| Abyss | Endless deep-sea swim | 1 | [`abyss/`](abyss/) |
 
 All games are in English.
 
