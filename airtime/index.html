@@ -1102,7 +1102,7 @@ function setupPlayers(n) {
   while (PLAYERS_CACHE.length < n) PLAYERS_CACHE.push(makePlayer(PLAYERS_CACHE.length));
   for (const p of PLAYERS_CACHE) { p.rig.bike.visible = false; p.rig.rider.visible = false; if (p.eng) { p.eng.stop(); p.eng = null; } }
   G.P = PLAYERS_CACHE.slice(0, n);
-  G.P.forEach((b, i) => { Object.assign(b, { state: 'wait', score: 0, crashes: 0, cp: -1, chain: null, time: null, done: false, rec: [], recT: 0, trickType: -1 });
+  G.P.forEach((b, i) => { Object.assign(b, { bot: false, state: 'wait', score: 0, crashes: 0, cp: -1, chain: null, time: null, done: false, rec: [], recT: 0, trickType: -1 });
     b.rig.bike.visible = true; b.rig.rider.visible = true; placeBike(b, 2 - i * 3.2, 0); b.trails.forEach(t => t.reset());
     const mx = (b.R.x + b.F.x) / 2; b.cam.x = mx + 3; b.cam.y = (b.R.y + b.F.y) / 2 + 1; b.cam.d = 14; b.cam.shake = 0; b.cam.roll = 0;
     if (AC && !G.demo) b.eng = makeEngine(n === 2 ? 0 : 0); });
@@ -1148,6 +1148,7 @@ function tick(dt) {
   for (const b of G.P) {
     const inp = G.mode === 'play' && !b.bot ? readInput(b.i) : (b.bot || G.mode === 'menu' ? botInput(b, G.demo || G.botFlips) : NOIN);
     if (b.bot && G.mode === 'menu' && b.state === 'done') { /* demo loops */ }
+    const R = b.R, F = b.F, Bd = b.B, rg = b.rag; b.snap = [R.x, R.y, F.x, F.y, Bd.x, Bd.y, rg.x, rg.y]; // for render interpolation
     stepBike(b, dt, inp); playerLogic(b, dt);
     b._inp = inp;
     if (G.mode === 'play' && G.players === 1 && !b.done) { b.recT -= dt; if (b.recT <= 0) { b.recT += .05; b.rec.push(+((b.R.x + b.F.x) / 2).toFixed(2), +((b.R.y + b.F.y) / 2).toFixed(2), +Math.atan2(b.F.y - b.R.y, b.F.x - b.R.x).toFixed(3), +b.pose.toFixed(2), b.trickType < 0 ? 0 : b.trickType); } }
@@ -1252,7 +1253,11 @@ function render() {
   let sx = 0, sy = 0; for (const b of G.P) { sx += b.cam.x; sy += b.cam.y; } sx /= G.P.length || 1; sy /= G.P.length || 1;
   let spread = 0; if (n === 2) spread = Math.abs(G.P[0].cam.x - G.P[1].cam.x);
   const sc = sun.shadow.camera, half = clamp(24 + spread * .55, 24, 60); if (Math.abs(sc.right - half) > 1) { sc.left = -half; sc.right = half; sc.updateProjectionMatrix(); }
-  sun.target.position.set(sx, sy, 0); sun.position.set(sx, sy, 0).add(LVL.lightOff);
+  // snap the shadow camera to whole shadow-map texels, so shadows don't shimmer while it follows the bike
+  { const tex = 2 * half / sun.shadow.mapSize.x; _d.copy(LVL.lightOff).normalize(); _a.set(0, 1, 0).cross(_d).normalize(); _b.copy(_d).cross(_a).normalize();
+    const u = sx * _a.x + sy * _a.y, v = sx * _b.x + sy * _b.y, du = Math.round(u / tex) * tex - u, dv = Math.round(v / tex) * tex - v;
+    sx += _a.x * du + _b.x * dv; sy += _a.y * du + _b.y * dv; const sz = _a.z * du + _b.z * dv;
+    sun.target.position.set(sx, sy, sz); sun.position.set(sx, sy, sz).add(LVL.lightOff); }
   const draw = target => {
     views.forEach((v, i) => { const b = G.P[i], cam = cams[i];
       if (target) { const W = POST.size.x, H = POST.size.y; target.viewport.set(0, Math.round(v.y * H), W, Math.round(v.h * H)); target.scissor.copy(target.viewport); target.scissorTest = n === 2; renderer.setRenderTarget(target);
@@ -1270,9 +1275,16 @@ function frame(now) {
   const dt = Math.min(.05, (now - last) / 1000); last = now;
   if (!LVL) return;
   if (G.mode !== 'pause') { U.time.value += dt; acc += dt; let n = 0; while (acc >= STEP && n < 8) { acc -= STEP; tick(STEP); n++; } if (n >= 8) acc = 0; }
+  // draw the bikes between the last two physics steps (physics runs at 120 Hz, the screen at any rate): no stutter
+  const al = clamp(acc / STEP, 0, 1), saved = [];
+  if (G.mode !== 'pause') for (const b of G.P) { if (!b.snap) continue; const P = [b.R, b.F, b.B, b.rag], s = b.snap, cur = [];
+    for (let k = 0; k < 4; k++) { const p = P[k], ox = s[k * 2], oy = s[k * 2 + 1]; cur.push(p.x, p.y, p.px, p.py);
+      if (Math.abs(p.x - ox) + Math.abs(p.y - oy) < 3) { const ix = lerp(ox, p.x, al) - p.x, iy = lerp(oy, p.y, al) - p.y; p.x += ix; p.y += iy; p.px += ix; p.py += iy; } }
+    saved.push([P, cur]); }
   if (G.mode !== 'pause') updateVisuals(dt);
   const n = G.players, aspect = innerWidth / (innerHeight / n);
   G.P.forEach((b, i) => updateCam(b, cams[i], G.mode === 'pause' ? 0 : dt, aspect));
+  for (const [P, c] of saved) P.forEach((p, k) => { p.x = c[k * 4]; p.y = c[k * 4 + 1]; p.px = c[k * 4 + 2]; p.py = c[k * 4 + 3]; });
   render(); drawFx(dt); if (G.mode !== 'menu') updateHud();
 }
 function resize() { renderer.setSize(innerWidth, innerHeight, false); if (POST) POST.resize(); fx.width = innerWidth * DPR; fx.height = innerHeight * DPR; }
