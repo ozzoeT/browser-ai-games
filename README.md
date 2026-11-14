@@ -2,7 +2,7 @@
 
 A small collection of AI-made games you can play right in your browser. Nothing too hard, just fun: made for kids, and for dads and moms who want to play together with them :)
 
-Racing, fighting, strategy, parkour, medieval battles and adventure, 1–2 players on one keyboard. No download, no build step: every game is a single HTML file.
+Racing, fighting, strategy, parkour, motorbike stunts, medieval battles and adventure, 1–2 players on one keyboard. No download, no build step: every game is a single HTML file.
 
 **▶ Play:** https://ozzoet.github.io/browser-ai-games/
 
@@ -18,6 +18,7 @@ Racing, fighting, strategy, parkour, medieval battles and adventure, 1–2 playe
 | Shield Brothers | First-person shield wall battles | 1 | [`shield-brothers/`](shield-brothers/) |
 | Pop Gallery | First-person shooting gallery for kids | 1–2 (take turns) | [`pop-gallery/`](pop-gallery/) |
 | Abyss | Endless deep-sea swim | 1 | [`abyss/`](abyss/) |
+| Airtime | Motorbike stunt jumps, split-screen | 1–2 | [`airtime/`](airtime/) |
 
 All games are in English.
 
