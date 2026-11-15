@@ -1043,10 +1043,10 @@ function airStep(b, dt, inp, st, jp, fp) {
   // rotations: S = backflip (nose up), W = frontflip, A/D = spin
   const pin = b.rf != null ? 0 : (down ? 1 : 0) - (up ? 1 : 0), sin = (right ? 1 : 0) - (left ? 1 : 0);
   b.w = pin ? damp(b.w, pin * 8.6, 8, dt) : damp(b.w, 0, 2.6, dt);
-  b.ws = sin ? damp(b.ws, -sin * 8.4, 8, dt) : damp(b.ws, 0, 2.6, dt);
+  b.ws = sin ? damp(b.ws, -sin * 8.4, 8, dt) : damp(b.ws, 0, 5, dt); // a released spin stops quickly, so a short steering tap does not keep turning
   b.pitch += b.w * dt; b.spin += b.ws * dt;
   if (!pin && Math.abs(b.w) < 1.2) { const tv = clamp(Math.atan2(b.vy, Math.hypot(b.vs, b.vx)) * .6, -.45, .4), tg = tv + Math.round((b.pitch - tv) / TAU) * TAU; b.pitch = damp(b.pitch, tg, 1.6, dt); }
-  if (!sin && Math.abs(b.ws) < 1.2) { const tg = Math.round(b.spin / TAU) * TAU; b.spin = damp(b.spin, tg, 2.4, dt); }
+  if (!sin && Math.abs(b.ws) < 2.2) { const tg = Math.round(b.spin / TAU) * TAU; b.spin = damp(b.spin, tg, 4, dt); }
   b.roll = damp(b.roll, 0, 5, dt);
   b.vy -= GRAV * dt;
   let nx = b.x + b.vx * dt; const ns = b.s + b.vs * dt, ny = b.y + b.vy * dt;
@@ -1069,15 +1069,17 @@ function land(b, p, h, inp) {
   if (p.kind === 'pit') { crash(b, 'BALL PIT!'); return; }
   if (b.rf != null) { crash(b, 'BAIL!'); return; }
   if (b.pose > .45) { crash(b, 'LET GO!'); return; }
-  if (Math.abs(pe) > .8 || Math.abs(se) > .7 || Math.abs(b.roll) > .9) { crash(b, 'CRASH!'); return; }
+  if (Math.abs(pe) > .95 || Math.abs(se) > 1.35 || Math.abs(b.roll) > .9) { crash(b, 'CRASH!'); return; }
+  const sketchy = Math.abs(se) > .7 || Math.abs(pe) > .7; // landed crooked but still on the wheels: saved, at the cost of some speed
   const hard = clamp(-b.vy / 24, 0, 1);
   scoreAir(b);
-  const vh = Math.hypot(b.vs, b.vx); b.u = clamp(Math.max(vh * Math.cos(th) + b.vy * Math.sin(th) * .5, vh * .92), 8, VBOOST);
+  const vh = Math.hypot(b.vs, b.vx); b.u = clamp(Math.max(vh * Math.cos(th) + b.vy * Math.sin(th) * .5, vh * .92) * (sketchy ? .8 : 1), 8, VBOOST);
   b.pitch -= Math.round((b.pitch - th) / TAU) * TAU; b.spin -= Math.round(b.spin / TAU) * TAU; b.pitch0 = b.pitch; b.spin0 = b.spin;
   b.state = 'ride'; b.compV -= 2 + hard * 5;
   const perfect = Math.abs(pe) < .22 && Math.abs(se) < .25;
   if (perfect && b.chain) { b.boost = Math.max(b.boost, 1); addChain(b, 'PERFECT LANDING', 150, '#ffffff'); }
   landFX(b, b.x, h, -b.s, hard, perfect && !!b.chain);
+  if (sketchy) { pop(b, 'SKETCHY!', '#ffb347'); shake(b, .35); }
 }
 function wallStep(b, dt, inp, st, jp) {
   const w = b.wall; b.wallT += dt;
