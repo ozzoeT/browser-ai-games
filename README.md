@@ -19,6 +19,7 @@ Racing, fighting, strategy, parkour, motorbike stunts, medieval battles and adve
 | Pop Gallery | First-person shooting gallery for kids | 1–2 (take turns) | [`pop-gallery/`](pop-gallery/) |
 | Abyss | Endless deep-sea swim | 1 | [`abyss/`](abyss/) |
 | Airtime | Motorbike stunt jumps, split-screen | 1–2 | [`airtime/`](airtime/) |
+| Trickline | 3D motorbike stunt run: ramps, wall rides, grinds, rooftop gaps | 1–2 | [`trickline/`](trickline/) |
 
 All games are in English.
 
