@@ -98,7 +98,7 @@ body.light .ghost{background:#ffffffb0}
  <div class="worlds" id="worlds"></div>
  <div class="lbl" id="lOps"></div>
  <div class="ops" id="ops"></div>
- <div class="row"><button class="play" id="play"></button><button class="small" id="lang" aria-label="Language">IT</button><button class="small" id="snd1" aria-label="Sound">♪</button></div>
+ <div class="row"><button class="play" id="play"></button><button class="ghost" id="explore"></button><button class="small" id="lang" aria-label="Language">IT</button><button class="small" id="snd1" aria-label="Sound">♪</button></div>
 </div></div>
 <div id="hud" class="hidden"><button class="small" id="home" aria-label="Menu">⌂</button><div id="dots"></div><button class="small" id="snd2" aria-label="Sound">♪</button></div>
 <div id="card" class="hidden"><span class="s" id="ca">?</span><span id="cop">+</span><span class="s" id="cb">?</span><span>=</span><span class="s t" id="ct">0</span></div>
@@ -240,8 +240,8 @@ const WORLDS=[
  {name:{en:'Neon Night',it:'Notte Neon'},age:'8–10',theme:2,dark:1,add:50,mul:10,ops:['×','÷'],n:7},
  {name:{en:'Lava Galaxy',it:'Galassia Lava'},age:'10+',theme:3,dark:1,add:100,mul:12,ops:['+','−','×','÷'],n:8}];
 const TX={
- en:{tn:{'+':'Straw','−':'Pin','×':'Magic wand','÷':'Cutter',reset:'Start again'},tt:{'+':'Straw: hold down to blow a new bubble, then drag it onto yours','−':'Pin: hold down on your bubble to let some out','×':'Wand: tap your bubble to make a twin, then squish the twins together','÷':'Cutter: tap the bubble to cut it into equal parts (tap again for more parts)'},goal:t=>`Make your bubble as big as the shadow: ${t}!`,dragIt:'Now drag it onto your bubble!',cutMore:'Right size, but something is left over: cut again!',twins:'Squish the twins together!',tooBig:'Too big!',tooSmall:'Too small!',usePin:'Use the pin to let some out.',useStraw:'Blow some more with the straw.',useReset:'Tap ↺ to start again.',sub:'Blow, pop, copy and cut jelly bubbles until they fit the shadow!',world:'Choose a world',ops:'Operations',play:'Play  ▶',up:'up to',tables:'tables to',tip:'Drag a bubble onto another one to make',tip2:'Double-tap a bubble to split it',left:'leftover',leftover:(x,y,q,r)=>`${x} ÷ ${y} = ${q}, leftover ${r}`,great:['Great!','Super!','Bloop-tastic!','Yes!','Amazing!','Splendid!','Wow!'],need:'Almost! We need',notExact:"It doesn't split evenly!",done:'World complete!',again:'Play again',next:'Next world',menu:'Menu',score:(m)=>m===0?'Perfect, never started over!':m===1?'Started over only once!':'Started over '+m+' times',streak:(n)=>n+' in a row!'},
- it:{tn:{'+':'Cannuccia','−':'Spillo','×':'Bacchetta magica','÷':'Taglierina',reset:'Ricomincia'},tt:{'+':'Cannuccia: tieni premuto per soffiare una bolla nuova, poi trascinala sulla tua','−':'Spillo: tieni premuto sulla tua bolla per farne uscire un po\'','×':'Bacchetta: tocca la tua bolla per fare una gemella, poi unisci le gemelle','÷':'Taglierina: tocca la bolla per tagliarla in parti uguali (tocca ancora per più parti)'},goal:t=>`Fai diventare la bolla grande come l\'ombra: ${t}!`,dragIt:'Ora trascinala sulla tua bolla!',cutMore:'Misura giusta, ma avanza qualcosa: taglia ancora!',twins:'Ora unisci le gemelle!',tooBig:'Troppo grande!',tooSmall:'Troppo piccola!',usePin:'Usa lo spillo per farne uscire un po\'.',useStraw:'Soffiane ancora con la cannuccia.',useReset:'Tocca ↺ per ricominciare.',sub:'Soffia, buca, copia e taglia le bolle di gelatina finché non riempiono l\'ombra!',world:'Scegli un mondo',ops:'Operazioni',play:'Gioca  ▶',up:'fino a',tables:'tabelline fino al',tip:'Trascina una bolla su un\'altra per fare',tip2:'Tocca due volte una bolla per spezzarla',left:'resto',leftover:(x,y,q,r)=>`${x} : ${y} = ${q}, resto ${r}`,great:['Bravo!','Super!','Fantastico!','Sì!','Grande!','Splendido!','Wow!'],need:'Quasi! Ci serve',notExact:'Non si divide esatto!',done:'Mondo completato!',again:'Ancora',next:'Mondo dopo',menu:'Menu',score:(m)=>m===0?'Perfetto, mai ricominciato!':m===1?'Ricominciato solo una volta!':'Ricominciato '+m+' volte',streak:(n)=>n+' di fila!'}};
+ en:{tn:{'+':'Straw','−':'Pin','×':'Magic wand','÷':'Cutter',reset:'Start again'},tt:{'+':'Straw: hold down to blow a new bubble, then drag it onto yours','−':'Pin: hold down on your bubble to let some out','×':'Wand: tap your bubble to make a twin, then squish the twins together','÷':'Cutter: tap the bubble to cut it into equal parts (tap again for more parts)'},goal:t=>`Make your bubble as big as the shadow: ${t}!`,explore:'Free play',freeTip:'Free play: blow, pop, copy and cut the bubbles as you like!',dragIt:'Now drag it onto your bubble!',cutMore:'Right size, but something is left over: cut again!',twins:'Squish the twins together!',tooBig:'Too big!',tooSmall:'Too small!',usePin:'Use the pin to let some out.',useStraw:'Blow some more with the straw.',useReset:'Tap ↺ to start again.',sub:'Blow, pop, copy and cut jelly bubbles until they fit the shadow!',world:'Choose a world',ops:'Operations',play:'Play  ▶',up:'up to',tables:'tables to',tip:'Drag a bubble onto another one to make',tip2:'Double-tap a bubble to split it',left:'leftover',leftover:(x,y,q,r)=>`${x} ÷ ${y} = ${q}, leftover ${r}`,great:['Great!','Super!','Bloop-tastic!','Yes!','Amazing!','Splendid!','Wow!'],need:'Almost! We need',notExact:"It doesn't split evenly!",done:'World complete!',again:'Play again',next:'Next world',menu:'Menu',score:(m)=>m===0?'Perfect, never started over!':m===1?'Started over only once!':'Started over '+m+' times',streak:(n)=>n+' in a row!'},
+ it:{tn:{'+':'Cannuccia','−':'Spillo','×':'Bacchetta magica','÷':'Taglierina',reset:'Ricomincia'},tt:{'+':'Cannuccia: tieni premuto per soffiare una bolla nuova, poi trascinala sulla tua','−':'Spillo: tieni premuto sulla tua bolla per farne uscire un po\'','×':'Bacchetta: tocca la tua bolla per fare una gemella, poi unisci le gemelle','÷':'Taglierina: tocca la bolla per tagliarla in parti uguali (tocca ancora per più parti)'},goal:t=>`Fai diventare la bolla grande come l\'ombra: ${t}!`,explore:'Gioco libero',freeTip:'Gioco libero: soffia, buca, copia e taglia le bolle come vuoi!',dragIt:'Ora trascinala sulla tua bolla!',cutMore:'Misura giusta, ma avanza qualcosa: taglia ancora!',twins:'Ora unisci le gemelle!',tooBig:'Troppo grande!',tooSmall:'Troppo piccola!',usePin:'Usa lo spillo per farne uscire un po\'.',useStraw:'Soffiane ancora con la cannuccia.',useReset:'Tocca ↺ per ricominciare.',sub:'Soffia, buca, copia e taglia le bolle di gelatina finché non riempiono l\'ombra!',world:'Scegli un mondo',ops:'Operazioni',play:'Gioca  ▶',up:'fino a',tables:'tabelline fino al',tip:'Trascina una bolla su un\'altra per fare',tip2:'Tocca due volte una bolla per spezzarla',left:'resto',leftover:(x,y,q,r)=>`${x} : ${y} = ${q}, resto ${r}`,great:['Bravo!','Super!','Fantastico!','Sì!','Grande!','Splendido!','Wow!'],need:'Quasi! Ci serve',notExact:'Non si divide esatto!',done:'Mondo completato!',again:'Ancora',next:'Mondo dopo',menu:'Menu',score:(m)=>m===0?'Perfetto, mai ricominciato!':m===1?'Ricominciato solo una volta!':'Ricominciato '+m+' volte',streak:(n)=>n+' di fila!'}};
 const ICON={'+':'<svg viewBox="0 0 48 48"><path d="M33 5V29Q33 41 21 41H9" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round"/><path d="M33 5V29Q33 41 21 41H9" fill="none" stroke="#ff4f8a" stroke-width="8" stroke-dasharray="5 6"/></svg>',
  '−':'<svg viewBox="0 0 48 48"><path d="M9 41L33 15" stroke="#c9d3e2" stroke-width="4" stroke-linecap="round"/><path d="M9 41L14 35" stroke="#8a96a8" stroke-width="3" stroke-linecap="round"/><circle cx="35" cy="12" r="8.5" fill="#ff3f6a"/><circle cx="32" cy="9" r="2.6" fill="#fff" opacity=".8"/></svg>',
  '×':'<svg viewBox="0 0 48 48"><path d="M18 25L6 41" stroke="#ffb11f" stroke-width="6" stroke-linecap="round"/><circle cx="25" cy="16" r="10" fill="#8fe8ff40" stroke="#fff" stroke-width="4"/><circle cx="40" cy="27" r="5.5" fill="#ff8fd0" stroke="#fff" stroke-width="1.8"/><circle cx="39" cy="40" r="5.5" fill="#ff8fd0" stroke="#fff" stroke-width="1.8"/></svg>',
@@ -250,7 +250,7 @@ let lang=(navigator.language||'en').toLowerCase().startsWith('it')?'it':'en';
 let save={};try{save=JSON.parse(localStorage.getItem('bloop-math')||'{}')}catch{}
 if(save.lang)lang=save.lang;
 const persist=()=>{try{localStorage.setItem('bloop-math',JSON.stringify(save))}catch{}};
-const S={u:20,top:130,bot:600,resets:0,tool:'+',tools:[],act:null,cardT:0,pulse:0,flash:0,ghost:null,mode:'menu',world:save.world??1,ops:new Set(save.ops||WORLDS[save.world??1].ops),time:0,round:0,mistakes:0,wrongs:0,streak:0,op:'+',T:0,busy:false,merge:null,muted:!!save.muted,tipShown:false};
+const S={free:false,u:20,top:130,bot:600,resets:0,tool:'+',tools:[],act:null,cardT:0,pulse:0,flash:0,ghost:null,mode:'menu',world:save.world??1,ops:new Set(save.ops||WORLDS[save.world??1].ops),time:0,round:0,mistakes:0,wrongs:0,streak:0,op:'+',T:0,busy:false,merge:null,muted:!!save.muted,tipShown:false};
 let bubbles=[],drops=[],ripples=[],queue=[],rings=[],texts=[];
 const shake={x:0,y:0,vx:0,vy:0};
 let W=1,H=1,DPR=1,Q=1,glScale=1,r0=50,cx=0,cy=0;
@@ -270,7 +270,7 @@ const BA=new Float32Array(MAXB*4),CA=new Float32Array(MAXB*4),SA=new Float32Arra
 function resize(){W=innerWidth;H=innerHeight;DPR=Math.min(devicePixelRatio||1,2);glScale=Math.min(DPR,1.5)*Q;cv.width=Math.round(W*glScale);cv.height=Math.round(H*glScale);ov.width=Math.round(W*DPR);ov.height=Math.round(H*DPR);gl.viewport(0,0,cv.width,cv.height);layout()}
 function layout(){
  if(S.mode==='menu'){const wide=W>H*1.15;r0=clamp(Math.min(W,H)*.075,30,70);cx=wide?W*.74:W*.5;cy=wide?H*.52:H*.86}
- else{r0=clamp(Math.min(W,H)*.07,30,70);if(S.T)layoutStage();else{cx=W/2;cy=H*.55}}}
+ else{r0=clamp(Math.min(W,H)*.07,30,70);if(S.T||S.free)layoutStage();else{cx=W/2;cy=H*.55}}}
 addEventListener('resize',resize);
 // ---------- audio ----------
 let AC=null,master=null,nbuf=null;
@@ -310,17 +310,18 @@ function genRound(){const w=WORLDS[S.world],ops=[...S.ops],op=ops[rint(0,ops.len
 let RMIN=22;
 function rOf(v){return v<=0?RMIN*.5:Math.max(RMIN,S.u*Math.sqrt(v))}
 function layoutStage(){const top=($('card').getBoundingClientRect().bottom||130)+10,tb=$('tools').getBoundingClientRect(),bot=(tb.height?tb.top:H-100)-44;
- S.top=top;S.bot=bot;const sh=Math.max(160,bot-top),wide=W>sh*1.25,maxV=Math.max(S.a||1,S.T||1);
+ S.top=top;S.bot=bot;const sh=Math.max(160,bot-top),wide=W>sh*1.25,maxV=S.free?Math.min(40,WORLDS[S.world].add):Math.max(S.a||1,S.T||1);
  RMIN=clamp(Math.min(W,H)*.04,18,28);
  const dim=wide?Math.min(W*.42,sh):Math.min(W*.86,sh*.5);S.u=.36*dim/Math.sqrt(maxV);
+ if(S.free){S.ghost=null;S.home={x:W/2,y:(top+bot)/2};cx=S.home.x;cy=S.home.y;for(const b of bubbles)if(b.val>0)b.r=rOf(b.val);return}
  const gr=rOf(S.T);
  if(wide){S.ghost={x:W*.71,y:top+sh/2,r:gr};S.home={x:W*.31,y:top+sh/2}}
  else{S.ghost={x:W/2,y:top+gr+14,r:gr};S.home={x:W/2,y:(top+gr*2+28+bot)/2}}
  cx=S.home.x;cy=S.home.y;for(const b of bubbles)if(b.val>0)b.r=rOf(b.val);if(S.won&&S.winB)S.winB.r=gr}
 const mains=()=>bubbles.filter(b=>b.main);
 function setCard(a,op,b,t,cls){const A=$('ca'),B=$('cb');A.textContent=a??'?';B.textContent=b??'?';A.classList.toggle('q',a==null);B.classList.toggle('q',b==null);$('cop').textContent=op||S.op;$('ct').textContent=t??S.T;const c=$('card');c.classList.remove('good','bad');if(cls)c.classList.add(cls)}
-function cardIdle(){let a=S.a;const ms=mains();if((S.op==='+'||S.op==='−')&&ms.length===1)a=ms[0].val;setCard(a,S.op,null,S.T)}
-function showEq(a,op,b,res){setCard(a,op,b,res,res===S.T?'good':'bad');cardAnim('pop');S.cardT=2.2}
+function cardIdle(){if(S.free)return;let a=S.a;const ms=mains();if((S.op==='+'||S.op==='−')&&ms.length===1)a=ms[0].val;setCard(a,S.op,null,S.T)}
+function showEq(a,op,b,res){setCard(a,op,b,res,S.free||res===S.T?'good':'bad');cardAnim('pop');S.cardT=2.2}
 function cardAnim(n){const c=$('card');c.classList.remove('pop','shake');void c.offsetWidth;c.classList.add(n)}
 let msgT=0;function say(t,dur=1.6){const m=$('msg');m.textContent=t;m.classList.remove('show');void m.offsetWidth;m.classList.add('show');msgT=dur;const r=$('card').getBoundingClientRect();m.style.top=(r.bottom+8)+'px'}
 function buildTools(){$('tools').innerHTML=S.tools.map(o=>`<button class="tool" data-op="${o}" aria-label="${TX[lang].tn[o]}">${ICON[o]}<i class="b${'+−×÷'.indexOf(o)}">${o}</i></button>`).join('')+`<button class="tool reset" data-op="reset" aria-label="${TX[lang].tn.reset}">↺</button>`}
@@ -331,13 +332,18 @@ function startRound(){const R=genRound();S.op=R.op;S.T=R.T;S.a=R.a;S.won=false;S
  S.tools=WORLDS[S.world].theme<2?LITTLE[R.op]:['+','−','×','÷'];buildTools();selectTool(R.op);layoutStage();cardIdle();cardAnim('pop');
  S.busy=true;for(const b of bubbles.filter(b=>b.deco)){kill(b);burst(b,7,520,[b.col])}
  later(.15,spawnMain);later(.7,()=>{S.busy=false});say(TX[lang].goal(S.T),2.6)}
-function spawnMain(){const b=newB(S.a,S.home.x,H+rOf(S.a),S.col,{main:true});b.vy=-1300;b.kv=3;SND.bloop(1);cardIdle()}
-function resetRound(quiet){if(!quiet)S.resets++;S.act=null;bubbles.slice().forEach((b,i)=>later(i*.05,()=>{if(bubbles.includes(b)){kill(b);burst(b,8,480,[b.col]);SND.plop(1+i*.1)}}));later(.35,spawnMain);S.hintV=null}
+function spawnMain(){if(S.free){const A=Math.min(10,WORLDS[S.world].add),cols=shuffle(PAL.slice());[rint(2,A),rint(1,A)].forEach((v,i)=>later(i*.12,()=>{const b=newB(v,S.home.x+(i?1:-1)*rOf(v),H+rOf(v),cols[i],{main:true});b.vy=-1300;b.kv=3;SND.bloop(1+i*.2)}));return}
+ const b=newB(S.a,S.home.x,H+rOf(S.a),S.col,{main:true});b.vy=-1300;b.kv=3;SND.bloop(1);cardIdle()}
+function resetRound(quiet){if(!quiet&&!S.free)S.resets++;S.act=null;bubbles.slice().forEach((b,i)=>later(i*.05,()=>{if(bubbles.includes(b)){kill(b);burst(b,8,480,[b.col]);SND.plop(1+i*.1)}}));later(.35,spawnMain);S.hintV=null}
 function clearRound(next){const list=bubbles.slice();list.sort((a,b)=>a.x-b.x);
  list.forEach((b,i)=>later(i*.09,()=>{const k=bubbles.indexOf(b);if(k<0)return;bubbles.splice(k,1);burst(b,7,520,[b.col]);SND.plop(1+i*.12);ripple(b.x,b.y,4)}));
  later(list.length*.09+.35,next)}
 function dotsUI(){const d=$('dots');if(d.children.length!==ROUNDS){d.innerHTML='';for(let i=0;i<ROUNDS;i++)d.appendChild(document.createElement('i'))}[...d.children].forEach((e,i)=>{const on=i<S.round;e.classList.toggle('on',on);e.style.background=on?`rgb(${PAL[i%PAL.length].map(v=>v*255|0)})`:''})}
-function startGame(){audio();queue=[];S.busy=true;S.T=0;S.ghost=null;S.mode='play';S.round=0;S.resets=0;S.streak=0;S.act=null;S.won=false;save.world=S.world;save.ops=[...S.ops];persist();
+function startFree(){audio();queue=[];S.busy=true;S.free=true;S.T=0;S.ghost=null;S.act=null;S.won=false;S.mode='play';S.tools=['+','−','×','÷'];
+ ['menu','end'].forEach(id=>$(id).classList.add('hidden'));['hud','card','tools'].forEach(id=>$(id).classList.remove('hidden'));$('dots').style.visibility='hidden';
+ applyTheme();buildTools();selectTool('+');layoutStage();setCard(null,'+',null,'?');cardAnim('pop');
+ clearRound(()=>{layoutStage();spawnMain();say(TX[lang].freeTip,3.2);later(.5,()=>{S.busy=false})})}
+function startGame(){audio();queue=[];S.busy=true;S.free=false;$('dots').style.visibility='';S.T=0;S.ghost=null;S.mode='play';S.round=0;S.resets=0;S.streak=0;S.act=null;S.won=false;save.world=S.world;save.ops=[...S.ops];persist();
  $('menu').classList.add('hidden');$('end').classList.add('hidden');$('hud').classList.remove('hidden');$('card').classList.remove('hidden');$('tools').classList.remove('hidden');
  dotsUI();applyTheme();clearRound(startRound)}
 function finish(){S.mode='end';S.ghost=null;const m=S.resets,st=m<=1?3:m<=4?2:1,key='w'+S.world;save.stars=save.stars||{};save.stars[key]=Math.max(save.stars[key]||0,st);persist();
@@ -347,7 +353,7 @@ function finish(){S.mode='end';S.ghost=null;const m=S.resets,st=m<=1?3:m<=4?2:1,
  sp.forEach((s,i)=>setTimeout(()=>{s.className=i<st?'on':'off';if(i<st)SND.bell(660*Math.pow(2,i*4/12),0,.2)},400+i*350));
  SND.win();for(let i=0;i<36;i++)later(i*.04,()=>{const c=PAL[i%PAL.length];addDrop(rnd(0,W),-20,rnd(-120,120),rnd(0,300),r0*rnd(.15,.35),c)});
  for(let i=0;i<7;i++)later(.4+i*.12,()=>{const v=['★','+','−','×','÷','=','★'][i],b=mkBubble(0,v,cx+rnd(-60,60),H+r0*2,r0*.85,PAL[i]);b.vy=-1100;b.deco=1;bubbles.push(b);SND.bloop(1+i*.1)})}
-function toMenu(){S.mode='menu';S.ghost=null;S.act=null;S.busy=false;queue=[];['hud','card','end','tip','tools'].forEach(id=>$(id).classList.add('hidden'));$('msg').classList.remove('show');$('menu').classList.remove('hidden');buildMenu();layout();bubbles.forEach(b=>{b.lock=false});clearRound(menuBubbles)}
+function toMenu(){S.free=false;$('dots').style.visibility='';S.mode='menu';S.ghost=null;S.act=null;S.busy=false;queue=[];['hud','card','end','tip','tools'].forEach(id=>$(id).classList.add('hidden'));$('msg').classList.remove('show');$('menu').classList.remove('hidden');buildMenu();layout();bubbles.forEach(b=>{b.lock=false});clearRound(menuBubbles)}
 function menuBubbles(){layout();const labels=['1','+','2','×','3','=','÷','−'],cols=shuffle(PAL.slice());labels.forEach((l,i)=>later(i*.1,()=>{const b=mkBubble(0,l,cx+rnd(-80,80),H+r0*2,r0*(l.length>1?1:rnd(.85,1.1)),cols[i]);b.vy=-rnd(900,1200);b.deco=1;bubbles.push(b);SND.bloop(rnd(.8,1.3))}))}
 // ---------- helpers ----------
 const MIXC=(a,b)=>a.map((v,i)=>(v+b[i])/2),tint=(c,i)=>{const k=[1,.84,1.14,.92,1.07,.97][i%6];return c.map(v=>clamp(v*k,0,1))};
@@ -407,7 +413,7 @@ function win(b){S.won=true;S.winB=b;hold(b);goTo(b,S.ghost.x,S.ghost.y);b.gT=1;S
  later(.95,()=>{S.round++;dotsUI();kill(b);burst(b,28,850,[b.col,b.col.map(v=>Math.min(1,v*1.25))]);ripple(b.x,b.y,18);kick(rnd(-300,300),-420);jiggleAll(b.x,b.y,5);rings.push({x:b.x,y:b.y,r:b.r,t:0});SND.plop(.9);SND.plop(1.3,.05);
   say(S.streak>=3?TX[lang].streak(S.streak)+' '+TX[lang].great[rint(0,6)]:TX[lang].great[rint(0,6)],1.3);
   later(1.1,()=>{S.ghost=null;S.round>=ROUNDS?clearRound(finish):clearRound(startRound)})})}
-function idleChecks(dt){if(S.mode!=='play'||S.won||S.busy||S.act||ptr.mode==='drag')return;
+function idleChecks(dt){if(S.mode!=='play'||S.won||S.busy||S.act||ptr.mode==='drag')return;if(S.free){if(S.cardT>0)S.cardT-=dt;return}
  if(S.cardT>0){S.cardT-=dt;if(S.cardT<=0)cardIdle()}
  const ms=mains();if(!ms.length){if(!bubbles.some(b=>b.lock)){S.busy=true;later(.5,()=>{spawnMain();S.busy=false})}return}
  if(bubbles.some(b=>b.lock))return;
@@ -503,20 +509,20 @@ function frame(now){const raw=now-last;last=now;const dt=Math.min(.033,raw/1000|
 function applyTheme(){document.body.classList.toggle('light',!WORLDS[S.world].dark)}
 function buildMenu(){const t=TX[lang];document.documentElement.lang=lang;
  $('title').innerHTML=['Bloop','Math'].map((w,j)=>'<span class="w">'+[...w].map((c,i)=>`<span style="color:rgb(${PAL[(i+j*5)%PAL.length].map(v=>v*255|0)});animation-delay:${-(i+j*5)*.17}s">${c}</span>`).join('')+'</span>').join('');
- $('sub').textContent=t.sub;$('lWorld').textContent=t.world;$('lOps').textContent=t.ops;$('play').textContent=t.play;$('lang').textContent=lang==='it'?'EN':'IT';
+ $('sub').textContent=t.sub;$('lWorld').textContent=t.world;$('lOps').textContent=t.ops;$('play').textContent=t.play;$('explore').textContent=t.explore;$('lang').textContent=lang==='it'?'EN':'IT';
  const st=save.stars||{};
  $('worlds').innerHTML=WORLDS.map((w,i)=>`<button class="world w${i}${i===S.world?' on':''}" data-i="${i}"><span class="age">${w.age}</span><b>${w.name[lang]}</b><small>+ − ${t.up} ${w.add} · × ÷ ${t.tables} ${w.mul}</small><span class="stars">${'★'.repeat(st['w'+i]||0)}</span></button>`).join('');
  $('ops').innerHTML=['+','−','×','÷'].map(o=>`<button class="op${S.ops.has(o)?' on':''}" data-op="${o}" aria-pressed="${S.ops.has(o)}">${o}</button>`).join('');
  ['snd1','snd2'].forEach(id=>{$(id).textContent=S.muted?'🔇':'♪';$(id).style.opacity=S.muted?.6:1});applyTheme()}
 $('worlds').addEventListener('click',e=>{const b=e.target.closest('.world');if(!b)return;audio();const i=+b.dataset.i;if(i!==S.world){S.world=i;S.ops=new Set(WORLDS[i].ops);SND.bloop(1+i*.15);for(const bb of bubbles){bb.kv+=4;bb.vy-=200}ripple(cx,cy,10)}buildMenu()});
 $('ops').addEventListener('click',e=>{const b=e.target.closest('.op');if(!b)return;audio();const o=b.dataset.op;if(S.ops.has(o)){if(S.ops.size>1){S.ops.delete(o);SND.plop(.8)}else{SND.boing()}}else{S.ops.add(o);SND.bloop(1.2)}buildMenu()});
-$('play').addEventListener('click',startGame);
+$('play').addEventListener('click',startGame);$('explore').addEventListener('click',startFree);
 $('lang').addEventListener('click',()=>{lang=lang==='it'?'en':'it';save.lang=lang;persist();buildMenu()});
 const toggleSnd=()=>{S.muted=!S.muted;save.muted=S.muted;persist();audio();buildMenu()};$('snd1').addEventListener('click',toggleSnd);$('snd2').addEventListener('click',toggleSnd);
 $('home').addEventListener('click',toMenu);$('tomenu').addEventListener('click',toMenu);$('again').addEventListener('click',startGame);
 $('next').addEventListener('click',()=>{S.world=Math.min(WORLDS.length-1,S.world+1);S.ops=new Set(WORLDS[S.world].ops);startGame()});
 addEventListener('keydown',e=>{if(e.key==='Escape'&&S.mode!=='menu')toMenu();if(e.key==='Enter'&&S.mode==='menu')startGame()});
-window.__bloop={S,step:(n)=>{for(let i=0;i<n;i++)update(1/60)},get bubbles(){return bubbles},get drops(){return drops},startGame,toMenu,selectTool,resetRound};
+window.__bloop={S,step:(n)=>{for(let i=0;i<n;i++)update(1/60)},get bubbles(){return bubbles},get drops(){return drops},startGame,startFree,toMenu,selectTool,resetRound};
 buildMenu();resize();menuBubbles();requestAnimationFrame(frame);
 })();
 </script>
