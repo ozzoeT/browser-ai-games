@@ -68,7 +68,7 @@ const keys = {}, just = new Set();
 const latch = new Set();
 const BLOCKED = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space', 'Backspace', 'Enter']);
 window.addEventListener('keydown', e => {
-  if (BLOCKED.has(e.code)) e.preventDefault();
+  if (BLOCKED.has(e.code) && !e.ctrlKey && !e.metaKey && !e.altKey) e.preventDefault();
   initAudio();
   if (!e.repeat) { just.add(e.code); latch.add(e.code); if (e.code === 'KeyM') mute = !mute; }
   keys[e.code] = true;
@@ -80,6 +80,10 @@ const MAPS = [
   { left: 'KeyA', right: 'KeyD', up: 'KeyW', down: 'KeyS', p: 'KeyF', k: 'KeyG', h: 'KeyH' },
   { left: 'ArrowLeft', right: 'ArrowRight', up: 'ArrowUp', down: 'ArrowDown', p: 'KeyJ', k: 'KeyK', h: 'KeyL' }
 ];
+// anche le lettere del gioco non devono arrivare al browser: altrimenti la "ricerca mentre scrivi" (Firefox)
+// le prende, suona perché non trova testo e il comando si perde
+for (const m of MAPS) for (const k in m) BLOCKED.add(m[k]);
+BLOCKED.add('KeyM');
 const BTN = ['p', 'k', 'h'];
 const BLANK = { left: false, right: false, up: false, down: false, p: false, k: false, h: false };
 function playerInput(i) {
