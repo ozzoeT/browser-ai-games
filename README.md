@@ -2,7 +2,7 @@
 
 A small collection of AI-made games you can play right in your browser. Nothing too hard, just fun: made for kids, and for dads and moms who want to play together with them :)
 
-Racing, fighting, strategy, parkour, medieval battles and adventure, 1–2 players on one keyboard. No download, no build step: every game is a single HTML file.
+Racing, fighting, strategy, parkour, motorbike stunts, medieval battles and adventure, 1–2 players on one keyboard. No download, no build step: every game is a single HTML file.
 
 **▶ Play:** https://ozzoet.github.io/browser-ai-games/
 
@@ -17,8 +17,16 @@ Racing, fighting, strategy, parkour, medieval battles and adventure, 1–2 playe
 | Skyflip | First-person rooftop parkour | 1 | [`skyflip/`](skyflip/) |
 | Shield Brothers | First-person shield wall battles | 1 | [`shield-brothers/`](shield-brothers/) |
 | Pop Gallery | First-person shooting gallery for kids | 1–2 (take turns) | [`pop-gallery/`](pop-gallery/) |
+| Abyss | Endless deep-sea swim | 1 | [`abyss/`](abyss/) |
+| Airtime | Motorbike stunt jumps, split-screen | 1–2 | [`airtime/`](airtime/) |
+| Trickline | 3D motorbike stunt run: ramps, wall rides, grinds, rooftop gaps | 1–2 | [`trickline/`](trickline/) |
 
 All games are in English.
+
+## Custom games & support
+Want a custom browser game (a birthday game for your kid, a game for a class or an event)? Write to **datasciencepv@gmail.com**.
+
+If you enjoy the games, you can support them with a donation on [PayPal](https://paypal.me/teoargentieri) ☕
 
 ## Run locally
 Open `index.html` in a browser, or serve the folder: `python -m http.server 8000` → http://localhost:8000

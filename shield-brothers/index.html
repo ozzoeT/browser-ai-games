@@ -1134,6 +1134,7 @@ function startSkirmish(){const s=prog.sk,Z=SIZES[s.size];state.campaign=false;
 function beginBattle(cfg){
  initAudio();state.mode='battle';state.paused=false;showScreen(null);$('hud').classList.remove('hidden');
  setupBattle(cfg);updateOrderUI();buildPips();
+ $('fade').style.opacity=0;$('vig').style.opacity=0; // clear the death fade left over from a lost battle
  banner(cfg.title,isTouch?'Get ready':'Click to grab the mouse');
  $('touch').classList.toggle('hidden',!isTouch);lockPointer();
 }
