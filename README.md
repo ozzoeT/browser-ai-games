@@ -2,7 +2,7 @@
 
 A small collection of AI-made games you can play right in your browser. Nothing too hard, just fun: made for kids, and for dads and moms who want to play together with them :)
 
-Racing, fighting, strategy, parkour, motorbike stunts, medieval battles and adventure, 1–2 players on one keyboard. No download, no build step: every game is a single HTML file.
+Racing, fighting, strategy, parkour, motorbike stunts, medieval battles, adventure and a math game for little ones, 1–2 players on one keyboard. No download, no build step: every game is a single HTML file.
 
 **▶ Play:** https://ozzoet.github.io/browser-ai-games/
 
@@ -20,6 +20,7 @@ Racing, fighting, strategy, parkour, motorbike stunts, medieval battles and adve
 | Abyss | Endless deep-sea swim | 1 | [`abyss/`](abyss/) |
 | Airtime | Motorbike stunt jumps, split-screen | 1–2 | [`airtime/`](airtime/) |
 | Trickline | 3D motorbike stunt run: ramps, wall rides, grinds, rooftop gaps | 1–2 | [`trickline/`](trickline/) |
+| Bloop Math | Math for kids with gooey jelly bubbles (+ − × ÷, ages 4–10+) | 1 | [`bloop-math/`](bloop-math/) |
 
 All games are in English.
 
