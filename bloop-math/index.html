@@ -64,6 +64,15 @@ body.light #msg{text-shadow:0 2px 8px #fff}
 @keyframes msgin{0%{transform:scale(.6)}60%{transform:scale(1.12)}100%{transform:scale(1)}}
 #tip{position:absolute;left:12px;right:12px;bottom:calc(max(12px,env(safe-area-inset-bottom)) + 92px);text-align:center;font-size:16px;font-weight:500;color:var(--ink);text-shadow:0 1px 6px #0006;pointer-events:none}
 body.light #tip{text-shadow:0 1px 6px #fff}
+#tip b{display:block;font-size:17px;font-weight:600;margin-bottom:3px}#tip small{font-size:13.5px;opacity:.85}
+#dir{position:absolute;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:8px;font-size:clamp(15px,3.6vw,19px);font-weight:600;padding:6px 16px 6px 8px;border-radius:999px;color:#fff;white-space:nowrap;pointer-events:none;box-shadow:0 6px 18px #0003}
+#dir i{font-style:normal;width:30px;height:30px;border-radius:50%;background:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:18px}
+#dir.up{background:linear-gradient(180deg,#5fe06a,#2fb44a)}#dir.up i{color:#2fb44a}#dir.down{background:linear-gradient(180deg,#4fb8ff,#2a7ae0)}#dir.down i{color:#2a7ae0}
+#help{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:20px;background:#0006;z-index:5}
+#help .panel{text-align:center;max-width:420px}#help .hi{position:relative;width:96px;height:96px;margin:0 auto 6px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px #0003}
+#help .hi svg{width:70px;height:70px}#help .hi i{position:absolute;top:-4px;right:-4px;width:32px;height:32px;border-radius:50%;font-style:normal;font-weight:700;font-size:24px;line-height:31px;color:#fff}
+#help .b0{background:#ff4fa3}#help .b1{background:#1fb8ff}#help .b2{background:#ff8a1f}#help .b3{background:#3fcf3a}
+#help h3{margin:6px 0 10px;font-size:28px}#help ol{text-align:left;margin:0 0 16px;padding-left:24px;font-size:17px;line-height:1.5}#help li{margin:6px 0}#help .play{min-width:160px;flex:0}
 #tools{position:absolute;bottom:max(12px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);display:flex;gap:10px;padding:8px;background:var(--glass);border:1.5px solid var(--line);border-radius:999px;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
 .tool{position:relative;width:64px;height:64px;border-radius:50%;background:#ffffff26;display:flex;align-items:center;justify-content:center;transition:transform .15s,background .15s;color:var(--ink)}
 body.light .tool{background:#ffffff90}
@@ -105,6 +114,8 @@ body.light .ghost{background:#ffffffb0}
 <div id="msg"></div>
 <div id="tip" class="hidden"></div>
 <div id="tools" class="hidden"></div>
+<div id="dir" class="hidden"></div>
+<div id="help" class="hidden"><div class="panel"><div class="hi"></div><h3></h3><ol></ol><button class="play" id="helpOk">OK</button></div></div>
 <div id="end" class="hidden"><div class="panel"><h2 id="endT"></h2><div id="bigstars"><span>★</span><span>★</span><span>★</span></div><p class="sub" id="endS"></p><div class="row"><button class="play" id="again"></button><button class="ghost" id="next"></button><button class="ghost" id="tomenu"></button></div></div></div>
 <script id="fs" type="x-shader/x-fragment">
 #ifdef GL_FRAGMENT_PRECISION_HIGH
@@ -240,8 +251,8 @@ const WORLDS=[
  {name:{en:'Neon Night',it:'Notte Neon'},age:'8–10',theme:2,dark:1,add:50,mul:10,ops:['×','÷'],n:7},
  {name:{en:'Lava Galaxy',it:'Galassia Lava'},age:'10+',theme:3,dark:1,add:100,mul:12,ops:['+','−','×','÷'],n:8}];
 const TX={
- en:{tn:{'+':'Straw','−':'Pin','×':'Magic wand','÷':'Cutter',reset:'Start again'},tt:{'+':'Straw: hold down to blow a new bubble, then drag it onto yours','−':'Pin: hold down on your bubble to let some out','×':'Wand: tap your bubble to make a twin, then squish the twins together','÷':'Cutter: tap the bubble to cut it into equal parts (tap again for more parts)'},goal:t=>`Make your bubble as big as the shadow: ${t}!`,explore:'Free play',freeTip:'Free play: blow, pop, copy and cut the bubbles as you like!',dragIt:'Now drag it onto your bubble!',cutMore:'Right size, but something is left over: cut again!',twins:'Squish the twins together!',tooBig:'Too big!',tooSmall:'Too small!',usePin:'Use the pin to let some out.',useStraw:'Blow some more with the straw.',useReset:'Tap ↺ to start again.',sub:'Blow, pop, copy and cut jelly bubbles until they fit the shadow!',world:'Choose a world',ops:'Operations',play:'Play  ▶',up:'up to',tables:'tables to',tip:'Drag a bubble onto another one to make',tip2:'Double-tap a bubble to split it',left:'leftover',leftover:(x,y,q,r)=>`${x} ÷ ${y} = ${q}, leftover ${r}`,great:['Great!','Super!','Bloop-tastic!','Yes!','Amazing!','Splendid!','Wow!'],need:'Almost! We need',notExact:"It doesn't split evenly!",done:'World complete!',again:'Play again',next:'Next world',menu:'Menu',score:(m)=>m===0?'Perfect, never started over!':m===1?'Started over only once!':'Started over '+m+' times',streak:(n)=>n+' in a row!'},
- it:{tn:{'+':'Cannuccia','−':'Spillo','×':'Bacchetta magica','÷':'Taglierina',reset:'Ricomincia'},tt:{'+':'Cannuccia: tieni premuto per soffiare una bolla nuova, poi trascinala sulla tua','−':'Spillo: tieni premuto sulla tua bolla per farne uscire un po\'','×':'Bacchetta: tocca la tua bolla per fare una gemella, poi unisci le gemelle','÷':'Taglierina: tocca la bolla per tagliarla in parti uguali (tocca ancora per più parti)'},goal:t=>`Fai diventare la bolla grande come l\'ombra: ${t}!`,explore:'Gioco libero',freeTip:'Gioco libero: soffia, buca, copia e taglia le bolle come vuoi!',dragIt:'Ora trascinala sulla tua bolla!',cutMore:'Misura giusta, ma avanza qualcosa: taglia ancora!',twins:'Ora unisci le gemelle!',tooBig:'Troppo grande!',tooSmall:'Troppo piccola!',usePin:'Usa lo spillo per farne uscire un po\'.',useStraw:'Soffiane ancora con la cannuccia.',useReset:'Tocca ↺ per ricominciare.',sub:'Soffia, buca, copia e taglia le bolle di gelatina finché non riempiono l\'ombra!',world:'Scegli un mondo',ops:'Operazioni',play:'Gioca  ▶',up:'fino a',tables:'tabelline fino al',tip:'Trascina una bolla su un\'altra per fare',tip2:'Tocca due volte una bolla per spezzarla',left:'resto',leftover:(x,y,q,r)=>`${x} : ${y} = ${q}, resto ${r}`,great:['Bravo!','Super!','Fantastico!','Sì!','Grande!','Splendido!','Wow!'],need:'Quasi! Ci serve',notExact:'Non si divide esatto!',done:'Mondo completato!',again:'Ancora',next:'Mondo dopo',menu:'Menu',score:(m)=>m===0?'Perfetto, mai ricominciato!':m===1?'Ricominciato solo una volta!':'Ricominciato '+m+' volte',streak:(n)=>n+' di fila!'}};
+ en:{tn:{'+':'Straw','−':'Pin','×':'Magic wand','÷':'Cutter',reset:'Start again'},tt:{'+':'Straw: hold down to blow a new bubble, then drag it onto yours','−':'Pin: hold down on your bubble to let some out','×':'Wand: tap your bubble to make a twin, then squish the twins together','÷':'Cutter: hold on a bubble and let go when the number of parts is right (or tap for one part more)'},goal:{'+':(t,m)=>`Grow ${m?'a':'your'} bubble until it fills the shadow: ${t}`,'−':(t,m)=>`Let some out of ${m?'a':'your'} bubble until it fits the shadow: ${t}`,'×':(t,m)=>`Make twins of ${m?'a':'your'} bubble and squish them into one as big as the shadow: ${t}`,'÷':(t,m)=>`Cut ${m?'a':'your'} bubble into equal pieces, each one as big as the shadow: ${t}`},cutBig:'The pieces are still too big: tap again for more pieces!',cutSmall:'Too many pieces, they are smaller than the shadow! Tap ↺ to start again.',explore:'Bubble lab',ok:'Got it!',pull:'Pull the piece away!',pull2:'Pull to tear it into pieces!',dir:{'+':'Squish together: it grows','×':'Squish together: it copies and grows','−':'Stick on and pull: it shrinks','÷':'Stick on and pull: it splits'},how:{'+':'Drag one bubble onto another: they become one bigger bubble.','×':'Drag one bubble onto another: the big one is copied as many times as the small one says, then they melt together.','−':'Drag the small bubble onto the big one, then pull it away: it tears off a piece just as big as itself.','÷':'Drag the small bubble onto the big one, then pull it away: the big one breaks into that many equal pieces.'},help:{'+':['Hold your finger down on an empty spot.','A new bubble grows: the number tells you how much you are adding.','Let go, then drag it onto another bubble to add them together.'],'−':['Hold your finger on a bubble.','A piece comes out: −1, −2, −3… that is how much you take away.','Let go: the piece pops and the bubble is smaller.'],'×':['Tap a bubble: an identical twin appears.','Tap again for more twins: ×2, ×3…','Squish the twins together: 4 + 4 + 4 is 4 × 3.'],'÷':['Hold your finger on a bubble: cutting lines appear, ÷2, ÷3…','Let go when the number of parts is right: the bubble splits into equal parts.','If something doesn\'t fit, it stays as a grey leftover bubble.']},freeTip:'Bubble lab: try every tool! Tap ? to see how it works.',dragIt:'Now drag it onto your bubble!',cutMore:'Right size, but something is left over: cut again!',twins:'Squish the twins together!',tooBig:'Too big!',tooSmall:'Too small!',usePin:'Use the pin to let some out.',useStraw:'Blow some more with the straw.',useReset:'Tap ↺ to start again.',sub:'Play: pick two bubbles to make the magic number. Bubble lab: try the straw, the pin, the wand and the cutter!',world:'Choose a world',ops:'Operations',play:'Play  ▶',up:'up to',tables:'tables to',tip:'Drag a bubble onto another one to make',tip2:'Double-tap a bubble to split it',left:'leftover',leftover:(x,y,q,r)=>`${x} ÷ ${y} = ${q}, leftover ${r}`,great:['Great!','Super!','Bloop-tastic!','Yes!','Amazing!','Splendid!','Wow!'],need:'Almost! We need',notExact:"It doesn't split evenly!",done:'World complete!',again:'Play again',next:'Next world',menu:'Menu',score:(m)=>m===0?'No mistakes at all!':m===1?'Only 1 mistake!':m+' tries to learn from',streak:(n)=>n+' in a row!'},
+ it:{tn:{'+':'Cannuccia','−':'Spillo','×':'Bacchetta magica','÷':'Taglierina',reset:'Ricomincia'},tt:{'+':'Cannuccia: tieni premuto per soffiare una bolla nuova, poi trascinala sulla tua','−':'Spillo: tieni premuto sulla tua bolla per farne uscire un po\'','×':'Bacchetta: tocca la tua bolla per fare una gemella, poi unisci le gemelle','÷':'Taglierina: tieni premuto su una bolla e lascia quando le parti sono giuste (o tocca per una parte in più)'},goal:{'+':(t,m)=>`Fai crescere ${m?'una':'la tua'} bolla finché riempie l\'ombra: ${t}`,'−':(t,m)=>`Fai uscire un po\' ${m?'da una':'dalla tua'} bolla finché entra nell\'ombra: ${t}`,'×':(t,m)=>`Fai le gemelle di ${m?'una':'una'} bolla e uniscile in una grande come l\'ombra: ${t}`,'÷':(t,m)=>`Taglia ${m?'una':'la'} bolla in pezzi uguali, ognuno grande come l\'ombra: ${t}`},cutBig:'I pezzi sono ancora troppo grandi: tocca ancora per fare più pezzi!',cutSmall:'Troppi pezzi, sono più piccoli dell\'ombra! Tocca ↺ per ricominciare.',explore:'Laboratorio',ok:'Ho capito!',pull:'Strappa via il pezzo!',pull2:'Tira per strapparla in pezzi!',dir:{'+':'Unisci: cresce','×':'Unisci: si copia e cresce','−':'Attacca e tira: cala','÷':'Attacca e tira: si spezza'},how:{'+':'Trascina una bolla su un\'altra: diventano una bolla più grande.','×':'Trascina una bolla su un\'altra: la grande si copia tante volte quante dice la piccola, poi si fondono.','−':'Trascina la bolla piccola sulla grande, poi tirala via: strappa un pezzo grande come lei.','÷':'Trascina la bolla piccola sulla grande, poi tirala via: la grande si spezza in tanti pezzi uguali.'},help:{'+':['Tieni premuto il dito su uno spazio vuoto.','Nasce una bolla nuova: il numero ti dice quanto stai aggiungendo.','Lascia, poi trascinala su un\'altra bolla per sommarle.'],'−':['Tieni premuto il dito su una bolla.','Esce un pezzo: −1, −2, −3… è quanto stai togliendo.','Lascia: il pezzo scoppia e la bolla è più piccola.'],'×':['Tocca una bolla: nasce una gemella identica.','Tocca ancora per altre gemelle: ×2, ×3…','Unisci le gemelle: 4 + 4 + 4 fa 4 × 3.'],'÷':['Tieni premuto il dito su una bolla: compaiono le linee di taglio, ÷2, ÷3…','Lascia quando le parti sono giuste: la bolla si divide in parti uguali.','Se qualcosa non ci sta, resta come bolla grigia: il resto.']},freeTip:'Laboratorio: prova tutti gli strumenti! Tocca ? per vedere come funzionano.',dragIt:'Ora trascinala sulla tua bolla!',cutMore:'Misura giusta, ma avanza qualcosa: taglia ancora!',twins:'Ora unisci le gemelle!',tooBig:'Troppo grande!',tooSmall:'Troppo piccola!',usePin:'Usa lo spillo per farne uscire un po\'.',useStraw:'Soffiane ancora con la cannuccia.',useReset:'Tocca ↺ per ricominciare.',sub:'Gioca: scegli due bolle per fare il numero magico. Laboratorio: prova cannuccia, spillo, bacchetta e taglierina!',world:'Scegli un mondo',ops:'Operazioni',play:'Gioca  ▶',up:'fino a',tables:'tabelline fino al',tip:'Trascina una bolla su un\'altra per fare',tip2:'Tocca due volte una bolla per spezzarla',left:'resto',leftover:(x,y,q,r)=>`${x} : ${y} = ${q}, resto ${r}`,great:['Bravo!','Super!','Fantastico!','Sì!','Grande!','Splendido!','Wow!'],need:'Quasi! Ci serve',notExact:'Non si divide esatto!',done:'Mondo completato!',again:'Ancora',next:'Mondo dopo',menu:'Menu',score:(m)=>m===0?'Nessun errore!':m===1?'Solo 1 errore!':m+' tentativi per imparare',streak:(n)=>n+' di fila!'}};
 const ICON={'+':'<svg viewBox="0 0 48 48"><path d="M33 5V29Q33 41 21 41H9" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round"/><path d="M33 5V29Q33 41 21 41H9" fill="none" stroke="#ff4f8a" stroke-width="8" stroke-dasharray="5 6"/></svg>',
  '−':'<svg viewBox="0 0 48 48"><path d="M9 41L33 15" stroke="#c9d3e2" stroke-width="4" stroke-linecap="round"/><path d="M9 41L14 35" stroke="#8a96a8" stroke-width="3" stroke-linecap="round"/><circle cx="35" cy="12" r="8.5" fill="#ff3f6a"/><circle cx="32" cy="9" r="2.6" fill="#fff" opacity=".8"/></svg>',
  '×':'<svg viewBox="0 0 48 48"><path d="M18 25L6 41" stroke="#ffb11f" stroke-width="6" stroke-linecap="round"/><circle cx="25" cy="16" r="10" fill="#8fe8ff40" stroke="#fff" stroke-width="4"/><circle cx="40" cy="27" r="5.5" fill="#ff8fd0" stroke="#fff" stroke-width="1.8"/><circle cx="39" cy="40" r="5.5" fill="#ff8fd0" stroke="#fff" stroke-width="1.8"/></svg>',
@@ -270,7 +281,7 @@ const BA=new Float32Array(MAXB*4),CA=new Float32Array(MAXB*4),SA=new Float32Arra
 function resize(){W=innerWidth;H=innerHeight;DPR=Math.min(devicePixelRatio||1,2);glScale=Math.min(DPR,1.5)*Q;cv.width=Math.round(W*glScale);cv.height=Math.round(H*glScale);ov.width=Math.round(W*DPR);ov.height=Math.round(H*DPR);gl.viewport(0,0,cv.width,cv.height);layout()}
 function layout(){
  if(S.mode==='menu'){const wide=W>H*1.15;r0=clamp(Math.min(W,H)*.075,30,70);cx=wide?W*.74:W*.5;cy=wide?H*.52:H*.86}
- else{r0=clamp(Math.min(W,H)*.07,30,70);if(S.T||S.free)layoutStage();else{cx=W/2;cy=H*.55}}}
+ else{r0=clamp(Math.min(W,H)*.07,30,70);if(S.chal)chalLayout();else if(S.free)layoutStage();else{cx=W/2;cy=H*.55}}}
 addEventListener('resize',resize);
 // ---------- audio ----------
 let AC=null,master=null,nbuf=null;
@@ -300,19 +311,12 @@ function kick(ix,iy){const m=RM?.3:1;shake.vx+=ix*m;shake.vy+=iy*m}
 function burst(b,n,spd,cols){for(let i=0;i<n;i++){const a=i/n*TAU+rnd(-.3,.3),s=rnd(spd*.45,spd),c=cols[i%cols.length];addDrop(b.x+Math.cos(a)*b.rr*.45,b.y+Math.sin(a)*b.rr*.45,Math.cos(a)*s,Math.sin(a)*s-spd*.25,b.rr*rnd(.1,.27),c.map(v=>clamp(v*rnd(.9,1.15),0,1)))}}
 function jiggleAll(x,y,power){for(const b of bubbles){const dx=b.x-x,dy=b.y-y,d=Math.hypot(dx,dy)+60;b.vx+=dx/d*power*120/d*60;b.vy+=dy/d*power*120/d*60;b.kv+=rnd(-1,1)*power*.6+power*.3}}
 // ---------- rounds ----------
-const LITTLE={'+':['+','−'],'−':['−','+'],'×':['×'],'÷':['÷']};
-function genRound(){const w=WORLDS[S.world],ops=[...S.ops],op=ops[rint(0,ops.length-1)],A=w.add,M=w.mul;let a,T;
- if(op==='+'){T=rint(Math.max(3,Math.round(A*.3)),A);a=rint(1,T-1)}
- else if(op==='−'){a=rint(Math.max(3,Math.round(A*.35)),A);T=a-rint(1,a-1)}
- else if(op==='×'){a=rint(M<=3?1:2,Math.max(2,M));T=a*rint(2,Math.max(2,M))}
- else{const k=rint(2,Math.max(2,M));T=rint(M<=3?1:2,Math.max(2,M));a=k*T}
- return{op,a,T}}
 let RMIN=22;
 function rOf(v){return v<=0?RMIN*.5:Math.max(RMIN,S.u*Math.sqrt(v))}
-function layoutStage(){const top=($('card').getBoundingClientRect().bottom||130)+10,tb=$('tools').getBoundingClientRect(),bot=(tb.height?tb.top:H-100)-44;
- S.top=top;S.bot=bot;const sh=Math.max(160,bot-top),wide=W>sh*1.25,maxV=S.free?Math.min(40,WORLDS[S.world].add):Math.max(S.a||1,S.T||1);
+function layoutStage(){const top=($('card').getBoundingClientRect().bottom||130)+10,tb=$('tools').getBoundingClientRect(),bot=(tb.height?tb.top:H-100)-($('tip').offsetHeight||40)-14;
+ S.top=top;S.bot=bot;const sh=Math.max(160,bot-top),wide=W>sh*1.25,maxV=S.free?Math.min(40,WORLDS[S.world].add):Math.max(S.T||1,...(S.vals||[S.a||1])),sum=(S.vals||[]).reduce((x,y)=>x+y,0);
  RMIN=clamp(Math.min(W,H)*.04,18,28);
- const dim=wide?Math.min(W*.42,sh):Math.min(W*.86,sh*.5);S.u=.36*dim/Math.sqrt(maxV);
+ const dim=wide?Math.min(W*.42,sh):Math.min(W*.86,sh*.5);S.u=.36*dim/Math.sqrt(maxV);if(!S.free&&sum>maxV)S.u=Math.min(S.u,Math.sqrt(.2*(wide?W*.5*sh:W*sh*.55)/(PI*sum)));
  if(S.free){S.ghost=null;S.home={x:W/2,y:(top+bot)/2};cx=S.home.x;cy=S.home.y;for(const b of bubbles)if(b.val>0)b.r=rOf(b.val);return}
  const gr=rOf(S.T);
  if(wide){S.ghost={x:W*.71,y:top+sh/2,r:gr};S.home={x:W*.31,y:top+sh/2}}
@@ -320,40 +324,34 @@ function layoutStage(){const top=($('card').getBoundingClientRect().bottom||130)
  cx=S.home.x;cy=S.home.y;for(const b of bubbles)if(b.val>0)b.r=rOf(b.val);if(S.won&&S.winB)S.winB.r=gr}
 const mains=()=>bubbles.filter(b=>b.main);
 function setCard(a,op,b,t,cls){const A=$('ca'),B=$('cb');A.textContent=a??'?';B.textContent=b??'?';A.classList.toggle('q',a==null);B.classList.toggle('q',b==null);$('cop').textContent=op||S.op;$('ct').textContent=t??S.T;const c=$('card');c.classList.remove('good','bad');if(cls)c.classList.add(cls)}
-function cardIdle(){if(S.free)return;let a=S.a;const ms=mains();if((S.op==='+'||S.op==='−')&&ms.length===1)a=ms[0].val;setCard(a,S.op,null,S.T)}
+function cardIdle(){if(S.free)return;if(S.chal){setCard(null,S.op,null,S.T);return}let a=S.a;const ms=mains();if(S.vals&&S.vals.length>1)a=null;else if((S.op==='+'||S.op==='−')&&ms.length===1)a=ms[0].val;setCard(a,S.op,null,S.T)}
 function showEq(a,op,b,res){setCard(a,op,b,res,S.free||res===S.T?'good':'bad');cardAnim('pop');S.cardT=2.2}
 function cardAnim(n){const c=$('card');c.classList.remove('pop','shake');void c.offsetWidth;c.classList.add(n)}
-let msgT=0;function say(t,dur=1.6){const m=$('msg');m.textContent=t;m.classList.remove('show');void m.offsetWidth;m.classList.add('show');msgT=dur;const r=$('card').getBoundingClientRect();m.style.top=(r.bottom+8)+'px'}
-function buildTools(){$('tools').innerHTML=S.tools.map(o=>`<button class="tool" data-op="${o}" aria-label="${TX[lang].tn[o]}">${ICON[o]}<i class="b${'+−×÷'.indexOf(o)}">${o}</i></button>`).join('')+`<button class="tool reset" data-op="reset" aria-label="${TX[lang].tn.reset}">↺</button>`}
-function selectTool(o){S.tool=o;[...$('tools').children].forEach(e=>e.classList.toggle('on',e.dataset.op===o));$('tip').textContent=TX[lang].tt[o];$('tip').classList.remove('hidden')}
+let msgT=0;function say(t,dur=1.6){const m=$('msg');m.textContent=t;m.classList.remove('show');void m.offsetWidth;m.classList.add('show');msgT=dur;const r=$('card').getBoundingClientRect(),d=$('dir');let b=r.bottom;if(!d.classList.contains('hidden'))b=Math.max(b,d.getBoundingClientRect().bottom);m.style.top=(b+8)+'px'}
+function buildTools(){$('tools').innerHTML=S.tools.map(o=>`<button class="tool" data-op="${o}" aria-label="${TX[lang].tn[o]}">${ICON[o]}<i class="b${'+−×÷'.indexOf(o)}">${o}</i></button>`).join('')+`<button class="tool reset" data-op="help" aria-label="?">?</button><button class="tool reset" data-op="reset" aria-label="${TX[lang].tn.reset}">↺</button>`}
+function selectTool(o){S.tool=o;if(S.free&&!(save.seen&&save.seen[o])&&S.tools.length)showHelp(o);[...$('tools').children].forEach(e=>e.classList.toggle('on',e.dataset.op===o));$('tip').innerHTML='<small>'+TX[lang].tt[o]+'</small>';$('tip').classList.remove('hidden')}
 $('tools').addEventListener('click',e=>{const b=e.target.closest('.tool');if(!b||S.mode!=='play')return;audio();const o=b.dataset.op;
- if(o==='reset'){if(!S.busy&&!S.won)resetRound();return}selectTool(o);SND.pick()});
-function startRound(){const R=genRound();S.op=R.op;S.T=R.T;S.a=R.a;S.won=false;S.winB=null;S.act=null;S.hintV=null;S.col=PAL[rint(0,PAL.length-1)];
- S.tools=WORLDS[S.world].theme<2?LITTLE[R.op]:['+','−','×','÷'];buildTools();selectTool(R.op);layoutStage();cardIdle();cardAnim('pop');
- S.busy=true;for(const b of bubbles.filter(b=>b.deco)){kill(b);burst(b,7,520,[b.col])}
- later(.15,spawnMain);later(.7,()=>{S.busy=false});say(TX[lang].goal(S.T),2.6)}
-function spawnMain(){if(S.free){const A=Math.min(10,WORLDS[S.world].add),cols=shuffle(PAL.slice());[rint(2,A),rint(1,A)].forEach((v,i)=>later(i*.12,()=>{const b=newB(v,S.home.x+(i?1:-1)*rOf(v),H+rOf(v),cols[i],{main:true});b.vy=-1300;b.kv=3;SND.bloop(1+i*.2)}));return}
+ if(o==='reset'){if(!S.busy&&!S.won)resetRound();return}if(o==='help'){showHelp(S.tool);return}selectTool(o);SND.pick()});
+function spawnMain(){if(!S.free&&S.vals&&S.vals.length>1){const cols=shuffle(PAL.slice()),n=S.vals.length;S.vals.forEach((v,i)=>later(i*.1,()=>{const b=newB(v,S.home.x+(i-(n-1)/2)*rOf(v)*.8,H+rOf(v)+i*12,cols[i%cols.length],{main:true});b.vy=-1300;b.kv=3;SND.bloop(1+i*.1)}));later(.1,cardIdle);return}
+ if(S.free){const A=Math.min(10,WORLDS[S.world].add),cols=shuffle(PAL.slice());[rint(2,A),rint(1,A)].forEach((v,i)=>later(i*.12,()=>{const b=newB(v,S.home.x+(i?1:-1)*rOf(v),H+rOf(v),cols[i],{main:true});b.vy=-1300;b.kv=3;SND.bloop(1+i*.2)}));return}
  const b=newB(S.a,S.home.x,H+rOf(S.a),S.col,{main:true});b.vy=-1300;b.kv=3;SND.bloop(1);cardIdle()}
 function resetRound(quiet){if(!quiet&&!S.free)S.resets++;S.act=null;bubbles.slice().forEach((b,i)=>later(i*.05,()=>{if(bubbles.includes(b)){kill(b);burst(b,8,480,[b.col]);SND.plop(1+i*.1)}}));later(.35,spawnMain);S.hintV=null}
 function clearRound(next){const list=bubbles.slice();list.sort((a,b)=>a.x-b.x);
  list.forEach((b,i)=>later(i*.09,()=>{const k=bubbles.indexOf(b);if(k<0)return;bubbles.splice(k,1);burst(b,7,520,[b.col]);SND.plop(1+i*.12);ripple(b.x,b.y,4)}));
  later(list.length*.09+.35,next)}
 function dotsUI(){const d=$('dots');if(d.children.length!==ROUNDS){d.innerHTML='';for(let i=0;i<ROUNDS;i++)d.appendChild(document.createElement('i'))}[...d.children].forEach((e,i)=>{const on=i<S.round;e.classList.toggle('on',on);e.style.background=on?`rgb(${PAL[i%PAL.length].map(v=>v*255|0)})`:''})}
-function startFree(){audio();queue=[];S.busy=true;S.free=true;S.T=0;S.ghost=null;S.act=null;S.won=false;S.mode='play';S.tools=['+','−','×','÷'];
+function startFree(){audio();queue=[];S.busy=true;S.free=true;S.chal=false;S.tear=null;goo.length=0;S.scene=null;$('dir').classList.add('hidden');S.T=0;S.ghost=null;S.act=null;S.won=false;S.mode='play';S.tools=['+','−','×','÷'];
  ['menu','end'].forEach(id=>$(id).classList.add('hidden'));['hud','card','tools'].forEach(id=>$(id).classList.remove('hidden'));$('dots').style.visibility='hidden';
  applyTheme();buildTools();selectTool('+');layoutStage();setCard(null,'+',null,'?');cardAnim('pop');
- clearRound(()=>{layoutStage();spawnMain();say(TX[lang].freeTip,3.2);later(.5,()=>{S.busy=false})})}
-function startGame(){audio();queue=[];S.busy=true;S.free=false;$('dots').style.visibility='';S.T=0;S.ghost=null;S.mode='play';S.round=0;S.resets=0;S.streak=0;S.act=null;S.won=false;save.world=S.world;save.ops=[...S.ops];persist();
- $('menu').classList.add('hidden');$('end').classList.add('hidden');$('hud').classList.remove('hidden');$('card').classList.remove('hidden');$('tools').classList.remove('hidden');
- dotsUI();applyTheme();clearRound(startRound)}
-function finish(){S.mode='end';S.ghost=null;const m=S.resets,st=m<=1?3:m<=4?2:1,key='w'+S.world;save.stars=save.stars||{};save.stars[key]=Math.max(save.stars[key]||0,st);persist();
+ clearRound(()=>{layoutStage();spawnMain();say(TX[lang].freeTip,3.2);later(.5,()=>{S.busy=false})});if(!(save.seen&&save.seen['+']))later(.9,()=>showHelp('+'))}
+function finish(){S.mode='end';S.ghost=null;$('dir').classList.add('hidden');const m=S.mistakes,st=m<=1?3:m<=4?2:1,key='w'+S.world;save.stars=save.stars||{};save.stars[key]=Math.max(save.stars[key]||0,st);persist();
  $('card').classList.add('hidden');$('tools').classList.add('hidden');$('tip').classList.add('hidden');$('msg').classList.remove('show');
  $('endT').textContent=TX[lang].done;$('endS').textContent=TX[lang].score(m);$('again').textContent=TX[lang].again;$('next').textContent=TX[lang].next;$('tomenu').textContent=TX[lang].menu;$('next').classList.toggle('hidden',S.world>=WORLDS.length-1);
  const sp=[...$('bigstars').children];sp.forEach(s=>s.className='');$('end').classList.remove('hidden');$('end').firstElementChild.style.pointerEvents='auto';
  sp.forEach((s,i)=>setTimeout(()=>{s.className=i<st?'on':'off';if(i<st)SND.bell(660*Math.pow(2,i*4/12),0,.2)},400+i*350));
  SND.win();for(let i=0;i<36;i++)later(i*.04,()=>{const c=PAL[i%PAL.length];addDrop(rnd(0,W),-20,rnd(-120,120),rnd(0,300),r0*rnd(.15,.35),c)});
  for(let i=0;i<7;i++)later(.4+i*.12,()=>{const v=['★','+','−','×','÷','=','★'][i],b=mkBubble(0,v,cx+rnd(-60,60),H+r0*2,r0*.85,PAL[i]);b.vy=-1100;b.deco=1;bubbles.push(b);SND.bloop(1+i*.1)})}
-function toMenu(){S.free=false;$('dots').style.visibility='';S.mode='menu';S.ghost=null;S.act=null;S.busy=false;queue=[];['hud','card','end','tip','tools'].forEach(id=>$(id).classList.add('hidden'));$('msg').classList.remove('show');$('menu').classList.remove('hidden');buildMenu();layout();bubbles.forEach(b=>{b.lock=false});clearRound(menuBubbles)}
+function toMenu(){S.free=false;S.chal=false;S.tear=null;goo.length=0;S.scene=null;$('dir').classList.add('hidden');$('help').classList.add('hidden');$('dots').style.visibility='';S.mode='menu';S.ghost=null;S.act=null;S.busy=false;queue=[];['hud','card','end','tip','tools'].forEach(id=>$(id).classList.add('hidden'));$('msg').classList.remove('show');$('menu').classList.remove('hidden');buildMenu();layout();bubbles.forEach(b=>{b.lock=false});clearRound(menuBubbles)}
 function menuBubbles(){layout();const labels=['1','+','2','×','3','=','÷','−'],cols=shuffle(PAL.slice());labels.forEach((l,i)=>later(i*.1,()=>{const b=mkBubble(0,l,cx+rnd(-80,80),H+r0*2,r0*(l.length>1?1:rnd(.85,1.1)),cols[i]);b.vy=-rnd(900,1200);b.deco=1;bubbles.push(b);SND.bloop(rnd(.8,1.3))}))}
 // ---------- helpers ----------
 const MIXC=(a,b)=>a.map((v,i)=>(v+b[i])/2),tint=(c,i)=>{const k=[1,.84,1.14,.92,1.07,.97][i%6];return c.map(v=>clamp(v*k,0,1))};
@@ -378,9 +376,11 @@ function startLeak(X){if(X.val<1||X.lock)return;hold(X);X.drag=false;const L=new
 function stepAct(dt){const A=S.act;if(!A)return;A.t+=dt;const b=A.b;
  if(A.type==='blow'){goTo(b,ptr.x,ptr.y-b.rr-18);
   if(A.t>=A.next&&A.n<Math.min(150,S.T*2+10)){A.n++;setVal(b,A.n);b.kv+=2.5;A.next=A.t+stepGap(A.t);const ms=mains();setCard(ms.length===1?ms[0].val:S.a,'+',A.n,'?');SND.bloop(1+Math.min(A.n,24)*.045);hiss(.12,.04,900)}}
+ else if(A.type==='cut'){if(A.t>=A.next&&A.k<A.kmax){A.k++;A.next=A.t+stepGap(A.t)*1.3;A.src.kv-=1;setCard(A.g.total,'÷',A.k,'?');osc('triangle',480+A.k*40,700+A.k*40,.06,.1);hiss(.05,.05,2500)}}
  else{const X=A.src;let dx=ptr.x-X.x,dy=ptr.y-X.y,L=Math.hypot(dx,dy);if(L<5){dx=0;dy=-1;L=1}A.dir=[dx/L,dy/L];goTo(b,X.x+dx/L*(X.rr+b.rr*.8),X.y+dy/L*(X.rr+b.rr*.8));
   if(A.t>=A.next&&X.val>0){A.n++;setVal(X,X.val-1);if(X.val===0)X.r=RMIN*.45;b.val=A.n;b.r=rOf(A.n);b.label='−'+A.n;b.kv+=2;X.kv-=1.5;A.next=A.t+stepGap(A.t);setCard(A.v0,'−',A.n,'?');osc('sine',1300-Math.min(A.n,30)*25,700,.07,.1);hiss(.1,.06,3000)}}}
 function endAct(){const A=S.act;S.act=null;if(!A)return;const b=A.b;
+ if(A.type==='cut'){if(bubbles.includes(A.src))knife(A.src,A.k);return}
  if(A.type==='blow'){free(b);b.vy=-60;b.kv+=3;SND.plop(1.3);if(mains().length){say(TX[lang].dragIt,2.2);S.pulse=2.5}}
  else{const X=A.src;free(X);goTo(b,b.x+(A.dir?A.dir[0]:0)*60,b.y-70);text(b.x,b.y-b.rr-10,'−'+A.n);
   later(.45,()=>{if(bubbles.includes(b)){popB(b,12,520);SND.plop(1.2)}});showEq(A.v0,'−',A.n,X.val);
@@ -393,61 +393,167 @@ function wand(X){if(X.val<1)return;if(!X.fam){X.fam=++famId;X.base=X.val;X.mul=1
  text(X.x,X.y-X.rr-14,'×'+count);setCard(X.base,'×',count,'?');S.cardT=2.6;SND.bell(880*Math.pow(2,Math.min(count,12)/12),0,.12);SND.bloop(1.2);burst({x:T2.x,y:T2.y,rr:T2.r*.6},6,300,[[1,1,1],X.col]);
  if(count===2)say(TX[lang].twins,2.2)}
 // knife: tap to cut into equal parts; tap again for one more part (after the last cut it becomes whole again)
-function knife(X){const members=X.grp?bubbles.filter(b=>b.grp===X.grp):[X],total=members.reduce((s,b)=>s+b.val,0),parts=members.filter(b=>!b.remP).length;
- let k=X.grp?parts+1:2;if(k>Math.min(12,total))k=1;
+const groupOf=X=>{const members=X.grp?bubbles.filter(b=>b.grp===X.grp):[X];return{members,total:members.reduce((s,b)=>s+b.val,0),parts:members.filter(b=>!b.remP).length}};
+// hold the cutter on a bubble: the number of parts counts up with slice lines drawn on it; let go to cut
+function startCut(X){if(X.lock||X.remP||X.val<2)return;const g=groupOf(X);S.act={type:'cut',src:X,g,k:2,t:0,next:stepGap(0)*1.3,kmax:Math.min(12,g.total)};ptr.mode='act';X.kv-=2;setCard(g.total,'÷',2,'?');osc('triangle',500,700,.06,.1)}
+function knife(X,kForce){const {members,total,parts}=groupOf(X);
+ let k=kForce||(X.grp?parts+1:2);if(k>Math.min(12,total))k=1;
  let px=0,py=0;members.forEach(b=>{px+=b.x/members.length;py+=b.y/members.length});const main=members.some(b=>b.main),col=(members.find(b=>!b.remP)||X).col,s=X.s;members.forEach(kill);
  SND.squish();hiss(.12,.12,1800);ripple(px,py,5);
  if(k===1){const b=newB(total,px,py,col,{main,s});b.rr=b.r*.8;b.kv=6;showEq(total,'÷',1,total);text(px,py-b.r-12,'÷1');return}
  const q=Math.floor(total/k),rem=total%k,grp={},rp=rOf(q),pos=ringPos(k,rp,px,py),ctr=pos[k];
  for(let i=0;i<k;i++){const P=newB(q,ctr.x,ctr.y,tint(col,i),{main,grp,lock:true,s});P.rr=rp*.45;P.kv=5;goTo(P,pos[i].x,pos[i].y);later(.45,()=>free(P));later(i*.04,()=>SND.bloop(1+i*.05))}
  if(rem){const Rm=newB(rem,ctr.x,ctr.y,[.86,.87,.93],{grp,lock:true,remP:true});Rm.rr=0;later(.45,()=>free(Rm))}
- text(ctr.x,ctr.y-ctr.R-rp-14,'÷'+k);showEq(total,'÷',k,rem?`${q} r${rem}`:q);if(rem)say(TX[lang].leftover(total,k,q,rem)+(q===S.T?' '+TX[lang].cutMore:''),2.8)}
+ text(ctr.x,ctr.y-ctr.R-rp-14,'÷'+k);showEq(total,'÷',k,rem?`${q} r${rem}`:q);const t=TX[lang],fb=S.free?'':q>S.T?t.cutBig:q<S.T?t.cutSmall:rem?t.cutMore:'';if(rem||fb)say((rem?t.leftover(total,k,q,rem)+' ':'')+fb,3)}
 // drop one bubble on another: they always ADD up
 function mergeB(a,b){hold(a,b);const mx=b.x*.65+a.x*.35,my=b.y*.65+a.y*.35;goTo(a,mx,my);goTo(b,mx,my);SND.squish();buzz(12);
  later(.2,()=>{kill(a);kill(b);const v=a.val+b.val,same=a.fam&&a.fam===b.fam,big=a.r>b.r?a:b,m=newB(v,mx,my,MIXC(a.col,b.col),{main:a.main||b.main,kv:7,s:big.s});m.rr=Math.max(a.rr,b.rr);
   if(same){m.fam=a.fam;m.base=a.base;m.mul=a.mul+b.mul;showEq(a.base,'×',m.mul,v);text(mx,my-m.r-12,Array(m.mul).fill(a.base).join('+'),clamp(Math.min(W,H)*.045,18,30))}
   else{const [p,q]=b.main&&!a.main?[b,a]:[a,b];showEq(p.val,'+',q.val,v)}
   ripple(mx,my,6);kick(rnd(-60,60),90);S.pulse=0})}
-function win(b){S.won=true;S.winB=b;hold(b);goTo(b,S.ghost.x,S.ghost.y);b.gT=1;S.streak++;SND.melody(S.streak-1);$('card').classList.remove('bad');$('card').classList.add('good');$('ct').textContent=S.T;S.cardT=0;cardAnim('pop');buzz(20);
- later(.4,()=>{b.r=S.ghost.r;S.flash=1;ripple(S.ghost.x,S.ghost.y,10);SND.bloop(1.5);b.kv+=6});
- later(.95,()=>{S.round++;dotsUI();kill(b);burst(b,28,850,[b.col,b.col.map(v=>Math.min(1,v*1.25))]);ripple(b.x,b.y,18);kick(rnd(-300,300),-420);jiggleAll(b.x,b.y,5);rings.push({x:b.x,y:b.y,r:b.r,t:0});SND.plop(.9);SND.plop(1.3,.05);
-  say(S.streak>=3?TX[lang].streak(S.streak)+' '+TX[lang].great[rint(0,6)]:TX[lang].great[rint(0,6)],1.3);
-  later(1.1,()=>{S.ghost=null;S.round>=ROUNDS?clearRound(finish):clearRound(startRound)})})}
-function idleChecks(dt){if(S.mode!=='play'||S.won||S.busy||S.act||ptr.mode==='drag')return;if(S.free){if(S.cardT>0)S.cardT-=dt;return}
- if(S.cardT>0){S.cardT-=dt;if(S.cardT<=0)cardIdle()}
- const ms=mains();if(!ms.length){if(!bubbles.some(b=>b.lock)){S.busy=true;later(.5,()=>{spawnMain();S.busy=false})}return}
- if(bubbles.some(b=>b.lock))return;
- if(!bubbles.some(b=>b.remP)){const w=ms.find(b=>b.val===S.T);if(w){win(w);return}}
- const others=bubbles.some(b=>!b.main);if(ms.length===1&&!others){const v=ms[0].val;if(v!==S.hintV){S.hintV=v;const t=TX[lang];
-  if(v>S.T&&(S.op==='+'||S.op==='×'))say(t.tooBig+' '+(S.tools.includes('−')&&S.op==='+'?t.usePin:t.useReset),2.6);
-  else if(v<S.T&&S.op==='−')say(t.tooSmall+' '+(S.tools.includes('+')?t.useStraw:t.useReset),2.6)}}}
+function idleChecks(dt){if(S.free&&S.cardT>0)S.cardT-=dt}
+// ---------- challenge: pick the right two bubbles; squish to grow (+ ×), stick on and pull to shrink (− ÷) ----------
+const DIVMAX=12;let goo=[];
+function calc(a,b,op){const x=Math.max(a,b),y=Math.min(a,b);
+ if(op==='+')return{v:a+b,l:a,r:b};if(op==='−')return{v:x-y,l:x,r:y};if(op==='×')return{v:a*b,l:a,r:b};
+ return{v:x%y?null:x/y,l:x,r:y,q:Math.floor(x/y),rem:x%y}}
+function chalGen(){const w=WORLDS[S.world],ops=[...S.ops],op=ops[rint(0,ops.length-1)],A=w.add,M=w.mul,n=w.n;let a,b,T;
+ if(op==='+'){T=rint(Math.max(3,Math.round(A*.3)),A);a=rint(1,T-1);b=T-a}
+ else if(op==='−'){a=rint(Math.max(3,Math.round(A*.35)),A);b=rint(1,a-1);T=a-b}
+ else if(op==='×'){const lo=M<=3?1:2;a=rint(lo,M);b=rint(2,Math.max(2,M));T=a*b}
+ else{b=rint(2,Math.max(2,M));const q=rint(M<=3?1:2,Math.max(2,M));a=b*q;T=q}
+ const vals=[a,b];let g=0;
+ while(vals.length<n&&g++<300){let d;if(op==='+'||op==='−')d=rint(1,Math.max(2,A-1));else if(op==='×')d=rint(1,M+1);else d=Math.random()<.5?rint(2,Math.max(2,M)):rint(1,M)*rint(2,Math.max(2,M));
+  if(d===T||(vals.includes(d)&&Math.random()<.85))continue;vals.push(d)}
+ return{op,T,vals:shuffle(vals)}}
+function fitUnit(vals){const sw=W*.92,sh=Math.max(200,S.bot-S.top);let mx=Math.max(...vals,S.T);for(const a of vals)for(const b of vals){if(S.op==='+')mx=Math.max(mx,a+b);if(S.op==='×')mx=Math.max(mx,a*b)}
+ const sum=vals.reduce((a,b)=>a+b,0)+S.T;RMIN=clamp(Math.min(W,H)*.045,20,30);
+ S.u=Math.min(Math.sqrt(.3*sw*sh/(PI*sum)),.31*Math.min(sw,sh)/Math.sqrt(mx))}
+function chalLayout(){const cr=$('card').getBoundingClientRect(),d=$('dir');d.style.top=(cr.bottom+8)+'px';const top=Math.max(cr.bottom,d.getBoundingClientRect().bottom)+8,tp=$('tip').getBoundingClientRect();
+ S.top=top;S.bot=(tp.height?tp.top:H-16)-6;cx=W/2;cy=(S.top+S.bot)/2}
+function dirUI(){const t=TX[lang],up=S.op==='+'||S.op==='×',d=$('dir');d.className=up?'up':'down';d.innerHTML=`<i>${up?'⬆':'⬇'}</i>${t.dir[S.op]}`;$('tip').innerHTML='<small>'+t.how[S.op]+'</small>';$('tip').classList.remove('hidden')}
+function startGame(){audio();queue=[];S.busy=true;S.free=false;S.chal=true;S.T=0;S.ghost=null;S.act=null;S.won=false;S.tear=null;goo.length=0;S.scene=null;S.mode='play';S.round=0;S.mistakes=0;S.streak=0;save.world=S.world;save.ops=[...S.ops];persist();
+ ['menu','end','tools','help'].forEach(id=>$(id).classList.add('hidden'));['hud','card','dir'].forEach(id=>$(id).classList.remove('hidden'));$('dots').style.visibility='';
+ dotsUI();applyTheme();clearRound(chalRound)}
+function chalRound(){const R=chalGen();S.op=R.op;S.T=R.T;S.wrongs=0;S.scene=null;dirUI();cardIdle();cardAnim('pop');chalLayout();
+ const cols=shuffle(PAL.slice());S.busy=true;for(const b of bubbles.filter(b=>b.deco)){kill(b);burst(b,7,520,[b.col])}
+ fitUnit(R.vals);R.vals.forEach((v,i)=>later(.12+i*.11,()=>{const r=rOf(v),b=mkBubble(v,v,cx+rnd(-1,1)*Math.min(W*.3,S.u*8),H+r*1.5+i*10,r,cols[i%cols.length]);b.vy=-rnd(900,1250);b.kv=2;bubbles.push(b);SND.bloop(rnd(.8,1.3))}));
+ later(.12+R.vals.length*.11+.25,()=>{S.busy=false})}
+function splitBack(m,list){kill(m);const ang=rnd(0,PI),ux=Math.cos(ang),uy=Math.sin(ang);list.forEach((o,i)=>{const sg=i?-1:1,b=newB(o.val,m.x+ux*sg*m.r*.3,m.y+uy*sg*m.r*.3,o.col,{s:o.s});b.rr=b.r*.8;b.vx=ux*sg*420;b.vy=uy*sg*420;b.kv=5});SND.bloop(.8);ripple(m.x,m.y,5)}
+const snap=b=>({val:b.val,col:b.col,s:b.s});
+function beginMerge(a,b){const R=calc(a.val,b.val,S.op);S.busy=true;hold(a,b);S.scene={x:cx,y:cy,R:(a.r+b.r)*.9};setCard(R.l,S.op,R.r,S.T);SND.squish();buzz(12);
+ const X=a.val>=b.val?a:b,Y=X===a?b:a;({'+':doAdd,'−':doSub,'×':doMul,'÷':doDiv})[S.op](a,b,X,Y,R)}
+function doAdd(a,b,X,Y,R){const mx=cx,my=cy,A=snap(a),B=snap(b);goTo(a,mx,my);goTo(b,mx,my);
+ later(.22,()=>{kill(a);kill(b);const m=newB(R.v,mx,my,MIXC(a.col,b.col),{lock:true,kv:7});m.rr=Math.max(a.rr,b.rr);ripple(mx,my,6);kick(rnd(-60,60),90);
+  judge(m,R,[],()=>splitBack(m,[A,B]))})}
+// subtraction: the small bubble sticks onto the big one; pull it away to tear off a chunk of the same size
+function doSub(a,b,X,Y,R){const x=X.val,y=Y.val;let ux=Y.x-X.x,uy=Y.y-X.y;const L=Math.hypot(ux,uy);if(L<1){ux=0;uy=1}else{ux/=L;uy/=L}
+ const pr=rOf(y),c={x:cx,y:cy};S.scene.R=Math.min(X.r+pr*2.2+Y.r*1.8+20,Math.min(W,H)*.42);goTo(X,c.x,c.y);
+ const P=newB(y,c.x+ux*(X.r-pr),c.y+uy*(X.r-pr),X.col,{lock:true,s:X.s,label:''});P.r0=pr;P.r=pr*.55;P.rr=pr*.4;
+ const T={X,Y,P,x,y,d:x-y,R,XS:snap(X),YS:snap(Y),c,ux,uy,s:0,pull:false,gx:0,gy:0,idle:-.6,done:false,xr:X.r,lim:pr*2+26,place:tearPlace,snap:tearSnap};S.tear=T;tearPlace(T);
+ later(.4,()=>{if(S.tear===T&&!T.pull)say(TX[lang].pull,2.4)})}
+function tearPlace(T){const {X,Y,P,c,ux,uy,s}=T,pr=P.r0,k=Math.min(1,s/T.lim),sh=s*.12,pd=X.r-pr*.95+s,yd=pd+pr*.95+Y.r*.8;
+ P.r=pr*(.55+.45*Math.min(1,k*2.5));
+ X.tgt={x:c.x+ux*sh,y:c.y+uy*sh};P.tgt={x:c.x+ux*pd,y:c.y+uy*pd};Y.tgt={x:c.x+ux*yd,y:c.y+uy*yd};
+ goo.length=0;if(s>3){const ax=X.x+ux*X.r*.75,ay=X.y+uy*X.r*.75,nr=Math.min(pr,X.r)*.5;
+  for(let i=1;i<=3;i++){const t=i/4;goo.push({x:ax+(P.x-ax)*t,y:ay+(P.y-ay)*t,rr:Math.max(3,nr*(1-.75*k*Math.sin(PI*t))),col:X.col,k:0,a:0,glow:0})}}}
+function tearUpdate(dt){const T=S.tear;if(!T||T.done)return;const {X,Y}=T;
+ if(T.pull){const px=ptr.x+T.gx-T.c.x,py=ptr.y+T.gy-T.c.y,D=Math.hypot(px,py)||1,e=Math.min(1,dt*9);
+  const nx=T.ux+(px/D-T.ux)*e,ny=T.uy+(py/D-T.uy)*e,nl=Math.hypot(nx,ny)||1;T.ux=nx/nl;T.uy=ny/nl;
+  const s=Math.max(0,D-(T.xr+Y.r*.8))*.85;if(s>T.s+6)SND.tiny();T.s=s;
+  if(T.P){X.a=Math.atan2(T.uy,T.ux);X.k=Math.max(X.k,Math.min(1,s/T.lim)*.22)}else X.kv+=rnd(-1,1)*Math.min(1,s/T.lim)*.8;
+  if(s>=T.lim){T.place(T);T.snap(T);return}}
+ else{T.idle+=dt;const ph=T.idle%2.4;T.s=ph>0&&ph<.5?Math.sin(ph/.5*PI)*14:T.s*Math.exp(-12*dt);if(ph>0&&ph<dt*1.5)Y.kv+=3}
+ T.place(T)}
+function tearSnap(T){T.done=true;T.pull=false;goo.length=0;const {X,Y,P,c,ux,uy,x,y,XS,YS}=T,sx=X.x+ux*X.r,sy=X.y+uy*X.r;
+ X.val=T.d;X.label=String(T.d);X.r=rOf(T.d);X.kv-=7;X.k=0;X.tgt={x:c.x,y:c.y};
+ P.r=P.r0;P.label=String(y);P.kv+=6;
+ for(let i=0;i<9;i++){const an=Math.atan2(uy,ux)+rnd(-1.3,1.3)+(i%2?0:PI),v=rnd(150,420);addDrop(sx,sy,Math.cos(an)*v,Math.sin(an)*v,P.r0*rnd(.1,.22),X.col)}
+ SND.squish();SND.plop(.7,.04);buzz(20);ripple(sx,sy,8);kick(-ux*120,-uy*120);
+ const fx=clamp(P.x+ux*50,P.r0+10,W-P.r0-10),fy=clamp(P.y+uy*50,S.top+P.r0,S.bot-P.r0);goTo(P,fx,fy);goTo(Y,fx+ux*(P.r0+Y.r)*1.05,fy+uy*(P.r0+Y.r)*1.05);
+ text(fx,fy-P.r0-10,'−'+y);
+ later(.6,()=>{const mx=(P.x+Y.x)/2,my=(P.y+Y.y)/2;goTo(P,mx,my);goTo(Y,mx,my);
+  later(.24,()=>{popB(P,10,520);popB(Y,10,520);SND.plop(1.1);SND.plop(.8,.06);ripple(mx,my,6);kick(rnd(-50,50),60);
+   later(.3,()=>{S.tear=null;if(T.d<=0)popB(X,8,400);
+    judge(T.d>0?X:null,T.R,[],()=>{let X2=X;if(!bubbles.includes(X2))X2=newB(x,mx,my,XS.col,{s:XS.s});X2.val=x;X2.label=String(x);X2.r=rOf(x);X2.kv+=5;free(X2);
+     const Y2=newB(y,X2.x+ux*(X2.r+rOf(y)),X2.y+uy*(X2.r+rOf(y)),YS.col,{s:YS.s});Y2.rr=0;Y2.vx=ux*300;Y2.vy=uy*300;SND.bloop(.9)})})})})}
+// multiplication: the count bubble makes copies of the group bubble, then they all melt into one
+function doMul(a,b,X,Y,R){const g=X.val,c=Y.val,GS=snap(X),CS=snap(Y),rp=rOf(g),pos=ringPos(c,rp,cx,cy),ctr=pos[c],copies=[X];S.scene={x:ctr.x,y:ctr.y,R:Math.hypot(pos[0].x-ctr.x,pos[0].y-ctr.y)+rp*1.15};
+ Y.label='×'+c;goTo(X,pos[0].x,pos[0].y);goTo(Y,c>1?ctr.x:pos[0].x+rp+Y.r,c>1?ctr.y:pos[0].y);
+ if(c<=6)say(`${c} × ${g} = ${Array(c).fill(g).join(' + ')}`,2.6);
+ for(let i=1;i<c;i++)later(.3+i*.17,()=>{const P=newB(g,ctr.x,ctr.y,tint(GS.col,i),{lock:true,s:GS.s});P.rr=P.r*.3;P.kv=5;goTo(P,pos[i].x,pos[i].y);copies.push(P);Y.kv-=2;SND.bloop(1+i*.07)});
+ later(.3+c*.17+.45,()=>{popB(Y,8,420);SND.plop(1.2);copies.forEach(p=>goTo(p,ctr.x,ctr.y));
+  later(.3,()=>{copies.forEach(kill);const m=newB(g*c,ctr.x,ctr.y,GS.col,{lock:true,kv:7,s:GS.s});m.rr=rp*1.3;ripple(ctr.x,ctr.y,8);kick(rnd(-60,60),100);
+   judge(m,R,[],()=>splitBack(m,[GS,CS]))})})}
+// division: the divisor sticks on, dashed cut lines slice the big bubble like a pie, and pulling it tears the bubble into equal pieces (plus the leftover)
+function doDiv(a,b,X,Y,R){const x=X.val,y=Y.val,q=R.q,rem=R.rem,XS=snap(X),YS=snap(Y),part=y<=DIVMAX,np=part?y:q,sz=part?q:y,rp=rOf(sz),pos=ringPos(np,rp,cx,cy),ctr=pos[np],ringR=Math.hypot(pos[0].x-ctr.x,pos[0].y-ctr.y);S.scene={x:ctr.x,y:ctr.y,R:Math.max(ringR+rp*1.15,X.r*1.05)+Y.r};
+ Y.label='÷'+y;goTo(X,ctr.x,ctr.y);let ux=Y.x-X.x,uy=Y.y-X.y;const L=Math.hypot(ux,uy);if(L<1){ux=0;uy=1}else{ux/=L;uy/=L}
+ const base=Math.atan2(uy,ux),cuts=[],pieces=[];let acc=0;
+ Array(np).fill(sz).concat(rem?[rem]:[]).forEach((v,i)=>{const span=v/x*TAU,lr=i>=np,pr=rOf(v),P=newB(v,ctr.x,ctr.y,lr?XS.col:tint(XS.col,i),{lock:true,s:XS.s,label:''});
+  cuts.push(base+acc);P.ang=base+acc+span/2;P.to=base+(i+.5)/np*TAU;acc+=span;P.r0=pr;P.r=pr*.45;P.rr=pr*.3;P.rem=lr;pieces.push(P)});
+ const T={X,Y,pieces,cuts,c:ctr,ux,uy,s:0,pull:false,gx:0,gy:0,idle:-.6,done:false,xr:X.r,lim:rp*1.6+30,place:divPlace,snap:divSnap,x,y,q,rem,np,sz,part,XS,YS,R,ringR};S.tear=T;divPlace(T);SND.squish();
+ later(.4,()=>{if(S.tear===T&&!T.pull)say(TX[lang].pull2,2.4)})}
+function divPlace(T){const {X,Y,c,s}=T,k=Math.min(1,s/T.lim),per=T.pieces.length>6?1:2;X.r=T.xr*(1-.25*k);X.tgt={x:c.x,y:c.y};goo.length=0;
+ for(const P of T.pieces){const dx=Math.cos(P.ang),dy=Math.sin(P.ang),d=Math.max(0,T.xr-P.r0*.9)*(1-.25*k)+s;P.r=P.r0*(.45+.55*Math.min(1,k*2));P.tgt={x:c.x+dx*d,y:c.y+dy*d};
+  if(s>3){const ax=X.x+dx*X.r*.6,ay=X.y+dy*X.r*.6,nr=Math.min(P.r0,X.r)*.45;for(let j=1;j<=per;j++){if(bubbles.length+goo.length>=MAXB-6)break;const t=j/(per+1);goo.push({x:ax+(P.x-ax)*t,y:ay+(P.y-ay)*t,rr:Math.max(3,nr*(1-.75*k*Math.sin(PI*t))),col:X.col,k:0,a:0,glow:0})}}}
+ const yd=X.r+Y.r*.8+s;Y.tgt={x:c.x+T.ux*yd,y:c.y+T.uy*yd}}
+function divSnap(T){T.done=true;T.pull=false;goo.length=0;const {X,Y,c,pieces,x,y,q,rem,np,sz,part,XS,YS,R,ringR}=T,rp=rOf(sz),ctr=c,main=pieces.filter(p=>!p.rem),Rm=pieces.find(p=>p.rem)||null;
+ kill(X);popB(Y,8,380);SND.squish();SND.plop(.7,.04);buzz(25);ripple(c.x,c.y,9);kick(rnd(-80,80),100);
+ for(const P of pieces){const dx=Math.cos(P.ang),dy=Math.sin(P.ang);P.r=P.r0;P.label=String(P.val);P.kv+=5;
+  for(let i=0;i<2;i++){const an=P.ang+rnd(-.6,.6),v=rnd(180,420);addDrop(c.x+dx*T.xr*.7,c.y+dy*T.xr*.7,Math.cos(an)*v,Math.sin(an)*v,P.r0*rnd(.1,.2),XS.col)}}
+ main.forEach((P,i)=>{later(i*.03,()=>SND.bloop(1.1+i*.05));goTo(P,c.x+Math.cos(P.to)*ringR,c.y+Math.sin(P.to)*ringR)});if(Rm){Rm.col=[.9,.9,.95];goTo(Rm,c.x,c.y)}
+ S.tear=null;
+ const t=TX[lang];say(np<=6?`${x} = ${Array(np).fill(sz).join(' + ')}${rem?' + '+rem:''}`:`${x} = ${np} × ${sz}${rem?' + '+rem:''}`,2.4);
+ later(.75,()=>{const pieces=main;if(rem)text(ctr.x,ctr.y+ringR+rp+24,t.left+' '+rem,clamp(Math.min(W,H)*.045,18,30));
+  if(pieces[0])text(part?pieces[0].x:ctr.x,part?pieces[0].y-rp-6:ctr.y-ringR-rp-10,part?'= '+q:q+' ×');
+  judge(pieces[0],R,pieces.slice(1).concat(Rm?[Rm]:[]),()=>{pieces.concat(Rm?[Rm]:[]).forEach(p=>goTo(p,ctr.x,ctr.y));
+   later(.28,()=>{pieces.forEach(kill);if(Rm)kill(Rm);const X2=newB(x,ctr.x,ctr.y,XS.col,{s:XS.s});X2.rr=X2.r*.9;X2.kv=6;
+    const Y2=newB(y,ctr.x+X2.r+rOf(y),ctr.y,YS.col,{s:YS.s});Y2.rr=0;Y2.vx=380;SND.bloop(.9);ripple(ctr.x,ctr.y,5)})},rem?t.notExact+' '+t.leftover(x,y,q,rem):null)})}
+function judge(m,R,extra,restore,msg){const ok=R.v===S.T;
+ if(ok){S.streak++;setCard(R.l,S.op,R.r,R.v,'good');cardAnim('pop');if(m)m.gT=1;SND.bloop(1.4);SND.melody(S.streak-1);
+  later(.5,()=>{S.scene=null;S.round++;dotsUI();const all=[m,...extra].filter(e=>e&&bubbles.includes(e));let cx2=0,cy2=0;all.forEach(e=>{cx2+=e.x/all.length;cy2+=e.y/all.length});
+   all.forEach((e,i)=>{kill(e);burst(e,i?10:26,i?600:820,[e.col,e.col.map(v=>Math.min(1,v*1.25))])});
+   ripple(cx2,cy2,18);kick(rnd(-300,300),-420);jiggleAll(cx2,cy2,5);if(m)rings.push({x:m.x,y:m.y,r:m.r,t:0});SND.plop(.9);SND.plop(1.3,.05);buzz(25);
+   say(S.streak>=3?TX[lang].streak(S.streak)+' '+TX[lang].great[rint(0,6)]:TX[lang].great[rint(0,6)],1.3);
+   later(1.15,()=>S.round>=ROUNDS?clearRound(finish):clearRound(chalRound))})}
+ else{S.streak=0;S.wrongs++;S.mistakes++;setCard(R.l,S.op,R.r,R.v??(R.q+' r'+R.rem),'bad');cardAnim('shake');SND.boing();if(m)m.shk=1;
+  say(msg||TX[lang].need+' '+S.T,2.2);later(R.v==null?2:1.5,()=>{restore();cardIdle();S.scene=null;later(.4,()=>{S.busy=false})})}}
+// ---------- lab help cards ----------
+function showHelp(o){const t=TX[lang],h=$('help');h.querySelector('.hi').innerHTML=ICON[o]+`<i class="b${'+−×÷'.indexOf(o)}">${o}</i>`;h.querySelector('h3').textContent=t.tn[o];
+ h.querySelector('ol').innerHTML=t.help[o].map(x=>`<li>${x}</li>`).join('');$('helpOk').textContent=t.ok;h.classList.remove('hidden');save.seen=save.seen||{};save.seen[o]=1;persist()}
+$('helpOk').addEventListener('click',()=>{$('help').classList.add('hidden');SND.bloop(1.2)});
 // ---------- input ----------
 const ptr={x:0,y:0,id:null,down:false,moved:0,b:null,sx:0,sy:0,t0:0,mode:null};let cand=null;
 function hit(x,y){let best=null,bd=1e9;for(const b of bubbles){if(b.lock)continue;const d=Math.hypot(b.x-x,b.y-y);if(d<b.rr*1.15&&d<bd){bd=d;best=b}}return best}
 function beginDrag(b){ptr.mode='drag';b.drag=true;b.ox=b.x-ptr.x;b.oy=b.y-ptr.y;SND.pick();bubbles.splice(bubbles.indexOf(b),1);bubbles.push(b)}
-cv.addEventListener('pointerdown',e=>{audio();if(ptr.down)return;const x=e.clientX+shake.x,y=e.clientY+shake.y;ptr.down=true;ptr.id=e.pointerId;ptr.x=x;ptr.y=y;ptr.sx=x;ptr.sy=y;ptr.moved=0;ptr.t0=S.time;
+cv.addEventListener('pointerdown',e=>{audio();if(ptr.down)return;const x=e.clientX+shake.x,y=e.clientY+shake.y,T=S.tear;
+ if(T&&!T.done&&S.mode==='play'&&(Math.hypot(T.Y.x-x,T.Y.y-y)<T.Y.rr*1.35+12||(T.P&&Math.hypot(T.P.x-x,T.P.y-y)<T.P.r0))){Object.assign(ptr,{down:true,id:e.pointerId,x,y,sx:x,sy:y,moved:0,b:null,mode:'tear'});T.pull=true;T.gx=T.Y.x-x;T.gy=T.Y.y-y;T.Y.kv-=2.5;SND.pick();try{cv.setPointerCapture(e.pointerId)}catch{}return}
+ptr.down=true;ptr.id=e.pointerId;ptr.x=x;ptr.y=y;ptr.sx=x;ptr.sy=y;ptr.moved=0;ptr.t0=S.time;
  const locked=S.mode==='play'&&(S.busy||S.won);ptr.b=locked?null:hit(x,y);ptr.mode=locked?null:'pending';if(ptr.b)ptr.b.kv-=1.5;try{cv.setPointerCapture(e.pointerId)}catch{}});
 cv.addEventListener('pointermove',e=>{if(!ptr.down||e.pointerId!==ptr.id)return;ptr.x=e.clientX+shake.x;ptr.y=e.clientY+shake.y;ptr.moved=Math.max(ptr.moved,Math.hypot(ptr.x-ptr.sx,ptr.y-ptr.sy));
- if(ptr.mode==='pending'&&ptr.moved>10){if(ptr.b&&!ptr.b.lock)beginDrag(ptr.b);else if(S.mode==='play'&&S.tool==='+')startBlow();else ptr.mode=null}});
+ if(ptr.mode==='pending'&&ptr.moved>10){if(ptr.b&&!ptr.b.lock)beginDrag(ptr.b);else if(S.mode==='play'&&S.free&&S.tool==='+')startBlow();else ptr.mode=null}});
 function release(e){if(!ptr.down||e.pointerId!==ptr.id)return;ptr.down=false;const b=ptr.b,mode=ptr.mode;ptr.b=null;ptr.mode=null;
+ if(mode==='tear'){const T=S.tear;if(T&&!T.done){T.pull=false;T.idle=-1.2;if(T.s>10){T.X.kv+=4;SND.bloop(.7)}}return}
  if(mode==='act'){endAct();return}
- if(mode==='drag'&&b){b.drag=false;if(cand&&bubbles.includes(cand)&&!cand.lock){if(S.mode==='play')mergeB(b,cand);else{cand.kv+=4;SND.bloop(1.2)}}else if(S.mode==='play')cardIdle();cand=null;return}
- if(mode==='pending'&&b){if(S.mode==='play'&&S.tool==='×'&&!b.remP)wand(b);else if(S.mode==='play'&&S.tool==='÷'&&!b.remP)knife(b);else{b.kv-=4.5;b.vy-=60;SND.poke(b.val||b.label.charCodeAt(0))}}}
+ if(mode==='drag'&&b){b.drag=false;if(cand&&bubbles.includes(cand)&&!cand.lock){if(S.mode==='play'&&S.chal){if(!S.busy)beginMerge(b,cand)}else if(S.mode==='play')mergeB(b,cand);else{cand.kv+=4;SND.bloop(1.2)}}else if(S.mode==='play')cardIdle();cand=null;return}
+ if(mode==='pending'&&b){if(S.mode==='play'&&S.free&&S.tool==='×'&&!b.remP)wand(b);else if(S.mode==='play'&&S.free&&S.tool==='÷'&&!b.remP)knife(b);else{b.kv-=4.5;b.vy-=60;SND.poke(b.val||b.label.charCodeAt(0))}}}
 cv.addEventListener('pointerup',release);cv.addEventListener('pointercancel',release);
 // ---------- simulation ----------
 function update(dt){S.time+=dt;
  for(let i=queue.length-1;i>=0;i--){queue[i].t-=dt;if(queue[i].t<=0){const f=queue[i].fn;queue.splice(i,1);f()}}
- if(ptr.mode==='pending'&&ptr.down&&S.mode==='play'&&!S.busy&&!S.won&&S.time-ptr.t0>.22&&ptr.moved<10){if(S.tool==='+')startBlow();else if(S.tool==='−'&&ptr.b)startLeak(ptr.b)}
- stepAct(dt);idleChecks(dt);if(S.pulse>0)S.pulse-=dt;if(S.flash>0)S.flash=Math.max(0,S.flash-dt*1.6);
+ if(ptr.mode==='pending'&&ptr.down&&S.mode==='play'&&S.free&&!S.busy&&!S.won&&S.time-ptr.t0>.22&&ptr.moved<10){if(S.tool==='+')startBlow();else if(S.tool==='−'&&ptr.b)startLeak(ptr.b);else if(S.tool==='÷'&&ptr.b)startCut(ptr.b)}
+ stepAct(dt);idleChecks(dt);tearUpdate(dt);if(S.pulse>0)S.pulse-=dt;if(S.flash>0)S.flash=Math.max(0,S.flash-dt*1.6);
  const dragB=bubbles.find(b=>b.drag);cand=null;
  if(dragB){let bd=1e9;for(const o of bubbles){if(o===dragB||o.lock)continue;const d=Math.hypot(o.x-dragB.x,o.y-dragB.y),lim=(o.r+dragB.r)*1.05;if(d<lim&&d<bd){bd=d;cand=o}}
-  if(S.mode==='play'){if(cand){const same=cand.fam&&cand.fam===dragB.fam;if(same)setCard(dragB.base,'×',dragB.mul+cand.mul,'?');else{const [p,q]=cand.main&&!dragB.main?[cand,dragB]:[dragB,cand];setCard(p.val,'+',q.val,'?')}}else cardIdle()}}
- const KC=S.mode==='menu'?3:4.2,G=S.mode==='play'?S.ghost:null,pul=S.pulse>0&&!dragB;
+  if(S.mode==='play'&&S.chal){if(!S.busy){if(cand){const R=calc(dragB.val,cand.val,S.op);setCard(R.l,S.op,R.r,S.T)}else setCard(dragB.val,S.op,null,S.T)}}
+  else if(S.mode==='play'){if(cand){const same=cand.fam&&cand.fam===dragB.fam;if(same)setCard(dragB.base,'×',dragB.mul+cand.mul,'?');else{const [p,q]=cand.main&&!dragB.main?[cand,dragB]:[dragB,cand];setCard(p.val,'+',q.val,'?')}}else cardIdle()}}
+ const KC=S.mode==='menu'?3:4.2,G=S.mode==='play'?S.ghost:null,pul=S.pulse>0&&!dragB;let hp=null;
+ if(S.chal&&S.mode==='play'&&S.wrongs>=2&&!S.busy){outer:for(const a of bubbles)for(const b of bubbles){if(a!==b&&!a.lock&&!b.lock&&calc(a.val,b.val,S.op).v===S.T){hp=[a,b];break outer}}}
  for(const b of bubbles){
-  b.gT=b.drag?.3:b===cand?1:(pul&&b.main)?.35+.35*Math.sin(S.time*7):b===S.winB?1:0;
+  b.gT=b.drag?.3:b===cand?1:(pul&&b.main)?.35+.35*Math.sin(S.time*7):b===S.winB?1:0;if(hp&&hp.includes(b)){const q=.5+.5*Math.sin(S.time*5);b.gT=Math.max(b.gT,.35+.6*q)}
   if(b.drag){const tx=ptr.x+b.ox,ty=ptr.y+b.oy,e=1-Math.exp(-28*dt),nx=b.x+(tx-b.x)*e,ny=b.y+(ty-b.y)*e;b.vx=(nx-b.x)/dt;b.vy=(ny-b.y)/dt;b.x=nx;b.y=ny}
-  else if(b.lock){if(b.tgt){const e=1-Math.exp(-13*dt),nx=b.x+(b.tgt.x-b.x)*e,ny=b.y+(b.tgt.y-b.y)*e;b.vx=(nx-b.x)/dt;b.vy=(ny-b.y)/dt;b.x=nx;b.y=ny}else{b.vx*=.8;b.vy*=.8}}
-  else{let ax=(cx-b.x)*KC,ay=(cy-b.y)*KC;const dx0=b.x-cx,dy0=b.y-cy;ax+=-dy0*.25;ay+=dx0*.25;
+  else if(b.lock){if(b.tgt){const e=1-Math.exp(-13*dt),nx=b.x+(b.tgt.x-b.x)*e,ny=b.y+(b.tgt.y-b.y)*e;b.vx=(nx-b.x)/dt;b.vy=(ny-b.y)/dt;b.x=nx;b.y=ny}else{b.vx*=.8;b.vy*=.8}if(b.shk){b.shk=Math.max(0,b.shk-dt*1.2);b.sx=Math.sin(S.time*38)*9*b.shk}else b.sx=0}
+  else{let ax=(cx-b.x)*KC,ay=(cy-b.y)*KC;if(S.scene){const sc=S.scene,dx=b.x-sc.x,dy=b.y-sc.y,d=Math.hypot(dx,dy)||1,want=sc.R+b.r+8,f=(want-d)*(d<want?14:KC);ax=dx/d*f;ay=dy/d*f}const dx0=b.x-cx,dy0=b.y-cy;ax+=-dy0*.25;ay+=dx0*.25;
    ax+=Math.sin(S.time*.9+b.r)*14;ay+=Math.cos(S.time*.7+b.r*1.3)*14;
    for(const o of bubbles){if(o===b)continue;let dx=b.x-o.x,dy=b.y-o.y,d=Math.hypot(dx,dy);if(d<.01){dx=rnd(-1,1);dy=rnd(-1,1);d=1}const nx=dx/d,ny=dy/d,rest=(b.rr+o.rr)*.97;
     if(b===cand&&o.drag){ax-=nx*Math.min(d,rest)*9;ay-=ny*Math.min(d,rest)*9;continue}
@@ -481,12 +587,15 @@ function drawTools(){const A=S.act;if(!A)return;ctx.save();ctx.lineCap='round';
  if(A.type==='blow'){const b=A.b,[x,y]=disp(b.x,b.y),sx=x+b.rr*.55,sy=y+b.rr*.85,ex=sx+46,ey=sy+70;
   ctx.lineWidth=13;ctx.strokeStyle='#fff';ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(ex,ey);ctx.stroke();ctx.setLineDash([7,8]);ctx.strokeStyle='#ff4f8a';ctx.lineWidth=13;ctx.stroke();ctx.setLineDash([]);
   ctx.font=`700 ${clamp(Math.min(W,H)*.05,20,34)}px Fredoka,system-ui,sans-serif`;ctx.textAlign='center';ctx.lineWidth=6;ctx.strokeStyle='rgba(40,10,60,.75)';ctx.strokeText('+'+A.n,ex+26,ey+14);ctx.fillStyle='#fff';ctx.fillText('+'+A.n,ex+26,ey+14)}
+ else if(A.type==='cut'){const X=A.src,[x,y]=disp(X.x,X.y),R=X.rr*1.08;ctx.strokeStyle='rgba(255,255,255,.95)';ctx.lineWidth=3.5;ctx.setLineDash([8,6]);ctx.lineDashOffset=-S.time*30;
+  for(let i=0;i<A.k;i++){const a=i/A.k*TAU-PI/2;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+Math.cos(a)*R,y+Math.sin(a)*R);ctx.stroke()}ctx.setLineDash([]);
+  const fs=clamp(Math.min(W,H)*.06,24,40);ctx.font=`700 ${fs}px Fredoka,system-ui,sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineWidth=7;ctx.strokeStyle='rgba(40,10,60,.8)';ctx.strokeText('÷'+A.k,x,y-R-fs*.6);ctx.fillStyle='#fff';ctx.fillText('÷'+A.k,x,y-R-fs*.6)}
  else if(A.dir){const X=A.src,[x,y]=disp(X.x,X.y),ux=-A.dir[1],uy=A.dir[0],px=x+ux*X.rr*.9,py=y+uy*X.rr*.9,hx=px+ux*58,hy=py+uy*58;
   ctx.lineWidth=4;ctx.strokeStyle='#dfe6f0';ctx.beginPath();ctx.moveTo(px-ux*14,py-uy*14);ctx.lineTo(hx,hy);ctx.stroke();ctx.fillStyle='#ff4f8a';ctx.beginPath();ctx.arc(hx,hy,8,0,TAU);ctx.fill();ctx.fillStyle='#ffffffa0';ctx.beginPath();ctx.arc(hx-2.5,hy-2.5,2.5,0,TAU);ctx.fill()}
  ctx.restore()}
 // ---------- render ----------
 function disp(x,y){let px=x,py=y;for(let k=0;k<3;k++){let sx=px+shake.x,sy=py+shake.y;for(const r of ripples){const dx=sx-r.x,dy=sy-r.y,L=Math.hypot(dx,dy)+.001,xx=(L-r.t*650)/80,a=r.amp*(RM?.3:1)*Math.sin(xx*3)*Math.exp(-xx*xx)*Math.exp(-r.t*1.6);sx+=dx/L*a;sy+=dy/L*a}px+=x-sx;py+=y-sy}return[px,py]}
-function render(){const all=bubbles.concat(drops);let n=0;
+function render(){const all=bubbles.concat(goo,drops);let n=0;
  for(const b of all){if(n>=MAXB)break;const i=n*4,isD=b.age!==undefined;let a=((b.a||0)%PI+PI)%PI;BA[i]=b.x+(b.sx||0);BA[i+1]=b.y;BA[i+2]=Math.max(.5,b.rr);BA[i+3]=a+4*Math.round(clamp(b.glow||0,0,1)*15);CA[i]=b.col[0];CA[i+1]=b.col[1];CA[i+2]=b.col[2];CA[i+3]=isD?0:b.k;const sp=b.s||Z4;SA[i]=sp[0];SA[i+1]=sp[1];SA[i+2]=sp[2];SA[i+3]=sp[3];n++}
  RA.fill(0);ripples.forEach((r,k)=>{RA[k*4]=r.x;RA[k*4+1]=r.y;RA[k*4+2]=r.t;RA[k*4+3]=r.amp});
  const w=WORLDS[S.world];
@@ -495,6 +604,10 @@ function render(){const all=bubbles.concat(drops);let n=0;
  ctx.setTransform(DPR,0,0,DPR,0,0);ctx.clearRect(0,0,W,H);
  for(const r of rings){const t=r.t/.6,[x,y]=disp(r.x,r.y);ctx.globalAlpha=(1-t)*.8;ctx.lineWidth=10*(1-t)+1;ctx.strokeStyle='#fff';ctx.beginPath();ctx.arc(x,y,r.r*(1+t*2.2),0,TAU);ctx.stroke()}ctx.globalAlpha=1;
  drawGhost();
+ const TR=S.tear;if(TR&&!TR.done){const al=clamp(1-TR.s/(TR.lim*.6),0,1)*.85;if(al>0){ctx.save();ctx.globalAlpha=al;ctx.setLineDash([9,8]);ctx.lineDashOffset=-S.time*30;ctx.lineWidth=3;ctx.strokeStyle='#fff';ctx.beginPath();
+  if(TR.P){const P=TR.P,[x,y]=disp(P.x,P.y);ctx.arc(x,y,P.r0*.98,0,TAU)}
+  else if(TR.cuts.length>1){const X=TR.X,[x,y]=disp(X.x,X.y),r=X.rr;for(const a of TR.cuts){ctx.moveTo(x+Math.cos(a)*r*.38,y+Math.sin(a)*r*.38);ctx.lineTo(x+Math.cos(a)*r*.97,y+Math.sin(a)*r*.97)}}
+  ctx.stroke();ctx.restore()}}
  ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineJoin='round';
  for(const b of bubbles){if(!b.label)continue;const [x,y]=disp(b.x+(b.sx||0),b.y),L=b.label.length,fs=Math.max(15,b.rr*(L===1?1.0:L===2?.84:.64)),s=1+b.k,al=clamp(b.rr/b.r*1.5-.4,0,1);if(al<=0)continue;
   ctx.save();ctx.translate(x,y+fs*.04);ctx.rotate(b.a);ctx.scale(s,1/s);ctx.rotate(-b.a);ctx.globalAlpha=al;ctx.font=`700 ${fs}px Fredoka,'Arial Rounded MT Bold',system-ui,sans-serif`;
@@ -522,7 +635,7 @@ const toggleSnd=()=>{S.muted=!S.muted;save.muted=S.muted;persist();audio();build
 $('home').addEventListener('click',toMenu);$('tomenu').addEventListener('click',toMenu);$('again').addEventListener('click',startGame);
 $('next').addEventListener('click',()=>{S.world=Math.min(WORLDS.length-1,S.world+1);S.ops=new Set(WORLDS[S.world].ops);startGame()});
 addEventListener('keydown',e=>{if(e.key==='Escape'&&S.mode!=='menu')toMenu();if(e.key==='Enter'&&S.mode==='menu')startGame()});
-window.__bloop={S,step:(n)=>{for(let i=0;i<n;i++)update(1/60)},get bubbles(){return bubbles},get drops(){return drops},startGame,startFree,toMenu,selectTool,resetRound};
+window.__bloop={S,step:(n)=>{for(let i=0;i<n;i++)update(1/60)},get bubbles(){return bubbles},get drops(){return drops},startGame,startFree,toMenu,selectTool,resetRound,calc,beginMerge,get tear(){return S.tear}};
 buildMenu();resize();menuBubbles();requestAnimationFrame(frame);
 })();
 </script>
