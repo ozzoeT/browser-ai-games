@@ -240,7 +240,7 @@ void main(){
 const $=id=>document.getElementById(id),TAU=Math.PI*2,PI=Math.PI,clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),rnd=(a,b)=>a+Math.random()*(b-a),rint=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
 const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 const RM=(()=>{try{return matchMedia('(prefers-reduced-motion: reduce)').matches}catch{return false}})();
-const MAXB=48,ROUNDS=10;
+const MAXB=48,ROUNDS=10,DIVMAX=20;
 const hex=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)/255);
 const PAL=['#ff3f9a','#ff8a1f','#ffd21f','#6fe33a','#1fd1ff','#4a6bff','#a64bff','#ff4a4a','#22e0b0'].map(hex);
 const WORLDS=[
@@ -385,7 +385,7 @@ function splitBack(m,list){kill(m);const ang=rnd(0,PI),ux=Math.cos(ang),uy=Math.
 const snap=b=>({val:b.val,col:b.col,s:b.s});
 function beginMerge(a,b){
  if(S.mode==='explore'){const t=TX[lang],mn=Math.min(a.val,b.val),R0=calc(a.val,b.val,S.op);let bad=null;
-  if((S.op==='+'||S.op==='×')&&R0.v>999)bad=t.big;else if(S.op==='×'&&mn>12)bad=t.mulMax;else if(S.op==='÷'&&bubbles.length+(mn<=12?mn:R0.q)>34)bad=t.many;
+  if((S.op==='+'||S.op==='×')&&R0.v>999)bad=t.big;else if(S.op==='×'&&mn>12)bad=t.mulMax;else if(S.op==='÷'&&bubbles.length+(mn<=DIVMAX?mn:R0.q)>40)bad=t.many;
   if(bad){say(bad,2.4);SND.boing();a.kv+=4;b.kv+=4;setCard();return}}
  const R=calc(a.val,b.val,S.op);S.busy=true;hold(a,b);S.scene={x:cx,y:cy,R:(a.r+b.r)*.9};setCard(R.l,R.r,S.T);SND.squish();buzz(12);
  const X=a.val>=b.val?a:b,Y=X===a?b:a;({'+':doAdd,'−':doSub,'×':doMul,'÷':doDiv})[S.op](a,b,X,Y,R)}
@@ -432,7 +432,7 @@ function doMul(a,b,X,Y,R){const g=X.val,c=Y.val,GS=snap(X),CS=snap(Y),rp=rOf(g),
   later(.3,()=>{copies.forEach(kill);const m=newB(g*c,ctr.x,ctr.y,GS.col,{lock:true,kv:7,s:GS.s});m.rr=rp*1.3;ripple(ctr.x,ctr.y,8);kick(rnd(-60,60),100);
    judge(m,R,[],()=>splitBack(m,[GS,CS]))})})}
 // division: the divisor latches on, dashed cut lines slice the big bubble like a pie, and pulling the divisor tears it into equal pieces (plus the leftover, if any)
-function doDiv(a,b,X,Y,R){const x=X.val,y=Y.val,q=R.q,rem=R.rem,XS=snap(X),YS=snap(Y),part=y<=12,np=part?y:q,sz=part?q:y,rp=rOf(sz),pos=ringPos(np,rp,cx,cy),ctr=pos[np],ringR=Math.hypot(pos[0].x-ctr.x,pos[0].y-ctr.y);S.scene={x:ctr.x,y:ctr.y,R:Math.max(ringR+rp*1.15,X.r*1.05)+Y.r};
+function doDiv(a,b,X,Y,R){const x=X.val,y=Y.val,q=R.q,rem=R.rem,XS=snap(X),YS=snap(Y),part=y<=DIVMAX,np=part?y:q,sz=part?q:y,rp=rOf(sz),pos=ringPos(np,rp,cx,cy),ctr=pos[np],ringR=Math.hypot(pos[0].x-ctr.x,pos[0].y-ctr.y);S.scene={x:ctr.x,y:ctr.y,R:Math.max(ringR+rp*1.15,X.r*1.05)+Y.r};
  Y.label='÷'+y;goTo(X,ctr.x,ctr.y);let ux=Y.x-X.x,uy=Y.y-X.y;const L=Math.hypot(ux,uy);if(L<1){ux=0;uy=1}else{ux/=L;uy/=L}
  const base=Math.atan2(uy,ux),cuts=[],pieces=[];let acc=0;
  Array(np).fill(sz).concat(rem?[rem]:[]).forEach((v,i)=>{const span=v/x*TAU,lr=i>=np,pr=rOf(v),P=newB(v,ctr.x,ctr.y,lr?XS.col:tint(XS.col,i),{lock:true,s:XS.s,label:''});
@@ -441,7 +441,7 @@ function doDiv(a,b,X,Y,R){const x=X.val,y=Y.val,q=R.q,rem=R.rem,XS=snap(X),YS=sn
  later(.4,()=>{if(S.tear===T&&!T.pull)say(TX[lang].pull2,2.4)})}
 function divPlace(T){const {X,Y,c,s}=T,k=Math.min(1,s/T.lim),per=T.pieces.length>6?1:2;X.r=T.xr*(1-.25*k);X.tgt={x:c.x,y:c.y};goo.length=0;
  for(const P of T.pieces){const dx=Math.cos(P.ang),dy=Math.sin(P.ang),d=Math.max(0,T.xr-P.r0*.9)*(1-.25*k)+s;P.r=P.r0*(.45+.55*Math.min(1,k*2));P.tgt={x:c.x+dx*d,y:c.y+dy*d};
-  if(s>3){const ax=X.x+dx*X.r*.6,ay=X.y+dy*X.r*.6,nr=Math.min(P.r0,X.r)*.45;for(let j=1;j<=per;j++){const t=j/(per+1);goo.push({x:ax+(P.x-ax)*t,y:ay+(P.y-ay)*t,rr:Math.max(3,nr*(1-.75*k*Math.sin(PI*t))),col:X.col,k:0,a:0,glow:0})}}}
+  if(s>3){const ax=X.x+dx*X.r*.6,ay=X.y+dy*X.r*.6,nr=Math.min(P.r0,X.r)*.45;for(let j=1;j<=per;j++){if(bubbles.length+goo.length>=MAXB-6)break;const t=j/(per+1);goo.push({x:ax+(P.x-ax)*t,y:ay+(P.y-ay)*t,rr:Math.max(3,nr*(1-.75*k*Math.sin(PI*t))),col:X.col,k:0,a:0,glow:0})}}}
  const yd=X.r+Y.r*.8+s;Y.tgt={x:c.x+T.ux*yd,y:c.y+T.uy*yd}}
 function divSnap(T){T.done=true;T.pull=false;ptr.tear=false;goo.length=0;const {X,Y,c,pieces,x,y,q,rem,np,sz,part,XS,YS,R,ringR}=T,rp=rOf(sz),ctr=c,main=pieces.filter(p=>!p.rem),Rm=pieces.find(p=>p.rem)||null;
  kill(X);popB(Y,8,380);SND.squish();SND.plop(.7,.04);buzz(25);ripple(c.x,c.y,9);kick(rnd(-80,80),100);
