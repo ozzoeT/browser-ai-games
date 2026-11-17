@@ -102,7 +102,7 @@ precision highp float;
 precision mediump float;
 #endif
 uniform vec2 uRes;uniform float uPx;uniform float uTime;uniform int uN;uniform int uTheme;uniform float uDark;uniform vec2 uShake;
-uniform vec4 uB[48];uniform vec4 uC[48];uniform vec4 uRip[4];
+uniform vec4 uB[48];uniform vec4 uC[48];uniform vec4 uS[48];uniform vec4 uRip[4];
 const float T=0.2262;
 vec3 hue(float h){return .5+.5*cos(6.2832*(h+vec3(0.,.333,.667)));}
 float hash(vec2 p){p=fract(p*vec2(123.34,456.21));p+=dot(p,p+45.32);return fract(p.x*p.y);}
@@ -154,30 +154,43 @@ void main(){
  for(int i=0;i<4;i++){vec4 r=uRip[i];if(r.w<=0.)continue;vec2 d=p-r.xy;float L=length(d)+.001;float x=(L-r.z*650.)/80.;p+=d/L*r.w*sin(x*3.)*exp(-x*x)*exp(-r.z*1.6);}
  vec2 uv=p/uRes;
  vec3 bg=background(p,uv);
- float f=0.;vec2 g=vec2(0.);vec3 col=vec3(0.);float ws=0.,rw=0.,gw=0.;
+ float f=0.;vec2 g=vec2(0.);float rw=0.;
+ float w1=0.,w2=0.,r1=1.,gl1=0.;vec3 c1=vec3(0.),c2=vec3(0.);vec2 g1=vec2(0.);
  for(int i=0;i<48;i++){
   if(i>=uN)break;
   vec4 b=uB[i];vec4 cc=uC[i];
-  vec2 d=p-b.xy;float R=b.z*1.6;float lim=R*1.75;
+  vec2 d=p-b.xy;float R=b.z*1.6;float lim=R*1.95;
   if(abs(d.x)>lim||abs(d.y)>lim)continue;
   float w4=floor(b.w/4.);float an=b.w-w4*4.;
   vec2 u=vec2(cos(an),sin(an));vec2 v=vec2(-u.y,u.x);float s=1.+cc.w;
   vec2 l=vec2(dot(d,u)/s,dot(d,v)*s);
+  vec4 sp=uS[i];
+  float th=atan(l.y,l.x+1e-5);
+  float m=1.+sp.y*cos(2.*th+sp.x+uTime*.55)+sp.z*cos(3.*th-sp.x*1.7-uTime*.41)+sp.w*cos(5.*th+sp.x*2.3+uTime*.7);
+  l/=m;
   float x=dot(l,l)/(R*R);if(x>=1.)continue;
   float q=1.-x;float w=q*q*q;
-  f+=w;g+=-6.*q*q/(R*R)*(l.x/s*u+l.y*s*v);
-  float cw=w*w*w;col+=cc.rgb*cw;ws+=cw;rw+=b.z*w;gw+=w4/15.*w;
+  vec2 gi=-6.*q*q/(R*R)*(l.x/s*u+l.y*s*v)/m;
+  f+=w;g+=gi;rw+=b.z*w;
+  if(w>w1){w2=w1;c2=c1;w1=w;c1=cc.rgb;g1=gi;r1=b.z;gl1=w4/15.;}
+  else if(w>w2){w2=w;c2=cc.rgb;}
  }
  vec3 outc=bg;
  if(f>.002){
-  vec3 base=col/max(ws,1e-6);float rad=rw/f;float glow=gw/f;
+  float sep=(w1-w2)/(w1+w2+1e-5);
+  vec3 base=mix(c2,c1,smoothstep(0.,.22,sep));
+  float seam=(1.-smoothstep(0.,.13,sep))*smoothstep(T*.25,T*.6,w2);
+  float rad=rw/f;float glow=gl1*smoothstep(0.,.3,sep);
   float halo=smoothstep(0.,T,f);halo*=halo;
   if(uDark>.5){outc+=base*halo*.38+base*glow*halo*.5;}
   else{outc=mix(outc,outc*(.5+.5*base),halo*.45);outc+=base*glow*halo*.35;}
   if(f>T*.7){
    float h=max(f-T,0.)/(1.-T);
-   vec2 sl=-g/(1.-T)*rad*.42/sqrt(max(h,.003));
-   vec3 n=normalize(vec3(sl,1.));
+   vec2 slU=-g/(1.-T)*rad*.42/sqrt(max(h,.003));
+   const float Tc=T*.3;
+   float hc=max(w1-Tc,0.)/(1.-Tc);
+   vec2 slC=-g1/(1.-Tc)*r1*.42/sqrt(max(hc,.003));
+   vec3 n=normalize(vec3(slU*.5+slC*.7,1.));
    vec3 Ld=normalize(vec3(-.45,-.7,.8));
    float dif=clamp(dot(n,Ld),0.,1.);
    float fres=pow(1.-n.z,2.);
@@ -189,10 +202,12 @@ void main(){
    vec3 Rf=reflect(-Ld,n);
    c+=vec3(1.)*(pow(max(Rf.z,0.),70.)*1.2+pow(max(Rf.z,0.),9.)*.16);
    c+=hue(.55+swirl)*.2*pow(max(dot(n,normalize(vec3(.65,.7,.25))),0.),5.);
+   c*=1.-.28*seam;
+   c+=(film*.6+.35)*pow(seam,5.)*.75;
    c+=glow*(base*.3+.10);
    float e=length(g)/uPx;
    float a=clamp((f-T)/max(e,1e-4)+.5,0.,1.);
-   float alpha=a*mix(.80,1.,clamp(fres*1.6,0.,1.));
+   float alpha=a*mix(.82,1.,clamp(fres*1.6+seam,0.,1.));
    outc=mix(outc,c,alpha);
   }
  }
@@ -214,14 +229,14 @@ const WORLDS=[
  {name:{en:'Neon Night',it:'Notte Neon'},age:'8–10',theme:2,dark:1,add:50,mul:10,ops:['×','÷'],n:7},
  {name:{en:'Lava Galaxy',it:'Galassia Lava'},age:'10+',theme:3,dark:1,add:100,mul:12,ops:['+','−','×','÷'],n:8}];
 const TX={
- en:{sub:'Squish the bubbles together to make the magic number!',world:'Choose a world',ops:'Operations',play:'Play  ▶',up:'up to',tables:'tables to',tip:'Drag a bubble onto another one to make',great:['Great!','Super!','Bloop-tastic!','Yes!','Amazing!','Splendid!','Wow!'],need:'Almost! We need',notExact:"It doesn't split evenly!",done:'World complete!',again:'Play again',next:'Next world',menu:'Menu',score:(m)=>m===0?'No mistakes at all!':m===1?'Only 1 mistake!':m+' tries to learn from',streak:(n)=>n+' in a row!'},
- it:{sub:'Schiaccia le bolle una sull\'altra per fare il numero magico!',world:'Scegli un mondo',ops:'Operazioni',play:'Gioca  ▶',up:'fino a',tables:'tabelline fino al',tip:'Trascina una bolla su un\'altra per fare',great:['Bravo!','Super!','Fantastico!','Sì!','Grande!','Splendido!','Wow!'],need:'Quasi! Ci serve',notExact:'Non si divide esatto!',done:'Mondo completato!',again:'Ancora',next:'Mondo dopo',menu:'Menu',score:(m)=>m===0?'Nessun errore!':m===1?'Solo 1 errore!':m+' tentativi per imparare',streak:(n)=>n+' di fila!'}};
+ en:{sub:'Squish the bubbles together to make the magic number!',world:'Choose a world',ops:'Operations',play:'Play  ▶',up:'up to',tables:'tables to',tip:'Drag a bubble onto another one to make',tip2:'Double-tap a bubble to split it',left:'leftover',leftover:(x,y,q,r)=>`${x} ÷ ${y} = ${q}, leftover ${r}`,great:['Great!','Super!','Bloop-tastic!','Yes!','Amazing!','Splendid!','Wow!'],need:'Almost! We need',notExact:"It doesn't split evenly!",done:'World complete!',again:'Play again',next:'Next world',menu:'Menu',score:(m)=>m===0?'No mistakes at all!':m===1?'Only 1 mistake!':m+' tries to learn from',streak:(n)=>n+' in a row!'},
+ it:{sub:'Schiaccia le bolle una sull\'altra per fare il numero magico!',world:'Scegli un mondo',ops:'Operazioni',play:'Gioca  ▶',up:'fino a',tables:'tabelline fino al',tip:'Trascina una bolla su un\'altra per fare',tip2:'Tocca due volte una bolla per spezzarla',left:'resto',leftover:(x,y,q,r)=>`${x} : ${y} = ${q}, resto ${r}`,great:['Bravo!','Super!','Fantastico!','Sì!','Grande!','Splendido!','Wow!'],need:'Quasi! Ci serve',notExact:'Non si divide esatto!',done:'Mondo completato!',again:'Ancora',next:'Mondo dopo',menu:'Menu',score:(m)=>m===0?'Nessun errore!':m===1?'Solo 1 errore!':m+' tentativi per imparare',streak:(n)=>n+' di fila!'}};
 let lang=(navigator.language||'en').toLowerCase().startsWith('it')?'it':'en';
 let save={};try{save=JSON.parse(localStorage.getItem('bloop-math')||'{}')}catch{}
 if(save.lang)lang=save.lang;
 const persist=()=>{try{localStorage.setItem('bloop-math',JSON.stringify(save))}catch{}};
-const S={mode:'menu',world:save.world??1,ops:new Set(save.ops||WORLDS[save.world??1].ops),time:0,round:0,mistakes:0,wrongs:0,streak:0,op:'+',T:0,busy:false,merge:null,muted:!!save.muted,tipShown:false};
-let bubbles=[],drops=[],ripples=[],queue=[],rings=[];
+const S={scene:null,u:20,top:130,mode:'menu',world:save.world??1,ops:new Set(save.ops||WORLDS[save.world??1].ops),time:0,round:0,mistakes:0,wrongs:0,streak:0,op:'+',T:0,busy:false,merge:null,muted:!!save.muted,tipShown:false};
+let bubbles=[],drops=[],ripples=[],queue=[],rings=[],texts=[];
 const shake={x:0,y:0,vx:0,vy:0};
 let W=1,H=1,DPR=1,Q=1,glScale=1,r0=50,cx=0,cy=0;
 // ---------- WebGL ----------
@@ -235,12 +250,12 @@ if(!gl.getProgramParameter(prog,gl.LINK_STATUS))throw new Error(gl.getProgramInf
 gl.useProgram(prog);
 const buf=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buf);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW);
 const aLoc=gl.getAttribLocation(prog,'a');gl.enableVertexAttribArray(aLoc);gl.vertexAttribPointer(aLoc,2,gl.FLOAT,false,0,0);
-const U={};['uRes','uPx','uTime','uN','uTheme','uDark','uShake','uB[0]','uC[0]','uRip[0]'].forEach(n=>U[n]=gl.getUniformLocation(prog,n));
-const BA=new Float32Array(MAXB*4),CA=new Float32Array(MAXB*4),RA=new Float32Array(16);
+const U={};['uRes','uPx','uTime','uN','uTheme','uDark','uShake','uB[0]','uC[0]','uS[0]','uRip[0]'].forEach(n=>U[n]=gl.getUniformLocation(prog,n));
+const BA=new Float32Array(MAXB*4),CA=new Float32Array(MAXB*4),SA=new Float32Array(MAXB*4),RA=new Float32Array(16);
 function resize(){W=innerWidth;H=innerHeight;DPR=Math.min(devicePixelRatio||1,2);glScale=Math.min(DPR,1.5)*Q;cv.width=Math.round(W*glScale);cv.height=Math.round(H*glScale);ov.width=Math.round(W*DPR);ov.height=Math.round(H*DPR);gl.viewport(0,0,cv.width,cv.height);layout()}
 function layout(){const n=S.mode==='menu'?8:WORLDS[S.world].n;
  if(S.mode==='menu'){const wide=W>H*1.15;r0=clamp(Math.min(W,H)*.075,30,70);cx=wide?W*.74:W*.5;cy=wide?H*.52:H*.86}
- else{const top=($('card').getBoundingClientRect().bottom||130)+10,avail=H-top-40;r0=clamp(Math.min(W*.92,avail)/(2.3*Math.sqrt(n)+.8),30,82);cx=W/2;cy=top+avail*.5+10}}
+ else{const top=($('card').getBoundingClientRect().bottom||130)+10,avail=H-top-40;S.top=top;r0=clamp(Math.min(W*.92,avail)/(2.3*Math.sqrt(n)+.8),30,82);cx=W/2;cy=top+avail*.5+10}}
 addEventListener('resize',resize);
 // ---------- audio ----------
 let AC=null,master=null,nbuf=null;
@@ -261,7 +276,8 @@ const SND={
  win:()=>{[0,4,7,12,7,12,16,19,24].forEach((n,i)=>SND.bell(523.25*Math.pow(2,n/12),i*.12,.16));for(let i=0;i<10;i++)SND.plop(rnd(.8,1.6),.1+i*.09)}};
 const buzz=ms=>{try{navigator.vibrate&&navigator.vibrate(ms)}catch{}};
 // ---------- blobs ----------
-function mkBubble(val,label,x,y,r,col){return{x,y,vx:0,vy:0,r,rr:0,col,val,label:String(label),k:0,kv:0,a:0,glow:0,gT:0,lock:false,drag:false,ox:0,oy:0,sx:0}}
+const Z4=[0,0,0,0];
+function mkBubble(val,label,x,y,r,col){return{s:[rnd(0,TAU),rnd(.06,.12),rnd(.03,.07),rnd(.01,.028)],x,y,vx:0,vy:0,r,rr:0,col,val,label:String(label),k:0,kv:0,a:0,glow:0,gT:0,lock:false,drag:false,ox:0,oy:0,sx:0}}
 function addDrop(x,y,vx,vy,r,col){if(bubbles.length+drops.length>=MAXB)drops.shift();drops.push({x,y,vx,vy,r,rr:r,col,age:0,abs:null})}
 function later(t,fn){queue.push({t,fn})}
 function ripple(x,y,amp){if(RM)amp*=.3;ripples.push({x,y,t:0,amp});if(ripples.length>4)ripples.shift()}
@@ -281,20 +297,24 @@ function genRound(){const w=WORLDS[S.world],ops=[...S.ops],op=ops[rint(0,ops.len
  return{op,T,vals:shuffle(vals)}}
 function calc(a,b,op){const x=Math.max(a,b),y=Math.min(a,b);
  if(op==='+')return{v:a+b,l:a,r:b};if(op==='−')return{v:x-y,l:x,r:y};if(op==='×')return{v:a*b,l:a,r:b};
- return{v:x%y?null:x/y,l:x,r:y}}
-function bubbleR(v){const d=String(v).length;return r0*(.9+.07*d)}
+ return{v:x%y?null:x/y,l:x,r:y,q:Math.floor(x/y),rem:x%y}}
+let RMIN=22;
+function rOf(v){return v<=0?RMIN*.5:Math.max(RMIN,S.u*Math.sqrt(v))}
+function fitUnit(vals){const top=S.top,sw=W*.92,sh=Math.max(200,H-top-40);let mx=Math.max(...vals,S.T);for(const a of vals)for(const b of vals){const r=calc(a,b,S.op);if(r.v!=null&&S.op!=='×'&&S.op!=='÷')mx=Math.max(mx,r.v);if(S.op==='×')mx=Math.max(mx,a*b)}
+ const sum=vals.reduce((a,b)=>a+b,0)+S.T;RMIN=clamp(Math.min(W,H)*.045,20,30);
+ S.u=Math.min(Math.sqrt(.3*sw*sh/(PI*sum)),.31*Math.min(sw,sh)/Math.sqrt(mx))}
 function setCard(a,b,t,cls){$('ca').textContent=a??'?';$('cb').textContent=b??'?';$('ca').classList.toggle('q',a==null);$('cb').classList.toggle('q',b==null);$('cop').textContent=SYM[S.op];$('ct').textContent=t??S.T;const c=$('card');c.classList.remove('good','bad');if(cls)c.classList.add(cls)}
 function cardAnim(n){const c=$('card');c.classList.remove('pop','shake');void c.offsetWidth;c.classList.add(n)}
 let msgT=0;function say(t,dur=1.6){const m=$('msg');m.textContent=t;m.classList.remove('show');void m.offsetWidth;m.classList.add('show');msgT=dur;const r=$('card').getBoundingClientRect();m.style.top=(r.bottom+8)+'px'}
-function startRound(){const R=genRound();S.op=R.op;S.T=R.T;S.wrongs=0;setCard();cardAnim('pop');layout();if(!S.tipShown){$('tip').textContent=TX[lang].tip+' '+S.T+'!';$('tip').classList.remove('hidden')}
+function startRound(){const R=genRound();S.op=R.op;S.T=R.T;S.wrongs=0;setCard();cardAnim('pop');layout();if(!S.tipShown){$('tip').innerHTML=TX[lang].tip+' '+S.T+'!<br><small>'+TX[lang].tip2+'</small>';$('tip').classList.remove('hidden')}
  const cols=shuffle(PAL.slice());S.busy=true;for(const b of bubbles.filter(b=>b.deco)){bubbles.splice(bubbles.indexOf(b),1);burst(b,7,520,[b.col])}
- R.vals.forEach((v,i)=>later(.12+i*.11,()=>{const r=bubbleR(v),b=mkBubble(v,v,cx+rnd(-1,1)*Math.min(W*.3,r0*3),H+r*1.5+i*10,r,cols[i%cols.length]);b.vy=-rnd(900,1250);b.kv=2;bubbles.push(b);SND.bloop(rnd(.8,1.3))}));
+ fitUnit(R.vals);R.vals.forEach((v,i)=>later(.12+i*.11,()=>{const r=rOf(v),b=mkBubble(v,v,cx+rnd(-1,1)*Math.min(W*.3,S.u*8),H+r*1.5+i*10,r,cols[i%cols.length]);b.vy=-rnd(900,1250);b.kv=2;bubbles.push(b);SND.bloop(rnd(.8,1.3))}));
  later(.12+R.vals.length*.11+.25,()=>{S.busy=false})}
 function clearRound(next){const list=bubbles.slice();list.sort((a,b)=>a.x-b.x);
  list.forEach((b,i)=>later(i*.09,()=>{const k=bubbles.indexOf(b);if(k<0)return;bubbles.splice(k,1);burst(b,7,520,[b.col]);SND.plop(1+i*.12);ripple(b.x,b.y,4)}));
  later(list.length*.09+.35,next)}
 function dotsUI(){const d=$('dots');if(d.children.length!==ROUNDS){d.innerHTML='';for(let i=0;i<ROUNDS;i++)d.appendChild(document.createElement('i'))}[...d.children].forEach((e,i)=>{const on=i<S.round;e.classList.toggle('on',on);e.style.background=on?`rgb(${PAL[i%PAL.length].map(v=>v*255|0)})`:''})}
-function startGame(){audio();queue=[];S.mode='play';S.round=0;S.mistakes=0;S.streak=0;S.merge=null;save.world=S.world;save.ops=[...S.ops];persist();
+function startGame(){audio();queue=[];S.scene=null;S.mode='play';S.round=0;S.mistakes=0;S.streak=0;S.merge=null;save.world=S.world;save.ops=[...S.ops];persist();
  $('menu').classList.add('hidden');$('end').classList.add('hidden');$('hud').classList.remove('hidden');$('card').classList.remove('hidden');
   dotsUI();applyTheme();layout();clearRound(startRound)}
 function finish(){S.mode='end';const m=S.mistakes,st=m<=1?3:m<=4?2:1,key='w'+S.world;save.stars=save.stars||{};save.stars[key]=Math.max(save.stars[key]||0,st);persist();
@@ -304,31 +324,79 @@ function finish(){S.mode='end';const m=S.mistakes,st=m<=1?3:m<=4?2:1,key='w'+S.w
  sp.forEach((s,i)=>setTimeout(()=>{s.className=i<st?'on':'off';if(i<st)SND.bell(660*Math.pow(2,i*4/12),0,.2)},400+i*350));
  SND.win();for(let i=0;i<36;i++)later(i*.04,()=>{const c=PAL[i%PAL.length];addDrop(rnd(0,W),-20,rnd(-120,120),rnd(0,300),r0*rnd(.15,.35),c)});
  for(let i=0;i<7;i++)later(.4+i*.12,()=>{const v=['★','+','−','×','÷','=','★'][i],b=mkBubble(0,v,cx+rnd(-60,60),H+r0*2,r0*.85,PAL[i]);b.vy=-1100;b.deco=1;bubbles.push(b);SND.bloop(1+i*.1)})}
-function toMenu(){S.mode='menu';S.merge=null;S.busy=false;queue=[];$('hud').classList.add('hidden');$('card').classList.add('hidden');$('end').classList.add('hidden');$('tip').classList.add('hidden');$('msg').classList.remove('show');$('menu').classList.remove('hidden');buildMenu();layout();bubbles.forEach(b=>{b.lock=false});clearRound(menuBubbles)}
+function toMenu(){S.scene=null;S.mode='menu';S.merge=null;S.busy=false;queue=[];$('hud').classList.add('hidden');$('card').classList.add('hidden');$('end').classList.add('hidden');$('tip').classList.add('hidden');$('msg').classList.remove('show');$('menu').classList.remove('hidden');buildMenu();layout();bubbles.forEach(b=>{b.lock=false});clearRound(menuBubbles)}
 function menuBubbles(){layout();const labels=['1','+','2','×','3','=','÷','−'],cols=shuffle(PAL.slice());labels.forEach((l,i)=>later(i*.1,()=>{const b=mkBubble(0,l,cx+rnd(-80,80),H+r0*2,r0*(l.length>1?1:rnd(.85,1.1)),cols[i]);b.vy=-rnd(900,1200);b.deco=1;bubbles.push(b);SND.bloop(rnd(.8,1.3))}))}
-// ---------- merge ----------
-function beginMerge(a,b){const R=calc(a.val,b.val,S.op);S.merge={a,b,t:0,ph:'pull',R};a.lock=b.lock=true;a.drag=false;S.busy=true;setCard(R.l,R.r,S.T);SND.squish();buzz(12)}
-function updateMerge(dt){const M=S.merge;if(!M)return;M.t+=dt;
- if(M.ph==='pull'){const mx=(M.a.x*.4+M.b.x*.6),my=(M.a.y*.4+M.b.y*.6),e=1-Math.exp(-20*dt);for(const b of[M.a,M.b]){b.x+=(mx-b.x)*e;b.y+=(my-b.y)*e;b.vx=b.vy=0}
-  if(M.t>.2){const {a,b,R}=M,ok=R.v===S.T,col=a.col.map((v,i)=>(v+b.col[i])/2),m=mkBubble(R.v??0,R.v??'?',mx,my,Math.hypot(a.r,b.r)*.83,col);m.rr=m.r*.95;m.kv=7;m.lock=true;
-   bubbles.splice(bubbles.indexOf(a),1);bubbles.splice(bubbles.indexOf(b),1);bubbles.push(m);M.m=m;M.ph='show';M.t=0;M.ok=ok;ripple(mx,my,ok?7:4);kick(rnd(-60,60),90);
-   if(ok){S.streak++;setCard(R.l,R.r,R.v,'good');cardAnim('pop');m.gT=1;SND.bloop(1.4);SND.melody(S.streak-1)}
-   else{S.streak=0;S.wrongs++;S.mistakes++;setCard(R.l,R.r,R.v??'?','bad');cardAnim('shake');SND.boing();say(R.v==null?TX[lang].notExact:TX[lang].need+' '+S.T)}}}
- else if(M.ph==='show'){const m=M.m;
-  if(M.ok){m.gT=1;if(M.t>.42){M.ph='done';S.round++;dotsUI();bubbles.splice(bubbles.indexOf(m),1);burst(m,26,820,[M.a.col,M.b.col,m.col]);ripple(m.x,m.y,18);kick(rnd(-300,300),-420);jiggleAll(m.x,m.y,5);rings.push({x:m.x,y:m.y,r:m.r,t:0,col:m.col});SND.plop(.9);SND.plop(1.3,.05);buzz(25);
-    say(S.streak>=3?TX[lang].streak(S.streak)+' '+TX[lang].great[rint(0,6)]:TX[lang].great[rint(0,6)],1.3);if(!S.tipShown){S.tipShown=true;$('tip').classList.add('hidden')}
-    S.merge=null;later(1.15,()=>S.round>=ROUNDS?clearRound(finish):clearRound(startRound))}}
-  else{m.sx=Math.sin(M.t*38)*9*Math.max(0,1-M.t/.9);if(M.t>1.15){const ang=rnd(0,PI),ux=Math.cos(ang),uy=Math.sin(ang);bubbles.splice(bubbles.indexOf(m),1);
-    [[M.a,1],[M.b,-1]].forEach(([o,s])=>{const b=mkBubble(o.val,o.label,m.x+ux*s*m.r*.3,m.y+uy*s*m.r*.3,o.r,o.col);b.rr=o.r*.9;b.vx=ux*s*420;b.vy=uy*s*420;b.kv=5;bubbles.push(b)});
-    SND.bloop(.8);ripple(m.x,m.y,5);setCard();S.merge=null;S.busy=false}}}}
+// ---------- choreography ----------
+const MIXC=(a,b)=>a.map((v,i)=>(v+b[i])/2),tint=(c,i)=>{const k=[1,.84,1.14,.92,1.07,.97][i%6];return c.map(v=>clamp(v*k,0,1))};
+function kill(b){const i=bubbles.indexOf(b);if(i>=0)bubbles.splice(i,1)}
+function newB(v,x,y,col,o){const b=mkBubble(v,v,x,y,rOf(v),col);Object.assign(b,o||{});bubbles.push(b);return b}
+function goTo(b,x,y){b.tgt={x,y}}
+function hold(...l){for(const b of l){b.lock=true;b.drag=false;b.tgt={x:b.x,y:b.y}}}
+function free(...l){for(const b of l){b.lock=false;b.tgt=null}}
+function popB(b,n,spd){kill(b);burst(b,n||10,spd||560,[b.col])}
+function text(x,y,t,size){texts.push({x,y,t,size:size||clamp(Math.min(W,H)*.06,22,40),age:0})}
+function ringPos(n,rp,x,y){const R=n<2?0:rp*1.06/Math.sin(PI/n),m=R+rp+8,lo=S.top+m,hi=H-m;const X=clamp(x,Math.min(m,W/2),Math.max(W-m,W/2)),Y=lo<hi?clamp(y,lo,hi):(S.top+H)/2;
+ return Array.from({length:n},(_,i)=>{const a=i/n*TAU-PI/2;return{x:X+Math.cos(a)*R,y:Y+Math.sin(a)*R}}).concat([{x:X,y:Y}])}
+function splitBack(m,list){kill(m);const ang=rnd(0,PI),ux=Math.cos(ang),uy=Math.sin(ang);list.forEach((o,i)=>{const sg=i?-1:1,b=newB(o.val,m.x+ux*sg*m.r*.3,m.y+uy*sg*m.r*.3,o.col,{s:o.s});b.rr=b.r*.8;b.vx=ux*sg*420;b.vy=uy*sg*420;b.kv=5});SND.bloop(.8);ripple(m.x,m.y,5)}
+const snap=b=>({val:b.val,col:b.col,s:b.s});
+function beginMerge(a,b){const R=calc(a.val,b.val,S.op);S.busy=true;hold(a,b);S.scene={x:cx,y:cy,R:(a.r+b.r)*.9};setCard(R.l,R.r,S.T);SND.squish();buzz(12);
+ const X=a.val>=b.val?a:b,Y=X===a?b:a;({'+':doAdd,'−':doSub,'×':doMul,'÷':doDiv})[S.op](a,b,X,Y,R)}
+function doAdd(a,b,X,Y,R){const mx=cx,my=cy,A=snap(a),B=snap(b);goTo(a,mx,my);goTo(b,mx,my);
+ later(.22,()=>{kill(a);kill(b);const m=newB(R.v,mx,my,MIXC(a.col,b.col),{lock:true,kv:7});m.rr=Math.max(a.rr,b.rr);ripple(mx,my,6);kick(rnd(-60,60),90);
+  judge(m,R,[],()=>splitBack(m,[A,B]))})}
+// subtraction: a piece the size of the small bubble buds off the big one, and both vanish together
+function doSub(a,b,X,Y,R){const x=X.val,y=Y.val,d=x-y,XS=snap(X),YS=snap(Y);let dx=Y.x-X.x,dy=Y.y-X.y;const L=Math.hypot(dx,dy)||1,ux=dx/L,uy=dy/L,sx=cx-ux*Y.r,sy=cy-uy*Y.r;
+ S.scene.R=X.r+Y.r*2.3;goTo(X,sx,sy);goTo(Y,sx+ux*(X.r+Y.r)*1.08,sy+uy*(X.r+Y.r)*1.08);
+ later(.3,()=>{const rd=rOf(d),P=newB(y,sx+ux*X.r*.25,sy+uy*X.r*.25,X.col,{lock:true,s:X.s});P.rr=P.r*.4;P.kv=4;
+  X.val=d;X.label=String(d);X.r=rd;X.kv+=6;
+  const px=sx+ux*(rd+P.r)*.98,py=sy+uy*(rd+P.r)*.98;goTo(P,px,py);goTo(Y,px+ux*(P.r+Y.r)*1.15,py+uy*(P.r+Y.r)*1.15);
+  SND.squish();text(px,py-P.r-6,'−'+y);
+  later(.75,()=>{const mx=(P.x+Y.x)/2,my=(P.y+Y.y)/2;goTo(P,mx,my);goTo(Y,mx,my);
+   later(.24,()=>{popB(P,10,520);popB(Y,10,520);SND.plop(1.1);SND.plop(.8,.06);ripple(mx,my,6);kick(rnd(-50,50),60);
+    later(.3,()=>{if(d<=0)popB(X,8,400);
+     judge(d>0?X:null,R,[],()=>{let X2=X;if(!bubbles.includes(X2))X2=newB(x,mx,my,XS.col,{s:XS.s});X2.val=x;X2.label=String(x);X2.r=rOf(x);X2.kv+=5;free(X2);
+      const Y2=newB(y,X2.x+ux*(X2.r+rOf(y)),X2.y+uy*(X2.r+rOf(y)),YS.col,{s:YS.s});Y2.rr=0;Y2.vx=ux*300;Y2.vy=uy*300;SND.bloop(.9)})})})})})}
+// multiplication: the count bubble makes copies of the group bubble, then they all melt into one
+function doMul(a,b,X,Y,R){const g=X.val,c=Y.val,GS=snap(X),CS=snap(Y),rp=rOf(g),pos=ringPos(c,rp,cx,cy),ctr=pos[c],copies=[X];S.scene={x:ctr.x,y:ctr.y,R:Math.hypot(pos[0].x-ctr.x,pos[0].y-ctr.y)+rp*1.15};
+ Y.label='×'+c;goTo(X,pos[0].x,pos[0].y);goTo(Y,c>1?ctr.x:pos[0].x+rp+Y.r,c>1?ctr.y:pos[0].y);
+ if(c<=6)say(`${c} × ${g} = ${Array(c).fill(g).join(' + ')}`,2.6);
+ for(let i=1;i<c;i++)later(.3+i*.17,()=>{const P=newB(g,ctr.x,ctr.y,tint(GS.col,i),{lock:true,s:GS.s});P.rr=P.r*.3;P.kv=5;goTo(P,pos[i].x,pos[i].y);copies.push(P);Y.kv-=2;SND.bloop(1+i*.07)});
+ later(.3+c*.17+.45,()=>{popB(Y,8,420);SND.plop(1.2);copies.forEach(p=>goTo(p,ctr.x,ctr.y));
+  later(.3,()=>{copies.forEach(kill);const m=newB(g*c,ctr.x,ctr.y,GS.col,{lock:true,kv:7,s:GS.s});m.rr=rp*1.3;ripple(ctr.x,ctr.y,8);kick(rnd(-60,60),100);
+   judge(m,R,[],()=>splitBack(m,[GS,CS]))})})}
+// division: the divisor cuts the big bubble into equal pieces (plus the leftover, if any)
+function doDiv(a,b,X,Y,R){const x=X.val,y=Y.val,q=R.q,rem=R.rem,XS=snap(X),YS=snap(Y),part=y<=12,np=part?y:q,sz=part?q:y,rp=rOf(sz),pos=ringPos(np,rp,cx,cy),ctr=pos[np],pieces=[],ringR=Math.hypot(pos[0].x-ctr.x,pos[0].y-ctr.y);S.scene={x:ctr.x,y:ctr.y,R:Math.max(ringR+rp*1.15,X.r*1.05)};
+ Y.label='÷'+y;goTo(X,ctr.x,ctr.y);goTo(Y,ctr.x,ctr.y);
+ later(.3,()=>{popB(Y,8,380);kill(X);SND.squish();ripple(ctr.x,ctr.y,7);
+  for(let i=0;i<np;i++)later(i*.06,()=>{const P=newB(sz,ctr.x,ctr.y,tint(XS.col,i),{lock:true,s:XS.s});P.rr=P.r*.4;P.kv=5;goTo(P,pos[i].x,pos[i].y);pieces.push(P);SND.bloop(1.1+i*.05)});
+  let Rm=null;if(rem){Rm=newB(rem,ctr.x,ctr.y,[.9,.9,.95],{lock:true});Rm.rr=0}
+  const t=TX[lang];say(np<=6?`${x} = ${Array(np).fill(sz).join(' + ')}${rem?' + '+rem:''}`:`${x} = ${np} × ${sz}${rem?' + '+rem:''}`,2.4);
+  later(np*.06+.75,()=>{if(rem)text(ctr.x,ctr.y+ringR+rp+24,t.left+' '+rem,clamp(Math.min(W,H)*.045,18,30));
+   if(pieces[0])text(part?pieces[0].x:ctr.x,part?pieces[0].y-rp-6:ctr.y-ringR-rp-10,part?'= '+q:q+' ×');
+   judge(pieces[0],R,pieces.slice(1).concat(Rm?[Rm]:[]),()=>{pieces.concat(Rm?[Rm]:[]).forEach(p=>goTo(p,ctr.x,ctr.y));
+    later(.28,()=>{pieces.forEach(kill);if(Rm)kill(Rm);const X2=newB(x,ctr.x,ctr.y,XS.col,{s:XS.s});X2.rr=X2.r*.9;X2.kv=6;
+     const Y2=newB(y,ctr.x+X2.r+rOf(y),ctr.y,YS.col,{s:YS.s});Y2.rr=0;Y2.vx=380;SND.bloop(.9);ripple(ctr.x,ctr.y,5)})},rem?t.notExact+' '+t.leftover(x,y,q,rem):null)})})}
+function judge(m,R,extra,restore,msg){const ok=R.v===S.T;
+ if(ok){S.streak++;setCard(R.l,R.r,R.v,'good');cardAnim('pop');if(m)m.gT=1;SND.bloop(1.4);SND.melody(S.streak-1);
+  later(.5,()=>{S.scene=null;S.round++;dotsUI();const all=[m,...extra].filter(e=>e&&bubbles.includes(e));let cx2=0,cy2=0;all.forEach(e=>{cx2+=e.x/all.length;cy2+=e.y/all.length});
+   all.forEach((e,i)=>{kill(e);burst(e,i?10:26,i?600:820,[e.col,e.col.map(v=>Math.min(1,v*1.25))])});
+   ripple(cx2,cy2,18);kick(rnd(-300,300),-420);jiggleAll(cx2,cy2,5);if(m)rings.push({x:m.x,y:m.y,r:m.r,t:0});SND.plop(.9);SND.plop(1.3,.05);buzz(25);
+   say(S.streak>=3?TX[lang].streak(S.streak)+' '+TX[lang].great[rint(0,6)]:TX[lang].great[rint(0,6)],1.3);if(!S.tipShown){S.tipShown=true;$('tip').classList.add('hidden')}
+   later(1.15,()=>S.round>=ROUNDS?clearRound(finish):clearRound(startRound))})}
+ else{S.streak=0;S.wrongs++;S.mistakes++;setCard(R.l,R.r,R.v??(R.q+' r'+R.rem),'bad');cardAnim('shake');SND.boing();if(m)m.shk=1;
+  say(msg||TX[lang].need+' '+S.T,2.2);later(R.v==null?2:1.5,()=>{restore();setCard();S.scene=null;later(.4,()=>{S.busy=false})})}}
+function splitHalf(b){const v=b.val,h1=Math.ceil(v/2),h2=v-h1,ang=rnd(0,PI),ux=Math.cos(ang),uy=Math.sin(ang);kill(b);
+ [[h1,1],[h2,-1]].forEach(([vv,sg],i)=>{const n=newB(vv,b.x+ux*sg*b.r*.3,b.y+uy*sg*b.r*.3,i?tint(b.col,2):b.col,{s:b.s});n.rr=n.r*.85;n.vx=ux*sg*380;n.vy=uy*sg*380;n.kv=5});
+ text(b.x,b.y-b.r-8,`${v} = ${h1} + ${h2}`);SND.squish();ripple(b.x,b.y,5);buzz(12)}
 // ---------- input ----------
-const ptr={x:0,y:0,id:null,down:false,moved:0,b:null,sx:0,sy:0};let cand=null;
+const ptr={x:0,y:0,id:null,down:false,moved:0,b:null,sx:0,sy:0};let cand=null,lastTap={b:null,t:0};
 function hit(x,y){let best=null,bd=1e9;for(const b of bubbles){if(b.lock)continue;const d=Math.hypot(b.x-x,b.y-y);if(d<b.rr*1.15&&d<bd){bd=d;best=b}}return best}
 cv.addEventListener('pointerdown',e=>{audio();if(ptr.down)return;const x=e.clientX+shake.x,y=e.clientY+shake.y,b=hit(x,y);ptr.down=true;ptr.id=e.pointerId;ptr.x=x;ptr.y=y;ptr.sx=x;ptr.sy=y;ptr.moved=0;ptr.b=null;
  if(b&&!(S.mode==='play'&&S.busy)){ptr.b=b;b.drag=true;b.ox=b.x-x;b.oy=b.y-y;b.kv-=2.5;SND.pick();bubbles.splice(bubbles.indexOf(b),1);bubbles.push(b);try{cv.setPointerCapture(e.pointerId)}catch{}}});
 cv.addEventListener('pointermove',e=>{if(!ptr.down||e.pointerId!==ptr.id)return;ptr.x=e.clientX+shake.x;ptr.y=e.clientY+shake.y;ptr.moved=Math.max(ptr.moved,Math.hypot(ptr.x-ptr.sx,ptr.y-ptr.sy))});
 function release(e){if(!ptr.down||e.pointerId!==ptr.id)return;ptr.down=false;const b=ptr.b;ptr.b=null;if(!b)return;b.drag=false;
- if(ptr.moved<8){b.kv-=4.5;b.vy-=60;SND.poke(b.val||b.label.charCodeAt(0));if(S.mode==='play')setCard();return}
+ if(ptr.moved<8){b.kv-=4.5;b.vy-=60;SND.poke(b.val||b.label.charCodeAt(0));if(S.mode==='play')setCard();const now=performance.now();
+  if(S.mode==='play'&&!S.busy&&b.val>=2&&lastTap.b===b&&now-lastTap.t<380&&bubbles.length<16){splitHalf(b);lastTap.b=null}else lastTap={b,t:now};return}
  if(S.mode==='play'&&cand&&!S.busy){beginMerge(b,cand)}else{if(S.mode==='play')setCard();if(cand&&S.mode!=='play'){cand.kv+=4;SND.bloop(1.2)}}cand=null}
 cv.addEventListener('pointerup',release);cv.addEventListener('pointercancel',release);
 // ---------- simulation ----------
@@ -336,16 +404,17 @@ function update(dt){S.time+=dt;
  for(let i=queue.length-1;i>=0;i--){queue[i].t-=dt;if(queue[i].t<=0){const f=queue[i].fn;queue.splice(i,1);f()}}
  const dragB=bubbles.find(b=>b.drag);cand=null;
  if(dragB){let bd=1e9;for(const o of bubbles){if(o===dragB||o.lock)continue;const d=Math.hypot(o.x-dragB.x,o.y-dragB.y),lim=(o.r+dragB.r)*1.08;if(d<lim&&d<bd){bd=d;cand=o}}
-  if(S.mode==='play'&&!S.merge){if(cand){const R=calc(dragB.val,cand.val,S.op);setCard(R.l,R.r)}else setCard(dragB.val,null)}}
- const hintOn=S.mode==='play'&&S.wrongs>=2&&!S.merge&&!S.busy;let hp=null;
- if(hintOn){outer:for(const a of bubbles)for(const b of bubbles){if(a!==b&&calc(a.val,b.val,S.op).v===S.T){hp=[a,b];break outer}}}
+  if(S.mode==='play'&&!S.busy){if(cand){const R=calc(dragB.val,cand.val,S.op);setCard(R.l,R.r)}else setCard(dragB.val,null)}}
+ const hintOn=S.mode==='play'&&S.wrongs>=2&&!S.busy;let hp=null;
+ if(hintOn){outer:for(const a of bubbles)for(const b of bubbles){if(a!==b&&!a.lock&&!b.lock&&calc(a.val,b.val,S.op).v===S.T){hp=[a,b];break outer}}}
  const KC=S.mode==='menu'?3:4.2;
  for(const b of bubbles){
   b.gT=b.drag?.3:b===cand?1:0;if(hp&&hp.includes(b)){const s=.5+.5*Math.sin(S.time*5);b.gT=Math.max(b.gT,.35+.6*s);if(Math.sin(S.time*5)>.995)b.kv+=1.5}
   if(b.drag){const tx=ptr.x+b.ox,ty=ptr.y+b.oy,e=1-Math.exp(-28*dt),nx=b.x+(tx-b.x)*e,ny=b.y+(ty-b.y)*e;b.vx=(nx-b.x)/dt;b.vy=(ny-b.y)/dt;b.x=nx;b.y=ny}
-  else if(!b.lock){let ax=(cx-b.x)*KC,ay=(cy-b.y)*KC;const dx0=b.x-cx,dy0=b.y-cy;ax+=-dy0*.35;ay+=dx0*.35;
+  else if(b.lock){if(b.tgt){const e=1-Math.exp(-13*dt),nx=b.x+(b.tgt.x-b.x)*e,ny=b.y+(b.tgt.y-b.y)*e;b.vx=(nx-b.x)/dt;b.vy=(ny-b.y)/dt;b.x=nx;b.y=ny}else{b.vx*=.8;b.vy*=.8}if(b.shk){b.shk=Math.max(0,b.shk-dt*1.2);b.sx=Math.sin(S.time*38)*9*b.shk}else b.sx=0}
+  else if(!b.lock){let ax=(cx-b.x)*KC,ay=(cy-b.y)*KC;if(S.scene){const sc=S.scene,dx=b.x-sc.x,dy=b.y-sc.y,d=Math.hypot(dx,dy)||1,want=sc.R+b.r+8,f=(want-d)*(d<want?14:KC);ax=dx/d*f;ay=dy/d*f}const dx0=b.x-cx,dy0=b.y-cy;ax+=-dy0*.35;ay+=dx0*.35;
    ax+=Math.sin(S.time*.9+b.r)*14;ay+=Math.cos(S.time*.7+b.r*1.3)*14;
-   for(const o of bubbles){if(o===b)continue;let dx=b.x-o.x,dy=b.y-o.y,d=Math.hypot(dx,dy);if(d<.01){dx=rnd(-1,1);dy=rnd(-1,1);d=1}const nx=dx/d,ny=dy/d,rest=(b.r+o.r)*1.1;
+   for(const o of bubbles){if(o===b)continue;let dx=b.x-o.x,dy=b.y-o.y,d=Math.hypot(dx,dy);if(d<.01){dx=rnd(-1,1);dy=rnd(-1,1);d=1}const nx=dx/d,ny=dy/d,rest=(b.rr+o.rr)*.97;
     if(b===cand&&o.drag){ax-=nx*Math.min(d,rest)*9;ay-=ny*Math.min(d,rest)*9;continue}
     if(d<rest){const p=(rest-d)*(o.drag?38:o.lock?50:75);ax+=nx*p;ay+=ny*p}else if(d<rest*1.22&&!o.drag&&!o.lock){const p=(d-rest)*9;ax-=nx*p;ay-=ny*p}}
    const m=10;if(b.x<b.r+m)ax+=(b.r+m-b.x)*60;if(b.x>W-b.r-m)ax-=(b.x-(W-b.r-m))*60;const top=S.mode==='play'?($('card').getBoundingClientRect().bottom||0):0;if(b.y<top+b.r+m)ay+=(top+b.r+m-b.y)*40;if(b.y>H-b.r-m&&b.vy>-400)ay-=(b.y-(H-b.r-m))*45;
@@ -357,10 +426,10 @@ function update(dt){S.time+=dt;
  for(let i=drops.length-1;i>=0;i--){const d=drops[i];d.age+=dt;
   if(d.abs){const t=d.abs;if(!bubbles.includes(t)){d.abs=null;continue}const e=1-Math.exp(-16*dt);d.x+=(t.x-d.x)*e;d.y+=(t.y-d.y)*e;d.rr*=Math.exp(-3*dt);if(Math.hypot(t.x-d.x,t.y-d.y)<t.rr*.35){drops.splice(i,1);t.kv-=1.4*clamp(d.r/t.r*4,.3,1.4);t.rr+=d.r*.25;SND.tiny()}continue}
   d.vy+=1250*dt;const dm=Math.exp(-.5*dt);d.vx*=dm;d.vy*=dm;d.x+=d.vx*dt;d.y+=d.vy*dt;
-  if(d.age>.18)for(const t of bubbles){if(t.drag||(t.lock&&S.merge))continue;if(Math.hypot(t.x-d.x,t.y-d.y)<t.rr*.95+d.rr){d.abs=t;t.vx+=d.vx*.03;t.vy+=d.vy*.03;break}}
+  if(d.age>.18)for(const t of bubbles){if(t.drag||t.lock)continue;if(Math.hypot(t.x-d.x,t.y-d.y)<t.rr*.95+d.rr){d.abs=t;t.vx+=d.vx*.03;t.vy+=d.vy*.03;break}}
   if(d.x<d.rr&&d.vx<0){d.vx*=-.5}if(d.x>W-d.rr&&d.vx>0){d.vx*=-.5}
   if(d.age>2.2)d.rr*=Math.exp(-3*dt);if(d.y>H+80||d.rr<1)drops.splice(i,1)}
- updateMerge(dt);
+ for(let i=texts.length-1;i>=0;i--){texts[i].age+=dt;if(texts[i].age>1.9)texts.splice(i,1)}
  for(let i=ripples.length-1;i>=0;i--){ripples[i].t+=dt;if(ripples[i].t>2.5)ripples.splice(i,1)}
  for(let i=rings.length-1;i>=0;i--){rings[i].t+=dt;if(rings[i].t>.6)rings.splice(i,1)}
  shake.vx+=(-shake.x*260-shake.vx*11)*dt;shake.vy+=(-shake.y*260-shake.vy*11)*dt;shake.x+=shake.vx*dt;shake.y+=shake.vy*dt;
@@ -368,17 +437,18 @@ function update(dt){S.time+=dt;
 // ---------- render ----------
 function disp(x,y){let px=x,py=y;for(let k=0;k<3;k++){let sx=px+shake.x,sy=py+shake.y;for(const r of ripples){const dx=sx-r.x,dy=sy-r.y,L=Math.hypot(dx,dy)+.001,xx=(L-r.t*650)/80,a=r.amp*(RM?.3:1)*Math.sin(xx*3)*Math.exp(-xx*xx)*Math.exp(-r.t*1.6);sx+=dx/L*a;sy+=dy/L*a}px+=x-sx;py+=y-sy}return[px,py]}
 function render(){const all=bubbles.concat(drops);let n=0;
- for(const b of all){if(n>=MAXB)break;const i=n*4,isD=b.age!==undefined;let a=((b.a||0)%PI+PI)%PI;BA[i]=b.x+(b.sx||0);BA[i+1]=b.y;BA[i+2]=Math.max(.5,b.rr);BA[i+3]=a+4*Math.round(clamp(b.glow||0,0,1)*15);CA[i]=b.col[0];CA[i+1]=b.col[1];CA[i+2]=b.col[2];CA[i+3]=isD?0:b.k;n++}
+ for(const b of all){if(n>=MAXB)break;const i=n*4,isD=b.age!==undefined;let a=((b.a||0)%PI+PI)%PI;BA[i]=b.x+(b.sx||0);BA[i+1]=b.y;BA[i+2]=Math.max(.5,b.rr);BA[i+3]=a+4*Math.round(clamp(b.glow||0,0,1)*15);CA[i]=b.col[0];CA[i+1]=b.col[1];CA[i+2]=b.col[2];CA[i+3]=isD?0:b.k;const sp=b.s||Z4;SA[i]=sp[0];SA[i+1]=sp[1];SA[i+2]=sp[2];SA[i+3]=sp[3];n++}
  RA.fill(0);ripples.forEach((r,k)=>{RA[k*4]=r.x;RA[k*4+1]=r.y;RA[k*4+2]=r.t;RA[k*4+3]=r.amp});
  const w=WORLDS[S.world];
  gl.uniform2f(U.uRes,W,H);gl.uniform1f(U.uPx,glScale);gl.uniform1f(U.uTime,S.time);gl.uniform1i(U.uN,n);gl.uniform1i(U.uTheme,w.theme);gl.uniform1f(U.uDark,w.dark);gl.uniform2f(U.uShake,shake.x,shake.y);
- gl.uniform4fv(U['uB[0]'],BA);gl.uniform4fv(U['uC[0]'],CA);gl.uniform4fv(U['uRip[0]'],RA);gl.drawArrays(gl.TRIANGLES,0,3);
+ gl.uniform4fv(U['uB[0]'],BA);gl.uniform4fv(U['uC[0]'],CA);gl.uniform4fv(U['uS[0]'],SA);gl.uniform4fv(U['uRip[0]'],RA);gl.drawArrays(gl.TRIANGLES,0,3);
  ctx.setTransform(DPR,0,0,DPR,0,0);ctx.clearRect(0,0,W,H);
  for(const r of rings){const t=r.t/.6,[x,y]=disp(r.x,r.y);ctx.globalAlpha=(1-t)*.8;ctx.lineWidth=10*(1-t)+1;ctx.strokeStyle='#fff';ctx.beginPath();ctx.arc(x,y,r.r*(1+t*2.2),0,TAU);ctx.stroke()}ctx.globalAlpha=1;
  ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineJoin='round';
- for(const b of bubbles){if(!b.label)continue;const [x,y]=disp(b.x+(b.sx||0),b.y),L=b.label.length,fs=b.rr*(L===1?1.0:L===2?.84:.64),s=1+b.k,al=clamp(b.rr/b.r*1.5-.4,0,1);if(al<=0)continue;
+ for(const b of bubbles){if(!b.label)continue;const [x,y]=disp(b.x+(b.sx||0),b.y),L=b.label.length,fs=Math.max(15,b.rr*(L===1?1.0:L===2?.84:.64)),s=1+b.k,al=clamp(b.rr/b.r*1.5-.4,0,1);if(al<=0)continue;
   ctx.save();ctx.translate(x,y+fs*.04);ctx.rotate(b.a);ctx.scale(s,1/s);ctx.rotate(-b.a);ctx.globalAlpha=al;ctx.font=`700 ${fs}px Fredoka,'Arial Rounded MT Bold',system-ui,sans-serif`;
-  const dk=b.col.map(v=>v*95|0);ctx.lineWidth=fs*.17;ctx.strokeStyle=`rgba(${dk},.75)`;ctx.strokeText(b.label,0,0);ctx.fillStyle='#fff';ctx.fillText(b.label,0,0);ctx.restore()}}
+  const dk=b.col.map(v=>v*95|0);ctx.lineWidth=fs*.17;ctx.strokeStyle=`rgba(${dk},.75)`;ctx.strokeText(b.label,0,0);ctx.fillStyle='#fff';ctx.fillText(b.label,0,0);ctx.restore()}
+ for(const t of texts){const k=t.age,[x,y]=disp(t.x,t.y-k*34),sc=k<.15?.5+k/.15*.6:k<.3?1.1-(k-.15)/.15*.1:1;ctx.save();ctx.globalAlpha=clamp((1.9-k)/.5,0,1);ctx.translate(x,y);ctx.scale(sc,sc);ctx.font=`700 ${t.size}px Fredoka,'Arial Rounded MT Bold',system-ui,sans-serif`;ctx.lineWidth=t.size*.2;ctx.strokeStyle='rgba(40,10,60,.75)';ctx.strokeText(t.t,0,0);ctx.fillStyle='#fff';ctx.fillText(t.t,0,0);ctx.restore()}}
 let last=0,avg=16,qT=0;
 function frame(now){const raw=now-last;last=now;const dt=Math.min(.033,raw/1000||.016);avg+=(clamp(raw,1,100)-avg)*.05;qT+=dt;
  if(qT>2&&document.visibilityState==='visible'){if(avg>24&&Q>.5){Q=Math.max(.5,Q-.15);qT=0;resize()}else if(avg<15&&Q<1&&qT>6){Q=Math.min(1,Q+.1);qT=0;resize()}}
