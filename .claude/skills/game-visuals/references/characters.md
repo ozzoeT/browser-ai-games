@@ -31,7 +31,8 @@ indietro, quindi il ginocchio si piega con `rotation.x > 0`.
 
 | Ibrido | Mix | Teste | Dove |
 |---|---|---|---|
-| Eroe toon | manichino + chibi toon | ~4 | **Fight!** (applicato) |
+| Eroe toon | manichino + chibi toon | ~4 | Fight! (prima versione) |
+| Supereroe da fumetto | manichino + muscoli torniti (`LatheGeometry`) + toon 3 toni + retino Ben-Day + contorno spesso | ~7,5 | **Fight!** (applicato) |
 | Chubby snodato | manichino + chibi, pancia tonda | ~2,5 | Studio Zero (idea) |
 | Fagiolo snodato | manichino + fagiolo, arti "a tubo di gomma" | 1 | party/pedoni (idea) |
 | Cavaliere sfaccettato | manichino + low-poly | ~6,5 | **Iron Line** (applicato) |

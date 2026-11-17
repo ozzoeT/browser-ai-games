@@ -62,7 +62,7 @@ Come:
    | Gioco | Motore | Note |
    |---|---|---|
    | `pop-gallery/` | three.js **r160 da cdnjs** | Camera fissa con leggero ondeggiamento verso il mirino; colpi = raggio contro sfere (`rayHit`), niente raycast sulle mesh. Fucile a tappi in `vmScene`. |
-| `fight/` | three.js **r149 incorporato** nel file | Niente `colorspace_fragment` negli shader; luci "legacy" (intensità ~1–4). Unità ≈ pixel (personaggio alto ~190). |
+| `fight/` | three.js **r149 incorporato** nel file | Niente `colorspace_fragment` negli shader (il chunk finale si chiama `output_fragment`); luci "legacy" (intensità ~1–4, ×π negli shader). Unità ≈ pixel (personaggio alto ~185). |
    | `iron-line/`, `shield-brothers/`, `studio-zero/`, `skyflip/`, `airtime/`, `trickline/` | three.js **r160 da cdnjs** (UMD, `three.min.js`) | Negli `ShaderMaterial` aggiungi `#include <colorspace_fragment>`. Unità = metri. Gli addons (EffectComposer, GLTFLoader…) **non** sono nel build UMD: Iron Line ha bloom e grade **fatti a mano** (`POST`): è un'implementazione di riferimento, i valori vanno scelti per ogni gioco. |
    | `city-drive/` (Afterglow GP), `city-rush/` | **motore 3D fatto a mano su canvas 2D** (poligoni proiettati, ordinati per z) | Effetti con `globalCompositeOperation='lighter'` e sprite di bagliore; niente depth buffer. |
    | `dino-frenzy/` | canvas 2D | Come sopra, in 2D puro. Particelle in `parts` con forme (`spark`, `star`, `ring`, `conf`…). |
@@ -122,6 +122,7 @@ Vedi `scripts/shoot.js`. Trucchi utili:
 | Data | Gioco | Cosa | Note |
 |---|---|---|---|
 | 2026-11 | Fight! | Personaggi "Eroe toon" (manichino + chibi toon), testa HR 19.5 | Ombre a 3 toni, contorno inverted hull, ginocchiere/gomitiere colore accento, occhi cartoon |
+| 2026-11 | Fight! | Questionario: supereroi da fumetto, POW!/fermo-vignetta/linee di velocità/scossa, tetti al tramonto. Lottatori "Supereroe da fumetto" (testa HR 12.5 ≈ 7.5 teste, busto e arti torniti con `lathe`/`limbGeo`, pettorali/addominali/trapezio, mascella, tute con stemma su `CanvasTexture`, stivali, maschere), toon a 3 toni + contorno 2.2; **retino Ben-Day globale** aggiunto a `ShaderChunk.output_fragment` (puntini dove luce/colore < .92; nei toon si usa la sola luce diretta normalizzata sul sole `COMIC_SUN`); arena "Sunset Rooftops" (cielo dipinto su un pannello lontano con raggi, nuvole e retino, skyline in controluce, cartellone KA-POW); `comicHit` (onomatopee a 3 livelli, `focusLines`, zoom `g.punch`), fermo-vignetta del K.O. (`drawPanel`: hitstop 50, carta stampata intorno, didascalie) | Hitbox invariate, figura visivamente ~15 unità più bassa. Senza normalizzare sul sole il retino non compariva sui lottatori (la luce ambiente li teneva sopra soglia). Il banner K.O. parte con `t` negativo per non coprire la vignetta |
 | 2026-11 | Fight! | Scie mani/piedi, scintille 3D + lampo di luce d'impatto, aura + cerchio magico nelle super | `fxHit()` chiamato da `applyHit`; punti di riferimento `handF/handB/footF/footB` nello scheletro |
 | 2026-11 | Iron Line | Soldati "Cavaliere sfaccettato" (flatShading, ginocchia che si piegano, pennacchi colore squadra) | +2 mesh per soldato (stinchi): se rallenta con 420 unità, rendere rigide le gambe |
 | 2026-11 | Iron Line | Massi infuocati, esplosione completa, scintille sugli scudi, neve/foglie per bioma | `explosionFX()`, `sparksFX()`, `setWeather()` |
