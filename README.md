@@ -21,6 +21,7 @@ Racing, fighting, strategy, parkour, motorbike stunts, medieval battles, adventu
 | Airtime | Motorbike stunt jumps, split-screen | 1–2 | [`airtime/`](airtime/) |
 | Trickline | 3D motorbike stunt run: ramps, wall rides, grinds, rooftop gaps | 1–2 | [`trickline/`](trickline/) |
 | Bloop Math | Math for kids with gooey jelly bubbles (+ − × ÷, ages 4–10+) | 1 | [`bloop-math/`](bloop-math/) |
+| Rollway | 3D toy car run: fast roads, ramps and boost pads, tunnels you can drive upside down | 1 | [`rollway/`](rollway/) |
 
 All games are in English.
 
