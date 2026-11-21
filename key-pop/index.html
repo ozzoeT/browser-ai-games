@@ -70,13 +70,154 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 <script>
 'use strict';
 const EF="'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji','Segoe UI Symbol',sans-serif";
+/* original hand-drawn dinosaurs in emoji style (viewBox 128) */
+const DINO_SVG={
+trike:`<g stroke-linejoin="round">
+<path d="M98 74 Q118 70 126 84 Q112 90 94 90 Z" fill="#f0a030"/>
+<rect x="84" y="84" width="15" height="26" rx="7" fill="#d4841c"/><rect x="50" y="86" width="15" height="24" rx="7" fill="#d4841c"/>
+<ellipse cx="76" cy="76" rx="32" ry="24" fill="#f7b23b"/>
+<ellipse cx="78" cy="90" rx="24" ry="9" fill="#ffd98c"/>
+<rect x="92" y="86" width="16" height="26" rx="7" fill="#f0a030"/><rect x="58" y="88" width="16" height="24" rx="7" fill="#f0a030"/>
+<g fill="#e8603c"><circle cx="50" cy="56" r="24"/><circle cx="34" cy="40" r="7"/><circle cx="48" cy="32" r="7"/><circle cx="63" cy="36" r="7"/><circle cx="72" cy="49" r="7"/><circle cx="72" cy="65" r="7"/></g>
+<circle cx="50" cy="56" r="16" fill="#ff8f5e"/>
+<ellipse cx="34" cy="72" rx="22" ry="17" fill="#f7b23b"/>
+<path d="M16 70 Q4 76 12 86 Q20 86 22 80 Z" fill="#d4841c"/>
+<path d="M32 58 L22 34 L40 55 Z" fill="#fff4d8"/><path d="M44 58 L44 32 L52 58 Z" fill="#fff4d8"/><path d="M16 68 L10 56 L22 64 Z" fill="#fff4d8"/>
+<circle cx="32" cy="67" r="5" fill="#2b1d14"/><circle cx="33.6" cy="65.4" r="1.8" fill="#fff"/>
+<ellipse cx="42" cy="77" rx="5" ry="3" fill="#ff6f6f" opacity=".45"/>
+<path d="M18 82 Q25 86 31 81" fill="none" stroke="#7a3d10" stroke-width="2.2" stroke-linecap="round"/></g>`,
+stego:`<g>
+<g fill="#ff9a3c"><path d="M44 62 L50 40 L60 60 Z"/><path d="M56 56 L66 30 L76 54 Z"/><path d="M72 54 L84 28 L92 56 Z"/><path d="M88 58 L100 36 L106 62 Z"/><path d="M102 66 L114 50 L114 72 Z"/></g>
+<path d="M96 76 Q116 74 124 64 Q122 84 98 90 Z" fill="#5bb23c"/>
+<g fill="#fff4d8"><path d="M116 70 L126 60 L120 72 Z"/><path d="M120 74 L128 72 L120 78 Z"/></g>
+<rect x="84" y="86" width="15" height="24" rx="7" fill="#4a9a30"/><rect x="48" y="88" width="15" height="22" rx="7" fill="#4a9a30"/>
+<ellipse cx="74" cy="78" rx="34" ry="21" fill="#6cc84a"/>
+<ellipse cx="72" cy="91" rx="26" ry="8" fill="#cdf38e"/>
+<rect x="92" y="88" width="16" height="24" rx="7" fill="#5bb23c"/><rect x="56" y="90" width="16" height="22" rx="7" fill="#5bb23c"/>
+<path d="M44 74 Q30 74 24 82 L36 90 Q44 84 48 84 Z" fill="#6cc84a"/>
+<ellipse cx="24" cy="86" rx="16" ry="11" fill="#6cc84a"/>
+<circle cx="22" cy="83" r="4.2" fill="#22301a"/><circle cx="23.4" cy="81.6" r="1.5" fill="#fff"/>
+<ellipse cx="30" cy="90" rx="4" ry="2.4" fill="#ff6f6f" opacity=".45"/>
+<path d="M10 90 Q16 94 22 91" fill="none" stroke="#2f5a1c" stroke-width="2" stroke-linecap="round"/>
+<g fill="#4a9a30" opacity=".6"><circle cx="66" cy="70" r="3"/><circle cx="80" cy="66" r="2.5"/><circle cx="90" cy="76" r="3"/></g></g>`,
+ptero:`<g>
+<path d="M64 60 Q40 38 6 44 Q20 56 22 70 Q40 62 60 76 Z" fill="#8f7cf2"/>
+<path d="M64 60 Q88 38 122 44 Q108 56 106 70 Q88 62 68 76 Z" fill="#8f7cf2"/>
+<path d="M22 70 Q40 62 60 76 L58 68 Q38 56 14 52 Z" fill="#b8a9ff"/><path d="M106 70 Q88 62 68 76 L70 68 Q90 56 114 52 Z" fill="#b8a9ff"/>
+<ellipse cx="64" cy="76" rx="11" ry="18" fill="#a594ff"/>
+<ellipse cx="64" cy="80" rx="6" ry="11" fill="#e3dcff"/>
+<path d="M58 92 L54 104 M70 92 L74 104" stroke="#7a68d8" stroke-width="5" stroke-linecap="round"/>
+<path d="M64 46 L92 30 L70 52 Z" fill="#ff8fb3"/>
+<ellipse cx="62" cy="52" rx="13" ry="11" fill="#a594ff"/>
+<path d="M52 54 L28 60 L52 60 Z" fill="#ffc85a"/>
+<circle cx="60" cy="50" r="4" fill="#24183f"/><circle cx="61.4" cy="48.6" r="1.4" fill="#fff"/>
+<ellipse cx="68" cy="56" rx="3.5" ry="2.2" fill="#ff6f8f" opacity=".5"/></g>`,
+anky:`<g>
+<path d="M98 82 Q114 84 116 80" stroke="#9a6a3e" stroke-width="10" fill="none" stroke-linecap="round"/>
+<ellipse cx="118" cy="80" rx="9" ry="8" fill="#7a5230"/>
+<rect x="88" y="88" width="14" height="20" rx="6" fill="#8a5c36"/><rect x="40" y="88" width="14" height="20" rx="6" fill="#8a5c36"/>
+<path d="M30 86 Q32 56 66 54 Q100 56 104 86 Z" fill="#b07a4a"/>
+<g fill="#e9c58f"><path d="M38 64 L32 56 L44 60 Z"/><path d="M56 56 L54 46 L62 54 Z"/><path d="M76 55 L78 45 L82 56 Z"/><path d="M94 62 L102 54 L98 66 Z"/></g>
+<g fill="#8a5c36"><circle cx="48" cy="68" r="4"/><circle cx="62" cy="64" r="4"/><circle cx="76" cy="64" r="4"/><circle cx="90" cy="70" r="4"/><circle cx="55" cy="78" r="3.5"/><circle cx="70" cy="75" r="3.5"/><circle cx="84" cy="79" r="3.5"/></g>
+<rect x="96" y="90" width="14" height="20" rx="6" fill="#9a6a3e"/><rect x="48" y="90" width="14" height="20" rx="6" fill="#9a6a3e"/>
+<path d="M30 86 L104 86 Q100 94 66 94 Q34 94 30 86 Z" fill="#e9c58f"/>
+<ellipse cx="24" cy="84" rx="15" ry="11" fill="#b07a4a"/>
+<circle cx="22" cy="81" r="4" fill="#2b1d14"/><circle cx="23.4" cy="79.6" r="1.4" fill="#fff"/>
+<ellipse cx="30" cy="88" rx="3.6" ry="2.2" fill="#ff6f6f" opacity=".45"/>
+<path d="M10 88 Q15 91 20 88" fill="none" stroke="#5a3418" stroke-width="2" stroke-linecap="round"/></g>`,
+para:`<g>
+<path d="M72 80 Q100 78 124 96 Q100 96 74 94 Z" fill="#f2709a"/>
+<path d="M78 96 L76 112 L88 112 L88 96 Z" fill="#d8557f"/>
+<ellipse cx="66" cy="80" rx="22" ry="20" fill="#ff8fb3"/>
+<ellipse cx="62" cy="86" rx="14" ry="12" fill="#ffd3e2"/>
+<path d="M64 96 L62 112 L76 112 L76 94 Z" fill="#f2709a"/>
+<path d="M50 72 Q44 60 46 48 L56 48 Q56 62 62 70 Z" fill="#ff8fb3"/>
+<path d="M54 82 Q46 88 44 94" stroke="#f2709a" stroke-width="6" fill="none" stroke-linecap="round"/>
+<path d="M50 40 Q66 22 96 26 Q100 30 94 34 Q70 32 58 46 Z" fill="#b06ef0"/>
+<ellipse cx="44" cy="42" rx="17" ry="12" fill="#ff8fb3"/>
+<path d="M30 42 Q20 44 22 50 Q30 52 36 48 Z" fill="#f2709a"/>
+<circle cx="44" cy="39" r="4.2" fill="#3a1424"/><circle cx="45.4" cy="37.6" r="1.5" fill="#fff"/>
+<ellipse cx="50" cy="46" rx="3.6" ry="2.2" fill="#ff5a7a" opacity=".45"/>
+<path d="M24 49 Q29 52 34 48" fill="none" stroke="#8a2b4c" stroke-width="2" stroke-linecap="round"/></g>`,
+raptor:`<g>
+<path d="M76 70 Q104 64 126 50 Q110 74 80 84 Z" fill="#3b8de0"/>
+<path d="M66 88 L60 110 L72 110 L76 88 Z" fill="#2f74c0"/>
+<ellipse cx="68" cy="76" rx="20" ry="15" fill="#4aa3ff"/>
+<ellipse cx="62" cy="82" rx="13" ry="8" fill="#cfe8ff"/>
+<path d="M78 86 L80 110 L92 110 L86 86 Z" fill="#3b8de0"/>
+<g fill="#ffcf3a"><path d="M74 62 L80 52 L84 64 Z"/><path d="M84 64 L92 56 L92 68 Z"/><path d="M62 62 L64 52 L72 62 Z"/></g>
+<path d="M52 70 Q44 58 42 46 L54 44 Q56 58 62 66 Z" fill="#4aa3ff"/>
+<path d="M54 78 Q46 82 46 88" stroke="#3b8de0" stroke-width="5" fill="none" stroke-linecap="round"/>
+<path d="M56 42 Q40 30 22 36 Q14 42 18 48 Q34 52 56 50 Z" fill="#4aa3ff"/>
+<path d="M18 48 Q34 52 56 50 L54 46 Q36 48 20 44 Z" fill="#2f74c0"/>
+<path d="M22 46 L24 50 L26 46 L28 50 L30 46" fill="#fff" stroke="none"/>
+<circle cx="40" cy="38" r="4.2" fill="#0f2440"/><circle cx="41.4" cy="36.6" r="1.5" fill="#fff"/>
+<path d="M34 32 Q40 29 46 32" fill="none" stroke="#2f74c0" stroke-width="2.4" stroke-linecap="round"/>
+<ellipse cx="46" cy="45" rx="3.4" ry="2" fill="#ff6f8f" opacity=".45"/></g>`,
+hatch:`<g>
+<ellipse cx="64" cy="58" rx="22" ry="20" fill="#7ed957"/>
+<ellipse cx="64" cy="66" rx="13" ry="10" fill="#d4f7a8"/>
+<path d="M40 44 Q42 20 64 18 Q86 20 88 44 L80 38 L72 46 L64 38 L56 46 L48 38 Z" fill="#fff8e7"/>
+<g fill="#9ed8ff"><circle cx="54" cy="28" r="4"/><circle cx="72" cy="26" r="3"/></g>
+<circle cx="56" cy="54" r="4.5" fill="#1f3014"/><circle cx="57.6" cy="52.4" r="1.6" fill="#fff"/>
+<circle cx="72" cy="54" r="4.5" fill="#1f3014"/><circle cx="73.6" cy="52.4" r="1.6" fill="#fff"/>
+<ellipse cx="50" cy="62" rx="3.6" ry="2.4" fill="#ff6f6f" opacity=".5"/><ellipse cx="78" cy="62" rx="3.6" ry="2.4" fill="#ff6f6f" opacity=".5"/>
+<path d="M58 64 Q64 70 70 64" fill="#c0392b"/>
+<path d="M30 74 Q30 112 64 114 Q98 112 98 74 L90 80 L82 70 L74 80 L64 70 L54 80 L46 70 L38 80 Z" fill="#fff8e7"/>
+<g fill="#9ed8ff"><circle cx="48" cy="96" r="5"/><circle cx="76" cy="102" r="4"/><circle cx="84" cy="88" r="3"/></g>
+<path d="M30 74 Q30 112 64 114 Q98 112 98 74" fill="none" stroke="#e8dcc0" stroke-width="2"/></g>`,
+plesio:`<g>
+<ellipse cx="72" cy="92" rx="34" ry="14" fill="#2ab0b0"/>
+<path d="M50 88 Q40 60 44 34 L58 34 Q58 62 64 86 Z" fill="#3cc8c8"/>
+<path d="M50 88 Q44 64 46 40 L50 40 Q50 64 56 88 Z" fill="#a6f0e6"/>
+<ellipse cx="48" cy="30" rx="15" ry="11" fill="#3cc8c8"/>
+<path d="M34 30 Q26 32 30 38 Q36 38 40 34 Z" fill="#2ab0b0"/>
+<circle cx="48" cy="27" r="4" fill="#0f3030"/><circle cx="49.4" cy="25.6" r="1.4" fill="#fff"/>
+<ellipse cx="54" cy="34" rx="3.4" ry="2" fill="#ff6f8f" opacity=".45"/>
+<path d="M30 37 Q35 40 40 36" fill="none" stroke="#0f5a5a" stroke-width="2" stroke-linecap="round"/>
+<ellipse cx="64" cy="102" rx="60" ry="20" fill="#4aa8ff"/><ellipse cx="64" cy="108" rx="48" ry="12" fill="#2f8ae0"/>
+<path d="M14 98 Q24 92 34 97" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round" opacity=".8"/><path d="M80 96 Q90 90 100 95" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round" opacity=".8"/></g>`,
+spino:`<g>
+<path d="M44 62 Q48 22 70 18 Q96 22 100 62 Z" fill="#ffb03a"/>
+<g stroke="#e8862a" stroke-width="3"><path d="M56 62 L58 30"/><path d="M68 62 L70 22"/><path d="M80 62 L82 24"/><path d="M92 62 L90 36"/></g>
+<path d="M84 74 Q110 74 126 92 Q104 94 84 90 Z" fill="#e8553a"/>
+<path d="M58 90 L54 112 L66 112 L68 90 Z" fill="#c8402a"/>
+<ellipse cx="70" cy="76" rx="28" ry="18" fill="#ff6a4a"/>
+<ellipse cx="66" cy="84" rx="18" ry="9" fill="#ffd0b8"/>
+<path d="M76 90 L78 112 L90 112 L86 88 Z" fill="#e8553a"/>
+<path d="M48 76 Q40 82 40 88" stroke="#e8553a" stroke-width="5" fill="none" stroke-linecap="round"/>
+<path d="M48 62 Q30 52 8 58 Q6 66 12 68 Q30 70 48 74 Z" fill="#ff6a4a"/>
+<path d="M12 68 Q30 70 48 74 L48 70 Q30 66 12 64 Z" fill="#c8402a"/>
+<circle cx="36" cy="58" r="4.2" fill="#3a0f08"/><circle cx="37.4" cy="56.6" r="1.5" fill="#fff"/>
+<ellipse cx="42" cy="66" rx="3.6" ry="2.2" fill="#ffd25a" opacity=".6"/>
+<circle cx="12" cy="61" r="1.5" fill="#8a2a18"/></g>`,
+pachy:`<g>
+<path d="M76 78 Q104 76 124 92 Q100 94 78 92 Z" fill="#9fcf3a"/>
+<path d="M64 92 L60 112 L72 112 L74 92 Z" fill="#82b02a"/>
+<ellipse cx="70" cy="80" rx="22" ry="18" fill="#b5e04a"/>
+<ellipse cx="66" cy="86" rx="14" ry="10" fill="#ecffb8"/>
+<path d="M80 92 L82 112 L94 112 L90 90 Z" fill="#9fcf3a"/>
+<path d="M54 80 Q46 86 46 92" stroke="#9fcf3a" stroke-width="5" fill="none" stroke-linecap="round"/>
+<path d="M56 70 Q50 60 46 52 L58 50 Q60 60 64 66 Z" fill="#b5e04a"/>
+<ellipse cx="44" cy="52" rx="20" ry="16" fill="#b5e04a"/>
+<path d="M26 48 Q28 26 46 24 Q64 26 64 46 Q46 40 26 48 Z" fill="#c98a4a"/>
+<g fill="#8a5a2a"><circle cx="30" cy="48" r="2.4"/><circle cx="62" cy="48" r="2.4"/><circle cx="26" cy="56" r="2"/></g>
+<circle cx="40" cy="52" r="4.2" fill="#1f2a0a"/><circle cx="41.4" cy="50.6" r="1.5" fill="#fff"/>
+<ellipse cx="48" cy="60" rx="3.6" ry="2.2" fill="#ff6f6f" opacity=".45"/>
+<path d="M26 62 Q31 66 36 62" fill="none" stroke="#4a6a10" stroke-width="2" stroke-linecap="round"/></g>`
+};
+const svgDoc=(k,px)=>`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="${px}" height="${px}">${DINO_SVG[k]}</svg>`;
+const IMG={};for(const k in DINO_SVG){const im=new Image();im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svgDoc(k,256));IMG['svg:'+k]=im}
+const glyphReady=e=>!IMG[e]||(IMG[e].complete&&IMG[e].naturalWidth>0);
+function glyph(g,e,cx,cy,px){const im=IMG[e];if(im){if(glyphReady(e))g.drawImage(im,cx-px*.64,cy-px*.68,px*1.28,px*1.28);return}g.font=`${px}px ${EF}`;g.textAlign='center';g.textBaseline='middle';g.fillText(e,cx,cy)}
+function glyphHTML(e){return IMG[e]?svgDoc(e.slice(4),26).replace('<svg ','<svg style="vertical-align:middle" '):e}
 const DOMAINS=[
 {id:'cars',n:['Vehicles','Veicoli'],icon:'🚗',bg:['#4fc3ff','#7cf0c8'],scene:'road',items:'🚗 Car/Macchina|🚕 Taxi/Taxi|🚙 Jeep/Jeep|🚌 Bus/Autobus|🏎️ Race car/Macchina da corsa|🚓 Police car/Polizia|🚑 Ambulance/Ambulanza|🚒 Fire truck/Camion dei pompieri|🚜 Tractor/Trattore|🚚 Truck/Camion|🛻 Pickup truck/Pick-up|🚐 Van/Furgone|🏍️ Motorbike/Moto|🚲 Bike/Bicicletta|🚂 Train/Treno|🚀 Rocket/Razzo|✈️ Airplane/Aereo|🚁 Helicopter/Elicottero|⛵ Sailboat/Barca a vela|🚤 Speedboat/Motoscafo'},
 {id:'animals',n:['Animals','Animali'],icon:'🦁',bg:['#ffb347','#ffd86b'],scene:'savanna',items:'🦁 Lion/Leone|🐯 Tiger/Tigre|🐘 Elephant/Elefante|🦒 Giraffe/Giraffa|🦓 Zebra/Zebra|🐵 Monkey/Scimmia|🐼 Panda/Panda|🐨 Koala/Koala|🦊 Fox/Volpe|🐻 Bear/Orso|🐰 Bunny/Coniglietto|🐶 Puppy/Cagnolino|🐱 Kitty/Gattino|🐸 Frog/Rana|🦛 Hippo/Ippopotamo|🦘 Kangaroo/Canguro|🐧 Penguin/Pinguino|🦉 Owl/Gufo|🦜 Parrot/Pappagallo|🐢 Turtle/Tartaruga'},
 {id:'farm',n:['Farm','Fattoria'],icon:'🐮',bg:['#8be06a','#ffe57a'],scene:'farm',items:'🐮 Cow/Mucca|🐷 Pig/Maialino|🐑 Sheep/Pecora|🐔 Chicken/Gallina|🐤 Chick/Pulcino|🐴 Horse/Cavallo|🐐 Goat/Capra|🦆 Duck/Papera|🐓 Rooster/Gallo|🐇 Rabbit/Coniglio|🦃 Turkey/Tacchino|🐕 Doggy/Cane|🐈 Cat/Gatto|🐭 Mouse/Topolino|🐄 Cow/Mucca|🐖 Pig/Maiale'},
 {id:'hearts',n:['Hearts','Cuoricini'],icon:'💖',bg:['#ff6fa8','#ffb3d1'],scene:'love',items:'❤️ Red heart/Cuore rosso|🧡 Orange heart/Cuore arancione|💛 Yellow heart/Cuore giallo|💚 Green heart/Cuore verde|💙 Blue heart/Cuore blu|💜 Purple heart/Cuore viola|🩷 Pink heart/Cuore rosa|💖 Sparkly heart/Cuore brillante|💗 Growing heart/Cuore che cresce|💕 Two hearts/Due cuori|💞 Spinning hearts/Cuori che girano|💝 Heart present/Cuore regalo|💘 Heart arrow/Cuore con la freccia|💓 Beating heart/Cuore che batte|💌 Love letter/Lettera d\'amore|🌹 Rose/Rosa'},
 {id:'smiles',n:['Smiles','Faccine'],icon:'😄',bg:['#ffd23f','#ff9f5a'],scene:'love',items:'😀 Happy face/Faccina felice|😄 Big smile/Sorrisone|😂 Laughing/Che risate|🥳 Party face/Faccina in festa|😎 Cool face/Faccina con gli occhiali|🤩 Star eyes/Occhi a stella|😜 Silly face/Faccina buffa|🤪 Crazy face/Faccina matta|😇 Angel/Angioletto|🤗 Big hug/Abbraccio|😺 Smiley cat/Gatto sorridente|🥰 Lovely face/Faccina dolce|😍 Heart eyes/Occhi a cuore|😘 Kiss/Bacio|🤡 Clown/Pagliaccio|👻 Ghost/Fantasma'},
-{id:'dinos',n:['Dinos','Dinosauri'],icon:'🦖',bg:['#5fd38d','#c6f36a'],scene:'jungle',items:'🦖 T-Rex/T-Rex|🦕 Dinosaur/Dinosauro|🐊 Crocodile/Coccodrillo|🦎 Lizard/Lucertola|🐉 Dragon/Drago|🐲 Dragon/Drago|🥚 Egg/Uovo|🌋 Volcano/Vulcano|🦴 Bone/Osso|🐢 Turtle/Tartaruga|🌴 Palm tree/Palma|🦤 Dodo/Dodo'},
+{id:'dinos',n:['Dinos','Dinosauri'],icon:'🦖',bg:['#5fd38d','#c6f36a'],scene:'jungle',items:'🦖 T-Rex/T-Rex|🦕 Dinosaur/Dinosauro|svg:trike Triceratops/Triceratopo|svg:stego Stegosaurus/Stegosauro|svg:ptero Pterodactyl/Pterodattilo|svg:anky Ankylosaurus/Anchilosauro|svg:para Parasaurolophus/Parasaurolofo|svg:raptor Velociraptor/Velociraptor|svg:hatch Baby dino/Cucciolo di dinosauro|svg:plesio Plesiosaurus/Plesiosauro|svg:spino Spinosaurus/Spinosauro|svg:pachy Pachycephalosaurus/Pachicefalosauro|🐊 Crocodile/Coccodrillo|🦎 Lizard/Lucertola|🐉 Dragon/Drago|🥚 Egg/Uovo|🌋 Volcano/Vulcano|🦴 Bone/Osso'},
 {id:'sea',n:['Sea','Mare'],icon:'🐳',bg:['#2fb8ff','#64f0e6'],scene:'sea',items:'🐳 Whale/Balena|🐬 Dolphin/Delfino|🐟 Fish/Pesce|🐠 Tropical fish/Pesce tropicale|🐡 Pufferfish/Pesce palla|🦈 Shark/Squalo|🐙 Octopus/Polpo|🦑 Squid/Calamaro|🦀 Crab/Granchio|🦞 Lobster/Aragosta|🦐 Shrimp/Gamberetto|🐚 Shell/Conchiglia|🪼 Jellyfish/Medusa|🦭 Seal/Foca|🐋 Big whale/Balenottera|🐢 Sea turtle/Tartaruga marina|⚓ Anchor/Ancora|🧜 Mermaid/Sirena'},
 {id:'space',n:['Space','Spazio'],icon:'🚀',bg:['#4b3bbf','#2a1f6b'],scene:'space',items:'🚀 Rocket/Razzo|🛸 UFO/Disco volante|🪐 Planet/Pianeta|🌍 Earth/Terra|🌙 Moon/Luna|⭐ Star/Stella|🌟 Shining star/Stella brillante|☄️ Comet/Cometa|👽 Alien/Alieno|👾 Alien monster/Mostriciattolo|🛰️ Satellite/Satellite|🌞 Sun/Sole|🔭 Telescope/Telescopio|🧑‍🚀 Astronaut/Astronauta|🌌 Galaxy/Galassia'},
 {id:'sweets',n:['Sweets','Dolci'],icon:'🍭',bg:['#ff8fd1','#ffd1ea'],scene:'candy',items:'🍭 Lollipop/Lecca-lecca|🍬 Candy/Caramella|🍫 Chocolate/Cioccolato|🍩 Donut/Ciambella|🍪 Cookie/Biscotto|🧁 Cupcake/Tortina|🍰 Cake/Torta|🎂 Birthday cake/Torta di compleanno|🍦 Ice cream/Gelato|🍨 Sundae/Coppa di gelato|🍧 Shaved ice/Granita|🥞 Pancakes/Frittelle|🍮 Pudding/Budino|🍯 Honey/Miele|🥐 Croissant/Cornetto|🍿 Popcorn/Popcorn'},
@@ -106,7 +247,7 @@ let lang=store.get('lang',(navigator.language||'en').toLowerCase().startsWith('i
 /* ---------- menu ---------- */
 const grid=document.getElementById('grid'),goBtn=document.getElementById('go');
 DOMAINS.forEach(d=>{const b=document.createElement('button');b.className='dom';b.dataset.id=d.id;b.style.background=`radial-gradient(circle at 30% 15%,#ffffff70,transparent 50%),linear-gradient(160deg,${d.bg[0]},${d.bg[1]})`;
- b.innerHTML=`<span class="ck">✓</span><span class="ic">${d.icon}<small>${d.items[1].e}${d.items[2].e}</small></span><b></b>`;
+ b.innerHTML=`<span class="ck">✓</span><span class="ic">${d.icon}<small>${glyphHTML(d.items[1].e)}${glyphHTML(d.items[2].e)}</small></span><b></b>`;
  b.onclick=()=>{sel.has(d.id)?sel.delete(d.id):sel.add(d.id);syncMenu();if(sel.has(d.id)){ac();pop(Math.random()*10|0)}};grid.appendChild(b)});
 function seg(id,cur,set){document.querySelectorAll('#'+id+' button').forEach(b=>{b.classList.toggle('on',b.dataset.v===String(cur));b.onclick=()=>{set(b.dataset.v);syncMenu();ac();pop(4)}})}
 function syncMenu(){document.documentElement.lang=lang;
@@ -152,8 +293,8 @@ const rnd=(a,b)=>a+Math.random()*(b-a),pick=a=>a[Math.random()*a.length|0],clamp
 const easeOut=t=>1-Math.pow(1-clamp(t,0,1),3),elastic=t=>{t=clamp(t,0,1);return t===1?1:1-Math.pow(2,-10*t)*Math.cos(t*Math.PI*2.4)};
 
 const sprCache=new Map();
-function spr(e){let c=sprCache.get(e);if(c)return c;c=document.createElement('canvas');c.width=c.height=160;const g=c.getContext('2d');g.font=`112px ${EF}`;g.textAlign='center';g.textBaseline='middle';
- g.shadowColor='rgba(60,20,80,.28)';g.shadowBlur=8;g.shadowOffsetY=6;g.fillText(e,80,86);sprCache.set(e,c);return c}
+function spr(e){let c=sprCache.get(e);if(c)return c;c=document.createElement('canvas');c.width=c.height=160;const g=c.getContext('2d');
+ g.shadowColor='rgba(60,20,80,.28)';g.shadowBlur=8;g.shadowOffsetY=6;glyph(g,e,80,86,112);if(glyphReady(e))sprCache.set(e,c);return c}
 
 /* ---------- state ---------- */
 let playing=false,T=0,pool=[],parts=[],bits=[],rings=[],letters=[],fx=[],timers=[],pc=null;
@@ -238,7 +379,7 @@ function grain(){if(grainPat)return grainPat;const c=document.createElement('can
  g.strokeStyle='rgba(255,255,255,.18)';for(let k=0;k<40;k++){g.beginPath();const x=rnd(0,160),y=rnd(0,160);g.moveTo(x,y);g.quadraticCurveTo(x+rnd(-8,8),y+rnd(-8,8),x+rnd(-14,14),y+rnd(-14,14));g.stroke()}
  grainPat=ctx.createPattern(c,'repeat');return grainPat}
 function sticker(e,px,pad){const big=document.createElement('canvas');const S=px+pad*2;big.width=big.height=S;const b=big.getContext('2d');
- const em=document.createElement('canvas');em.width=em.height=S;const g=em.getContext('2d');g.font=`${px*.8}px ${EF}`;g.textAlign='center';g.textBaseline='middle';g.fillText(e,S/2,S/2+px*.05);
+ const em=document.createElement('canvas');em.width=em.height=S;const g=em.getContext('2d');glyph(g,e,S/2,S/2+px*.05,px*.8);
  const wh=document.createElement('canvas');wh.width=wh.height=S;const w=wh.getContext('2d');w.drawImage(em,0,0);w.globalCompositeOperation='source-in';w.fillStyle='#fffdf6';w.fillRect(0,0,S,S);
  const out=document.createElement('canvas');out.width=out.height=S;const o=out.getContext('2d');for(let k=0;k<28;k++){const a=k/28*Math.PI*2;o.drawImage(wh,Math.cos(a)*pad*.8,Math.sin(a)*pad*.8)}
  o.globalCompositeOperation='source-atop';o.fillStyle=grain();o.fillRect(0,0,S,S);o.globalCompositeOperation='source-over';o.drawImage(em,0,0);
