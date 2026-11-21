@@ -2,7 +2,7 @@
 
 A small collection of AI-made games you can play right in your browser. Nothing too hard, just fun: made for kids, and for dads and moms who want to play together with them :)
 
-Racing, fighting, strategy, parkour, motorbike stunts, medieval battles, adventure and a math game for little ones, 1–2 players on one keyboard. No download, no build step: every game is a single HTML file.
+Racing, fighting, strategy, parkour, motorbike stunts, medieval battles, adventure and a math game for little ones, a keyboard emoji game for toddlers, 1–2 players on one keyboard. No download, no build step: every game is a single HTML file.
 
 **▶ Play:** https://ozzoet.github.io/browser-ai-games/
 
@@ -22,6 +22,7 @@ Racing, fighting, strategy, parkour, motorbike stunts, medieval battles, adventu
 | Trickline | 3D motorbike stunt run: ramps, wall rides, grinds, rooftop gaps | 1–2 | [`trickline/`](trickline/) |
 | Bloop Math | Math for kids with gooey jelly bubbles (+ − × ÷, ages 4–10+) | 1 | [`bloop-math/`](bloop-math/) |
 | Rollway | 3D toy car run: fast roads, ramps and boost pads, tunnels you can drive upside down | 1 | [`rollway/`](rollway/) |
+| Key Pop | Keyboard emoji fun for babies and toddlers: pick worlds, every key pops emoji | 1 | [`key-pop/`](key-pop/) |
 
 All games are in English.
 
