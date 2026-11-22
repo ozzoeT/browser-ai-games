@@ -23,7 +23,7 @@ Racing, fighting, strategy, parkour, motorbike stunts, medieval battles, adventu
 | Bloop Math | Math for kids with gooey jelly bubbles (+ − × ÷, ages 4–10+) | 1 | [`bloop-math/`](bloop-math/) |
 | Rollway | 3D toy car run: fast roads, ramps and boost pads, tunnels you can drive upside down | 1 | [`rollway/`](rollway/) |
 | Key Pop | Keyboard emoji fun for babies and toddlers: pick worlds, every key pops emoji; calm mode, goodnight timer, English/Italian | 1 | [`key-pop/`](key-pop/) |
-| Pop Cascade | Neon bubble popping: tap to start chains that play a melody | 1 | [`pop-cascade/`](pop-cascade/) |
+| Pop Cascade | Bubble popping chains that play a melody, with neon, ocean and sticky kitchen themes | 1 | [`pop-cascade/`](pop-cascade/) |
 
 All games are in English.
 
