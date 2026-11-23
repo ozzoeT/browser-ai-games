@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>Phalanx: Marathon 490 BC – Shield to Shield | Browser AI Games</title>
+<meta name="description" content="Free 3D browser game about the battle of Marathon. Keep the Greek phalanx in step to the beat of the aulos, raise shields under the Persian arrows, close the pincer and chase the Persians to their ships.">
+<link rel="canonical" href="https://ozzoet.github.io/browser-ai-games/phalanx/">
+<meta property="og:title" content="Phalanx: Marathon 490 BC"><meta property="og:description" content="Shield to shield, in step to the beat: lead the Greek phalanx at Marathon. Free 3D browser game."><meta property="og:image" content="https://ozzoet.github.io/browser-ai-games/thumbs/phalanx.jpg"><meta property="og:url" content="https://ozzoet.github.io/browser-ai-games/phalanx/"><meta name="twitter:card" content="summary_large_image"><meta name="theme-color" content="#1c1410">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Alegreya+Sans:wght@500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head><body>
+<div id="scene"></div>
+<div id="labels"></div>
+
+<!-- HUD -->
+<div id="hud" class="hidden">
+ <div id="hudL"><div id="actT"></div><div id="objT"></div></div>
+ <div id="hudR">
+  <div class="stat"><span class="ico">⛉</span><b id="menN">0</b><span id="menOf"></span></div>
+  <div class="meter"><span data-t="cohesion"></span><div class="bar"><i id="cohB"></i></div></div>
+  <div class="meter" id="breathM"><span data-t="breath"></span><div class="bar"><i id="brB"></i></div></div>
+ </div>
+ <div id="align" class="hidden"><div id="alignP"></div><div id="alignG"></div><span data-t="alignment"></span></div>
+ <div id="secs" class="hidden">
+  <div class="sec" data-s="0"><span class="sn"></span><div class="tug"><i></i></div></div>
+  <div class="sec" data-s="1"><span class="sn"></span><div class="tug"><i></i></div></div>
+  <div class="sec" data-s="2"><span class="sn"></span><div class="tug"><i></i></div></div>
+ </div>
+</div>
+<div id="beat" class="hidden"><div id="beatRing"></div><div id="beatCore"></div><div id="beatTxt"></div></div>
+<div id="judge"></div>
+<div id="big"></div>
+<div id="toasts"></div>
+<div id="tip" class="hidden"></div>
+<div id="volley" class="hidden"></div>
+<div id="choice" class="hidden"><div id="choiceT"></div><div class="row"><button id="chChase" class="cbtn"></button><button id="chTurn" class="cbtn gold"></button></div><div id="choiceBar"><i></i></div></div>
+
+<!-- touch controls -->
+<div id="touch" class="hidden">
+ <div class="tgrp l"><button class="tb" id="tL">◀</button><button class="tb" id="tR">▶</button></div>
+ <div class="tgrp r"><button class="tb wide" id="tClose"></button><button class="tb wide" id="tShield"></button></div>
+</div>
+<div id="corner"><button class="ib" id="bMute" aria-label="Sound">🔊</button><button class="ib hidden" id="bPause" aria-label="Pause">❚❚</button></div>
+
+<!-- screens -->
+<div class="ov" id="menu"><div class="panel">
+ <div class="meander"></div>
+ <h1>PHALANX</h1><div class="h1s" data-t="subtitle"></div>
+ <p class="sub" data-t="menuSub"></p>
+ <button class="btn" id="bPlay" data-t="play"></button>
+ <div class="opts">
+  <div class="opt"><span data-t="difficulty"></span><div class="seg" id="segDiff"><button data-v="story" data-t="story"></button><button data-v="hoplite" data-t="hoplite"></button></div></div>
+  <div class="opt"><span data-t="language"></span><div class="seg" id="segLang"><button data-v="it">Italiano</button><button data-v="en">English</button></div></div>
+ </div>
+ <button class="btn alt" id="bHow" data-t="howTo"></button>
+ <div class="best" id="bestT"></div>
+ <div class="meander b"></div>
+</div></div>
+
+<div class="ov hidden" id="how"><div class="panel wide">
+ <h2 data-t="howTo"></h2>
+ <div class="howgrid" id="howGrid"></div>
+ <button class="btn" id="bHowOk">OK</button>
+</div></div>
+
+<div class="ov hidden" id="story"><div class="panel wide storyp">
+ <div class="meander"></div>
+ <div id="storyN"></div>
+ <h2 id="storyH"></h2>
+ <p id="storyP"></p>
+ <div class="row"><button class="btn alt sm" id="bSkip" data-t="skip"></button><button class="btn sm" id="bNext" data-t="next"></button></div>
+</div></div>
+
+<div class="ov hidden bottom" id="deploy"><div class="panel wide dep">
+ <h2 data-t="deployT"></h2>
+ <p class="sub" data-t="deploySub"></p>
+ <div class="depl">
+  <div class="dcol"><b data-t="secL"></b><span class="dd" id="dL">8</span><small data-t="ranks"></small></div>
+  <div class="dcol mid"><b data-t="secC"></b><div class="pm"><button class="pmb" id="cMinus">−</button><span class="dd" id="dC">4</span><button class="pmb" id="cPlus">+</button></div><small data-t="ranks"></small></div>
+  <div class="dcol"><b data-t="secR"></b><span class="dd" id="dR">8</span><small data-t="ranks"></small></div>
+ </div>
+ <div class="presets"><button class="pre" data-c="4" data-t="preMil"></button><button class="pre" data-c="7" data-t="preEven"></button><button class="pre" data-c="10" data-t="preCenter"></button></div>
+ <p class="note" id="depNote"></p>
+ <button class="btn" id="bDeploy" data-t="toBattle"></button>
+</div></div>
+
+<div class="ov hidden" id="pause"><div class="panel">
+ <h2 data-t="paused"></h2>
+ <button class="btn" id="bResume" data-t="resume"></button>
+ <button class="btn alt" id="bQuit" data-t="quit"></button>
+</div></div>
+
+<div class="ov hidden" id="end"><div class="panel wide endp">
+ <div class="meander"></div>
+ <h2 id="endH"></h2>
+ <div id="laurel"></div>
+ <p class="sub" id="endSub"></p>
+ <div class="rows" id="endRows"></div>
+ <div id="fallen"></div>
+ <p class="hist" id="endHist"></p>
+ <div class="row"><button class="btn alt sm" id="bRetryClash" data-t="retryClash"></button><button class="btn sm" id="bAgain" data-t="again"></button></div>
+ <button class="btn alt" id="bMenu" data-t="menu"></button>
+</div></div>
+
+<div id="loading"><div>PHALANX</div><small>…</small></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/core.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/models.js"></script>
+<script src="js/world.js"></script>
+<script src="js/fx.js"></script>
+<script src="js/game.js"></script>
+</body></html>
