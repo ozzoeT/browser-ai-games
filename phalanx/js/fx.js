@@ -69,7 +69,7 @@ const ARROWS=(()=>{
   for(const a of A){if(!a.state)continue;
    if(a.state==='fly'){a.t+=dt;a.vy-=9.8*dt;a.x+=a.vx*dt;a.y+=a.vy*dt;a.z+=a.vz*dt;
     if(a.t>=a.T||a.y<=terrainH(a.x,a.z)+.1){a.y=Math.max(a.y,terrainH(a.x,a.z)+.1);const r=onLand?onLand(a):null;
-     if(r&&r.shield)stickShield(a,r.shield);else{a.state='ground';a.life=0;a.y=terrainH(a.x,a.z)+.25;a.vy=Math.min(a.vy,-2);}}
+     if(r&&r.shield&&r.shield.shM)stickShield(a,r.shield);else{a.state='ground';a.life=0;a.y=terrainH(a.x,a.z)+.25;a.vy=Math.min(a.vy,-2);}}
     if(a.state==='fly'){v.set(a.vx,a.vy,a.vz).normalize();q.setFromUnitVectors(F,v);m.compose(v.set(a.x,a.y,a.z),q,one);im.setMatrixAt(n++,m);}}
    if(a.state==='ground'){a.life+=dt;if(a.life>14){a.state=null;continue;}v.set(a.vx,a.vy,a.vz).normalize();q.setFromUnitVectors(F,v);m.compose(v.set(a.x,a.y,a.z),q,one);im.setMatrixAt(n++,m);}
    if(a.state==='shield'){a.life+=dt;const s=a.sold;if(a.life>18||!s||!s.shM||(s.fall>0&&a.life>6)){a.state=null;continue;}m.multiplyMatrices(s.shM,a.lm);im.setMatrixAt(n++,m);}

@@ -2,7 +2,7 @@
 
 A small collection of AI-made games you can play right in your browser. Nothing too hard, just fun: made for kids, and for dads and moms who want to play together with them :)
 
-Racing, fighting, strategy, parkour, motorbike stunts, medieval battles, adventure and a math game for little ones, a keyboard emoji game for toddlers, 1–2 players on one keyboard. No download, no build step: every game is a single HTML file.
+Racing, fighting, strategy, parkour, motorbike stunts, medieval battles, adventure and a math game for little ones, a keyboard emoji game for toddlers, a rhythm battle at Marathon, 1–2 players on one keyboard. No download, no build step: every game is a single HTML file.
 
 **▶ Play:** https://ozzoet.github.io/browser-ai-games/
 
@@ -28,6 +28,7 @@ Racing, fighting, strategy, parkour, motorbike stunts, medieval battles, adventu
 | Hungry Hole | 3D hole that swallows a toy town and grows, 2-minute rounds with a challenge-a-friend link | 1 | [`hungry-hole/`](hungry-hole/) |
 | Swarm Run | Crowd runner: number gates, traps, red crowds and ×10 stairs; unlockable colours | 1 | [`swarm-run/`](swarm-run/) |
 | Merge Zoo | Drop and merge cute animals in a jar, from a mouse up to the whale | 1 | [`merge-zoo/`](merge-zoo/) |
+| Phalanx | Marathon 490 BC: keep the Greek phalanx in step to the drum, shields up under the arrows, close the pincer and race to the ships (Italian/English) | 1 | [`phalanx/`](phalanx/) |
 
 All games are in English.
 

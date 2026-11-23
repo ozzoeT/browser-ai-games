@@ -5,8 +5,8 @@ const F=28,SECF=[9,10,9],SX=.95,SZ=1.25,CF=(F-1)/2,TOTAL=192;
 const PZ=W.PERSIAN_Z,CONTACT=PZ-1.4;
 const secOf=f=>f<9?0:f<19?1:2;
 const fileX0=f=>(CF-f)*SX;
-const DIFF={story:{perfect:.09,good:.18,stumble:.5,arrows:.5,volley:4.4,center:.88,chaseDefault:'turn',shipBonus:8},
-            hoplite:{perfect:.062,good:.125,stumble:1,arrows:1,volley:3.3,center:1,chaseDefault:'chase',shipBonus:0}};
+const DIFF={story:{perfect:.1,good:.21,stumble:.5,arrows:.5,volley:4.4,center:.88,chaseDefault:'turn',shipBonus:8},
+            hoplite:{perfect:.075,good:.15,stumble:1,arrows:1,volley:3.3,center:1,chaseDefault:'chase',shipBonus:0}};
 const SPEED={march:2.7,run:6.3,beach:6};
 const CREST=[[0x2f5fa8,0x1e1712,0xe9dcc0],[0x1e1712,0xa8321f,0xe9dcc0],[0xa8321f,0x1e1712,0xd8a456]].map(a=>a.map(c=>new THREE.Color(c)));
 const BAND=[0xa8321f,0x24354f,0x1e1712,0x2f6a3a].map(c=>new THREE.Color(c));
@@ -53,11 +53,12 @@ function makeLabels(){const box=$('labels');box.innerHTML='';G.heroLabels=[];
 const _p=new THREE.Vector3();
 const placed=[];
 function updateLabels(){const show=['march','run','clash','beach','end'].includes(G.state);placed.length=0;
+ const bt=$('beat').classList.contains('hidden')?null:$('beat').getBoundingClientRect();
  const order=G.heroLabels.map((e,i)=>{const m=G.men.find(m=>m.hero===i);return{e,i,m,d:m?camera.position.distanceTo(_p.set(m.x,1,m.z)):1e9};}).sort((a,b)=>a.d-b.d);
  for(const{e,m,d}of order){
   if(!show||!m||m.gone||d>(G.state==='clash'?40:30)){e.style.display='none';continue;}_p.set(m.x,(m.y||0)+(m.fall>0?.6:2.2),m.z).project(camera);
   const x=(_p.x*.5+.5)*innerWidth,y=(-_p.y*.5+.5)*innerHeight;
-  if(_p.z>1||x<0||x>innerWidth||y<40||y>innerHeight||placed.some(([px,py])=>Math.abs(px-x)<90&&Math.abs(py-y)<20)){e.style.display='none';continue;}
+  if(_p.z>1||x<0||x>innerWidth||y<40||y>innerHeight||(bt&&x>bt.left-60&&x<bt.right+60&&y>bt.top-6&&y<bt.bottom+24)||placed.some(([px,py])=>Math.abs(px-x)<90&&Math.abs(py-y)<20)){e.style.display='none';continue;}
   placed.push([x,y]);e.style.display='block';e.style.left=x+'px';e.style.top=y+'px';e.classList.toggle('dead',!m.alive);}}
 
 /* ---------------- UI helpers ---------------- */
@@ -67,21 +68,29 @@ function toast(t,cls=''){const box=$('toasts');const e=document.createElement('d
  while(box.children.length>4)box.firstChild.remove();setTimeout(()=>{e.style.opacity=0;setTimeout(()=>e.remove(),500);},3200);}
 function tip(key,dur=6){if(G.tips[key])return false;G.tips[key]=1;const e=$('tip');const k=T(key+(IS_TOUCH?'T':'K'));e.innerHTML=k.startsWith(key)?T(key):k;show('tip');
  clearTimeout(tip.h);tip.h=setTimeout(()=>show('tip',false),dur*1000);return true;}
-function judge(txt,cls){const e=$('judge');e.className=cls;e.textContent=txt;void e.offsetWidth;e.classList.add('go');}
+function judge(txt,cls,sub){const e=$('judge');e.className=cls;e.innerHTML=txt+(sub?`<small>${sub}</small>`:'');void e.offsetWidth;e.classList.add('go');}
 function setAct(n){$('actT').textContent=T('act'+n);$('objT').textContent=T('obj'+n);}
 
 /* ---------------- the beat ---------------- */
+// the time the player hears: audio clock minus output latency minus the player's own calibrated offset
+G.calib=clamp(store.get('calib',0),-.25,.25);
+const hearNow=()=>AUDIO.now()-AUDIO.latency-(AUDIO.virtual!=null?0:G.calib);
 AUDIO.onBeat((t,k)=>{G.beats.push({t,k,hit:false,judged:false});if(G.beats.length>12)G.beats.shift();});
 function lastBeatJudgeable(){return G.state==='march'||G.state==='run'||G.state==='clash'||G.state==='beach';}
 INPUT.onStep=()=>{AUDIO.init();
+ if(G.state==='calib'){calibTap();return;}
  if(G.paused||!lastBeatJudgeable()||G.ended)return;
- const tt=AUDIO.now()-AUDIO.latency;let best=null,bd=1e9;
- for(const b of G.beats){const d=Math.abs(tt-b.t);if(d<bd){bd=d;best=b;}}
- const len=AUDIO.B.len;const dir=best?tt-best.t:0;
- $('beat').classList.add('hit');setTimeout(()=>$('beat').classList.remove('hit'),90);
- if(best&&!best.hit&&bd<=D().good&&bd<len*.45){best.hit=true;best.judged=true;const q=bd<=D().perfect?1:.75;onGoodStep(q);
-  judge(q===1?T('perfect'):T('good'),q===1?'jp':'jg');}
- else{onBadStep();judge(T('miss'),'jm');}
+ const tt=hearNow();let best=null,bd=1e9;
+ // the nearest beat, including the next one not yet scheduled (a very early tap)
+ const cand=G.beats.map(b=>b);if(AUDIO.B.on)cand.push({t:AUDIO.B.next,future:true});
+ for(const b of cand){const d=Math.abs(tt-b.t);if(d<bd){bd=d;best=b;}}
+ const len=AUDIO.B.len;const off=best?tt-best.t:0;
+ const side=off<0?T('early'):T('late');
+ if(best&&!best.future&&!best.hit&&bd<=D().good&&bd<len*.45){best.hit=true;best.judged=true;best.off=off;const q=bd<=D().perfect?1:.75;onGoodStep(q);
+  judge(q===1?T('perfect'):T('good'),q===1?'jp':'jg',q===1?'':side);BEATUI.tap(off,q===1?'p':'g');}
+ else{onBadStep();
+  // a second tap on a beat already hit, or a tap far from any beat
+  const again=best&&best.hit&&bd<=D().good;judge(T('miss'),'jm',again?'':side);BEATUI.tap(again?D().good*1.6*(off<0?-1:1):off,'m');}
 };
 function onGoodStep(q){G.streak++;G.stats.hits++;if(q===1)G.stats.perfect++;
  if(G.state==='clash'){G.pushMul=1+.22*q+Math.min(.1,G.streak*.01);for(const m of G.men)if(m.alive&&m.r<2&&m.state==='line')m.stabT=.32*Math.random()*.4;AUDIO.S.push(q);return;}
@@ -94,7 +103,7 @@ function onBadStep(){G.stats.miss++;const wasMoving=G.drive>.35||G.state==='clas
 function stumble(mult){const base=(G.state==='march'?.05:.1)*D().stumble*mult;let n=0;
  for(const m of G.men){if(!m.alive||m.state!=='line')continue;let p=base*(m.wounded?2:1)*(2-m.vig)*(G.breath<.3?2.2:1);if(Math.random()<p){m.trip=rand(.5,.9);m.phOff=rand(1,TAU-1);n++;}}
  if(n){AUDIO.S.stumble();if(n>5&&!G.tips.tipClose)setTimeout(()=>tip('tipClose',7),900);}}
-function judgeMissedBeats(){const now=AUDIO.now()-AUDIO.latency;
+function judgeMissedBeats(){const now=hearNow();
  for(const b of G.beats){if(b.judged||b.t>now-D().good)continue;b.judged=true;
   if(!lastBeatJudgeable())continue;
   // breaking the rhythm while moving trips a few men; stopping on purpose does not
@@ -191,7 +200,7 @@ function updateLineMove(dt){
  G.az+=G.v*dt;
  // drift to the right (each man seeks his neighbour's shield) — worse with shields raised
  const drift=G.v>.6?(shield?.55:.14)*(G.state==='beach'?.5:1):0;
- G.ax-=drift*dt;if(INPUT.left)G.ax+=2.6*dt;if(INPUT.right)G.ax-=2.6*dt;G.ax=clamp(G.ax,-40,40);
+ G.ax-=drift*dt;const side=G.state==='beach'?4.4:2.6;if(INPUT.left)G.ax+=side*dt;if(INPUT.right)G.ax-=side*dt;G.ax=clamp(G.ax,-40,40);
  if(G.state==='beach'){G.ax=clamp(G.ax,-62,62);G.az=Math.min(G.az,W.SHIP_STERN-2.2);}
  // breath
  if(run&&G.v>3)G.breath=Math.max(0,G.breath-dt/(shield?70:48));else G.breath=Math.min(1,G.breath+dt/(close?9:16));
@@ -321,7 +330,7 @@ function startBeach(){G.state='beach';G.tAct=0;setAct(4);AUDIO.setStyle('beach',
  for(let f=0;f<nf;f++){const grp=ms.slice(f*depth,(f+1)*depth).sort((a,b)=>b.z-a.z);grp.forEach((m,r)=>{m.f=f;m.r=r;m.yaw=0;m.sec=1;});}
  G.ax=cx;G.az=fz;G.v=0;G.drive=0;G.breath=Math.max(G.breath,.6);
  // the ships started loading when the clash began: a slow battle means fewer ships to catch
- const order=[40,46,52,58,65,72,82].sort(()=>Math.random()-.5);WORLD.ships.forEach((s,i)=>{s.launchAt=order[i]+D().shipBonus;s.counted=false;});
+ const order=[42,50,58,66,75,85,97].sort(()=>Math.random()-.5);WORLD.ships.forEach((s,i)=>{s.launchAt=order[i]+D().shipBonus;s.counted=false;});
  // men who chased are already on the beach: they seize a ship at once
  const chasers=G.men.filter(m=>m.alive&&m.state==='chase');
  if(chasers.length>6){const s=WORLD.ships.reduce((a,b)=>Math.abs(b.x-chasers[0].x)<Math.abs(a.x-chasers[0].x)?b:a);captureShip(s,chasers.slice(0,6),true);}
@@ -388,7 +397,7 @@ function defeat(k){if(G.ended)return;
  finish(false,k);}
 
 /* ---------------- animation of every soldier ---------------- */
-const stepPhase=()=>PI*((AUDIO.now()-AUDIO.latency-AUDIO.B.next)/AUDIO.B.len+AUDIO.B.count);
+const stepPhase=()=>PI*((hearNow()-AUDIO.B.next)/AUDIO.B.len+AUDIO.B.count);
 function animate(dt){
  const sp=stepPhase();
  for(const m of G.men){
@@ -433,7 +442,7 @@ const camP=new THREE.Vector3(0,20,-40),camL=new THREE.Vector3(0,0,20),_cp=new TH
 function lineCenter(){let x=0,z=0,n=0,minz=1e9;for(const m of G.men){if(!m.alive||m.state!=='line')continue;x+=m.x;z+=m.z;n++;if(m.z<minz)minz=m.z;}return n?{x:x/n,z:z/n,back:minz}:{x:G.ax,z:G.az,back:G.az-8};}
 function updateCamera(dt,t){
  const st=G.state;let k=2.2;const asp=camera.aspect,port=asp<1;
- if(st==='menu'){const a=t*.05;_cp.set(Math.sin(a)*34,9+Math.sin(t*.13)*2,-30+Math.cos(a)*12);_cl.set(0,2,18);k=1.2;}
+ if(st==='menu'||st==='calib'){const a=t*.05;_cp.set(Math.sin(a)*34,9+Math.sin(t*.13)*2,-30+Math.cos(a)*12);_cl.set(0,2,18);k=1.2;}
  else if(st==='story'){const s=STORY[G.storyI].cam;_cp.set(...s[0]);_cl.set(...s[1]);_cp.x+=Math.sin(t*.2)*2;k=1.4;}
  else if(st==='deploy'){_cp.set(0,port?44:24,port?-44:-34);_cl.set(0,0,port?-22:-15);k=2;}
  else if(st==='march'||st==='run'||st==='beach'||st==='ending'){const c=lineCenter();const back=port?19:10.5,h=port?13:6.6;
@@ -447,20 +456,85 @@ function updateCamera(dt,t){
  const fov=st==='run'||st==='beach'?52+G.v*.9:52;camera.fov=damp(camera.fov,fov,2,dt);camera.updateProjectionMatrix();
  sunFollow(camL.x,camL.z-4);sky.position.copy(camera.position);}
 
-/* ---------------- beat indicator ---------------- */
-function updateBeatUI(){if($('beat').classList.contains('hidden'))return;const B=AUDIO.B,now=AUDIO.now()-AUDIO.latency;const x=(now-B.next)/B.len+B.count,ph=x-Math.floor(x);
- $('beatRing').style.transform=`scale(${lerp(1.9,1,ph)})`;$('beatRing').style.opacity=.25+.75*ph;}
+/* ---------------- beat indicator ----------------
+   A white ring closes on the gold target circle and touches it exactly on the drum beat, then keeps going inward
+   and fades. Its radius is a linear clock: r = target - (time from the beat) * k, so the gold bands drawn around
+   the target are the real "perfect" and "good" windows. A tap leaves a mark where the ring was: outside the
+   target = early, inside = late. The drum in the middle thumps on every beat. */
+const BEATUI=(()=>{
+ const cv=$('beatCv'),cx=cv.getContext('2d'),S=168,C=S/2,R={drum:22,target:44,max:78};
+ let dpr=0,marks=[],lastCount=-1,thump=0;
+ function fit(){const d=Math.min(2,devicePixelRatio||1);if(d===dpr)return;dpr=d;cv.width=S*d;cv.height=S*d;}
+ // pixels per second of timing error: the ring covers ~0.9 beat from the edge to the target,
+ // but never so fast that the "good" band would sink into the drum
+ const K=()=>Math.min((R.max-R.target)/(AUDIO.B.len*.9),(R.target-R.drum-4)/D().good);
+ const rOf=dt=>R.target-dt*K();
+ function ring(r,w,col,a){if(r<=0||a<=0)return;cx.globalAlpha=a;cx.strokeStyle=col;cx.lineWidth=w;cx.beginPath();cx.arc(C,C,r,0,TAU);cx.stroke();}
+ function band(r0,r1,col,a){r0=Math.max(r0,R.drum+1);if(r1<=r0)return;cx.globalAlpha=a;cx.fillStyle=col;cx.beginPath();cx.arc(C,C,r1,0,TAU);cx.arc(C,C,r0,0,TAU,true);cx.fill();}
+ function tap(off,kind){marks.push({r:clamp(rOf(off),R.drum+3,R.max),kind,t:0});if(marks.length>6)marks.shift();thump=Math.max(thump,kind==='m'?.3:.6);}
+ function draw(dt){fit();cx.setTransform(dpr,0,0,dpr,0,0);cx.clearRect(0,0,S,S);
+  const B=AUDIO.B,now=hearNow(),k=K(),g=D().good,p=D().perfect;
+  // soft backdrop so the rings read over grass and sky
+  const bg=cx.createRadialGradient(C,C,R.drum,C,C,R.max+6);bg.addColorStop(0,'rgba(20,12,8,.55)');bg.addColorStop(1,'rgba(20,12,8,0)');
+  cx.globalAlpha=1;cx.fillStyle=bg;cx.beginPath();cx.arc(C,C,R.max+6,0,TAU);cx.fill();
+  // the timing windows: wide pale band = good, narrow gold band = perfect, thin line = the beat itself
+  band(R.target-g*k,R.target+g*k,'#f4e7cc',.2);
+  ring(R.target+g*k,1,'#f4e7cc',.45);ring(R.target-g*k,1,'#f4e7cc',.45);
+  band(R.target-p*k,R.target+p*k,'#f0b84c',.5);
+  ring(R.target,2,'#ffd57a',.95);
+  // the beats: those already scheduled + the next ones from the clock
+  const list=G.beats.slice();if(B.on)for(let i=0;i<2;i++)list.push({t:B.next+i*B.len,hit:false,judged:false});
+  let inZone=false;
+  for(const b of list){const d=now-b.t;if(b.hit)continue;
+   const r=R.target-d*k;if(r>R.max+2||d>g+.25)continue;
+   const z=Math.abs(d)<=g;if(z)inZone=true;
+   if(d>g){ // missed: the ring goes on into the drum, red, fading
+    ring(r,3,'#ff6a4a',clamp(1-(d-g)/.25,0,1)*.6);continue;}
+   const fadeIn=clamp((R.max+2-r)/14,0,1);
+   ring(r,z?4:3,z?'#ffe27a':'#ffffff',fadeIn*(z?1:.9));}
+  // the drum: thumps on every beat (the moment you should hear it)
+  const x=(now-B.next)/B.len+B.count;const cnt=Math.floor(x+1e-6);
+  if(B.on&&cnt!==lastCount){if(lastCount>=0&&cnt>lastCount)thump=1;lastCount=cnt;}
+  thump=Math.max(0,thump-dt*5.5);
+  const dr=R.drum*(1+.16*thump*thump),gl=cx.createRadialGradient(C-dr*.25,C-dr*.3,1,C,C,dr);
+  gl.addColorStop(0,'#fff0c4');gl.addColorStop(.45,inZone?'#ffd060':'#f0b84c');gl.addColorStop(1,'#a8701e');
+  cx.globalAlpha=1;cx.fillStyle=gl;cx.beginPath();cx.arc(C,C,dr,0,TAU);cx.fill();
+  cx.lineWidth=2;cx.strokeStyle='#1c1410';cx.stroke();cx.globalAlpha=.5;cx.beginPath();cx.arc(C,C,dr*.58,0,TAU);cx.stroke();
+  if(thump>0){cx.globalAlpha=thump*.55;cx.fillStyle='#fff6dc';cx.beginPath();cx.arc(C,C,dr,0,TAU);cx.fill();}
+  // tap marks: they stay where the ring was when you tapped
+  for(const m of marks){m.t+=dt;const a=clamp(1-m.t/.6,0,1);if(a<=0)continue;
+   const col=m.kind==='p'?'#ffe27a':m.kind==='g'?'#bfe7a0':'#ff8a70';
+   ring(m.r+m.t*10,3.5,col,a);ring(m.r,1.5,'#ffffff',a*.6);}
+  marks=marks.filter(m=>m.t<.6);
+  cx.globalAlpha=1;}
+ return{draw,tap,reset(){marks=[];lastCount=-1;thump=0;}};})();
+function updateBeatUI(dt){if($('beat').classList.contains('hidden'))return;BEATUI.draw(dt);}
+
+/* ---------------- calibration: tap along with the drum, store the mean offset ---------------- */
+const CAL={taps:[],prev:null};
+function startCalib(){AUDIO.init();CAL.taps=[];CAL.prev=G.state;G.state='calib';show('menu',false);show('calib');
+ $('calibN').textContent=T('calibN',0);$('calibR').textContent=T('calibCur',Math.round(G.calib*1000));
+ G.beats.length=0;AUDIO.setStyle('march',90);}
+function calibTap(){if(!AUDIO.B.on)return;const tt=AUDIO.now()-AUDIO.latency;let bd=1e9,off=0;
+ const cand=G.beats.map(b=>b.t);cand.push(AUDIO.B.next);for(const t of cand){const d=tt-t;if(Math.abs(d)<Math.abs(bd)){bd=d;off=d;}}
+ if(Math.abs(off)>AUDIO.B.len*.4)return;CAL.taps.push(off);const n=CAL.taps.length;$('calibN').textContent=T('calibN',Math.min(12,n));
+ const e=$('calibDrum');e.classList.add('on');setTimeout(()=>e.classList.remove('on'),90);
+ if(n>=12){const v=CAL.taps.slice(2).sort((a,b)=>a-b);const med=(v[4]+v[5])/2; // median of the last 10
+  G.calib=clamp(med,-.25,.25);store.set('calib',G.calib);const ms=Math.round(G.calib*1000);
+  $('calibR').textContent=Math.abs(ms)<10?T('calibNone'):T('calibR',(ms>0?'+':'')+ms);CAL.taps=[];AUDIO.setStyle('calm');}}
+function endCalib(){show('calib',false);AUDIO.setStyle('calm');toMenu();}
 
 /* ---------------- main loop ---------------- */
 let last=performance.now(),tAll=0;
 function frame(now){requestAnimationFrame(frame);let dt=Math.min(.05,(now-last)/1000);last=now;if(G.paused||SIM.on)dt=0;
  readInput();step(dt);
- drawArmies();updateCamera(Math.max(dt,1/120),tAll);updateBeatUI();updateLabels();
+ drawArmies();updateCamera(Math.max(dt,1/120),tAll);updateBeatUI(Math.min(.05,(now-(frame.prev||now))/1000));frame.prev=now;updateLabels();
  if(POST){POST.comp.uniforms.flash.value=Math.max(0,POST.comp.uniforms.flash.value-dt*2);POST.render();}else renderer.render(scene,camera);
 }
 function step(dt){tAll+=dt;U.time.value=tAll;
  if(!G.paused&&dt>0){
-  if(['march','run','clash','beach','routing'].includes(G.state)){G.tAct+=dt;G.tTotal+=dt;judgeMissedBeats();}
+  if(['march','run','clash','beach','routing'].includes(G.state)){G.tAct+=dt;G.tTotal+=dt;judgeMissedBeats();
+   const alive=G.men.reduce((n,m)=>n+(m.alive?1:0),0);if(alive!==G.aliveShown){G.aliveShown=alive;$('menN').textContent=alive;$('menOf').textContent='/'+TOTAL;}}
   if(G.state==='march')updateMarch(dt);else if(G.state==='run')updateRun(dt);else if(G.state==='clash')updateClash(dt);else if(G.state==='beach')updateBeach(dt);
   else if(G.state==='routing'){for(const p of G.per)if(p.alive&&p.state==='flee')fleeMove(p,dt);for(const m of G.men){if(m.alive&&m.state==='line'){m.push=damp(m.push,0,3,dt);}else if(m.alive&&m.state==='chase')chaseMove(m,dt);}}
   else if(G.state==='end'||G.state==='ending'){for(const p of G.per)if(p.alive&&p.state==='flee')fleeMove(p,dt);for(const m of G.men)if(m.alive&&m.state==='board'){m.yaw=damp(m.yaw,0,3,dt);}}
@@ -486,6 +560,9 @@ function togglePause(){G.paused=!G.paused;show('pause',G.paused);if(G.paused){G.
 $('bPlay').onclick=()=>{AUDIO.init();AUDIO.S.ui();if(store.get('seen',false)){show('menu',false);startDeploy();}else{store.set('seen',true);startStory();}};
 $('bHow').onclick=()=>{AUDIO.S.ui();const K=IS_TOUCH?'T':'K';$('howGrid').innerHTML=[1,2,3,4].map(i=>`<div class="howc"><b>${T('how'+i+'h')}</b>${STR[LANG]['how'+i+K]?T('how'+i+K):T('how'+i)}</div>`).join('');show('how');};
 $('bHowOk').onclick=()=>show('how',false);
+$('calib').addEventListener('pointerdown',e=>{if(!e.target.closest('button'))calibTap();});
+$('bCalib').onclick=()=>{AUDIO.S.ui();startCalib();};$('bCalibOk').onclick=()=>{AUDIO.S.ui();endCalib();};
+$('bCalibReset').onclick=()=>{G.calib=0;store.set('calib',0);CAL.taps=[];$('calibN').textContent=T('calibN',0);$('calibR').textContent=T('calibCur',0);AUDIO.setStyle('march',90);};
 $('bNext').onclick=nextStory;$('bSkip').onclick=()=>{show('story',false);startDeploy();};
 $('cMinus').onclick=()=>{G.c=Math.max(3,G.c-1);AUDIO.S.ui();updateDeploy();};$('cPlus').onclick=()=>{G.c=Math.min(10,G.c+1);AUDIO.S.ui();updateDeploy();};
 document.querySelectorAll('.pre').forEach(b=>b.onclick=()=>{G.c=+b.dataset.c;AUDIO.S.ui();updateDeploy();});

@@ -26,7 +26,7 @@
   <div class="sec" data-s="2"><span class="sn"></span><div class="tug"><i></i></div></div>
  </div>
 </div>
-<div id="beat" class="hidden"><div id="beatRing"></div><div id="beatCore"></div><div id="beatTxt"></div></div>
+<div id="beat" class="hidden"><canvas id="beatCv"></canvas><div id="beatTxt"></div></div>
 <div id="judge"></div>
 <div id="big"></div>
 <div id="toasts"></div>
@@ -51,7 +51,7 @@
   <div class="opt"><span data-t="difficulty"></span><div class="seg" id="segDiff"><button data-v="story" data-t="story"></button><button data-v="hoplite" data-t="hoplite"></button></div></div>
   <div class="opt"><span data-t="language"></span><div class="seg" id="segLang"><button data-v="it">Italiano</button><button data-v="en">English</button></div></div>
  </div>
- <button class="btn alt" id="bHow" data-t="howTo"></button>
+ <div class="row"><button class="btn alt sm" id="bHow" data-t="howTo"></button><button class="btn alt sm" id="bCalib" data-t="calib"></button></div>
  <div class="best" id="bestT"></div>
  <div class="meander b"></div>
 </div></div>
@@ -60,6 +60,15 @@
  <h2 data-t="howTo"></h2>
  <div class="howgrid" id="howGrid"></div>
  <button class="btn" id="bHowOk">OK</button>
+</div></div>
+
+<div class="ov hidden" id="calib"><div class="panel">
+ <h2 data-t="calibH"></h2>
+ <p class="sub" data-t="calibP"></p>
+ <div id="calibDrum"></div>
+ <div id="calibN" class="calibn"></div>
+ <p class="note" id="calibR"></p>
+ <div class="row"><button class="btn alt sm" id="bCalibReset" data-t="calibReset"></button><button class="btn sm" id="bCalibOk" data-t="calibOk"></button></div>
 </div></div>
 
 <div class="ov hidden" id="story"><div class="panel wide storyp">
