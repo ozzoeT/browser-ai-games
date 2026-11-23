@@ -24,6 +24,7 @@ Racing, fighting, strategy, parkour, motorbike stunts, medieval battles, adventu
 | Rollway | 3D toy car run: fast roads, ramps and boost pads, tunnels you can drive upside down | 1 | [`rollway/`](rollway/) |
 | Key Pop | Keyboard emoji fun for babies and toddlers: pick worlds, every key pops emoji; calm mode, goodnight timer, English/Italian | 1 | [`key-pop/`](key-pop/) |
 | Pop Cascade | Bubble popping chains that play a melody, with neon, ocean and sticky kitchen themes | 1 | [`pop-cascade/`](pop-cascade/) |
+| Sky Stack | One-tap tower stacking up to space, with a challenge-a-friend link | 1 | [`sky-stack/`](sky-stack/) |
 
 All games are in English.
 

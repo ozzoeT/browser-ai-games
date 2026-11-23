@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"><title>Sky Stack – One-tap tower stacking game | Browser AI Games</title><meta name="description" content="Free one-tap stacking game: drop each sliding floor right on top of the last one and build a tower through the clouds, the sunset and the night, all the way to space. Perfect drops grow your floor back. Challenge a friend to beat your height. Mouse, touch or keyboard."><link rel="canonical" href="https://ozzoet.github.io/browser-ai-games/sky-stack/"><meta property="og:type" content="website"><meta property="og:title" content="Sky Stack – how high can you build?"><meta property="og:description" content="One tap per floor. Stack through the clouds all the way to space, then challenge a friend to beat your tower."><meta property="og:image" content="https://ozzoet.github.io/browser-ai-games/thumbs/skystack.jpg"><meta property="og:url" content="https://ozzoet.github.io/browser-ai-games/sky-stack/"><meta name="twitter:card" content="summary_large_image"><meta name="theme-color" content="#7fc8ff">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#7fc8ff;font-family:Fredoka,'Arial Rounded MT Bold',system-ui,sans-serif;color:#fff;user-select:none;-webkit-user-select:none}
+#sky{position:absolute;inset:0;background:linear-gradient(#5fb8ff,#dff4ff)}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+.hidden{display:none!important}
+#hud{position:absolute;left:0;right:0;top:0;pointer-events:none;text-align:center;padding-top:max(14px,env(safe-area-inset-top))}
+#floors{font-size:clamp(64px,16vw,96px);font-weight:700;line-height:1;text-shadow:0 3px 0 #0002,0 0 24px #fff6}
+#floorLbl{font-size:13px;letter-spacing:3px;font-weight:600;opacity:.85;margin-top:2px}
+#target{display:inline-block;margin-top:8px;padding:4px 12px;border-radius:99px;background:#0003;font-size:14px;font-weight:600}
+.icons{position:absolute;right:12px;top:max(12px,env(safe-area-inset-top));display:flex;gap:8px;pointer-events:auto}
+.ib{width:42px;height:42px;border-radius:50%;background:#ffffff38;border:1.5px solid #ffffff80;font-size:18px;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px)}
+#pop{position:absolute;left:0;right:0;top:34%;text-align:center;pointer-events:none;font-size:30px;font-weight:700;opacity:0;text-shadow:0 2px 0 #0003,0 0 18px #fff}
+#pop.go{animation:pop .9s ease-out}
+@keyframes pop{0%{opacity:0;transform:scale(.6) translateY(10px)}15%{opacity:1;transform:scale(1.15)}30%{transform:scale(1)}100%{opacity:0;transform:translateY(-40px)}}
+#zone{position:absolute;left:0;right:0;top:22%;text-align:center;pointer-events:none;opacity:0}
+#zone b{display:block;font-size:clamp(30px,8vw,44px);text-shadow:0 3px 0 #0003,0 0 26px #fff8}
+#zone small{font-size:15px;letter-spacing:2px;opacity:.9}
+#zone.go{animation:zone 2.6s ease-out}
+@keyframes zone{0%{opacity:0;transform:translateY(16px)}12%,75%{opacity:1;transform:none}100%{opacity:0;transform:translateY(-14px)}}
+.ov{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:16px}
+.panel{width:min(400px,100%);text-align:center;padding:28px 24px 22px;border-radius:30px;background:#ffffffd9;color:#2b2350;box-shadow:0 18px 50px #2b235040;backdrop-filter:blur(8px)}
+h1{margin:0;font-size:clamp(50px,14vw,70px);line-height:.9;font-weight:700;background:linear-gradient(180deg,#ff8fb1,#7b6cff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{color:#2b2350b8;font-size:16px;line-height:1.45;margin:14px 0 18px}
+.btn{display:block;width:100%;padding:15px 20px;border-radius:999px;font-size:24px;font-weight:700;color:#fff;background:linear-gradient(180deg,#ff8fb1,#ff5d8f);box-shadow:0 6px 0 #d93c70,0 10px 24px #ff5d8f60;transition:transform .1s}
+.btn:active{transform:translateY(4px);box-shadow:0 2px 0 #d93c70}
+.btn.alt{margin-top:12px;font-size:18px;padding:12px;background:linear-gradient(180deg,#8f84ff,#6a5cff);box-shadow:0 5px 0 #4b3fd6,0 8px 20px #6a5cff50}
+.btn.alt:active{box-shadow:0 1px 0 #4b3fd6}
+.best{margin-top:14px;font-size:15px;color:#2b2350a0;font-weight:600}
+.chal{margin:-4px 0 16px;padding:10px 12px;border-radius:16px;background:#ffe9a8;color:#6b4a00;font-weight:600;font-size:16px}
+.big{font-size:76px;font-weight:700;line-height:1;margin:4px 0 0;color:#ff5d8f}
+.bigl{font-size:13px;letter-spacing:3px;font-weight:600;color:#2b2350a0}
+.nb{display:inline-block;margin:8px 0 2px;padding:4px 12px;border-radius:10px;background:#ffd23f;color:#5a3a00;font-weight:700;font-size:14px;letter-spacing:1.5px}
+.rows{display:flex;justify-content:center;gap:26px;margin:12px 0 16px;color:#2b2350a0;font-size:13px}.rows b{display:block;font-size:24px;color:#2b2350}
+.verdict{font-size:16px;font-weight:600;margin:4px 0 0;color:#2b2350}
+.hint{font-size:12.5px;color:#2b235080;margin-top:12px}
+#toast{position:absolute;left:50%;bottom:28px;transform:translateX(-50%);padding:10px 18px;border-radius:99px;background:#2b2350e0;font-weight:600;opacity:0;transition:opacity .3s;pointer-events:none}
+#toast.on{opacity:1}
+</style></head><body>
+<div id="sky"></div>
+<canvas id="c"></canvas>
+<div id="hud" class="hidden"><div id="floors">0</div><div id="floorLbl">FLOORS</div><div id="target" class="hidden"></div></div>
+<div class="icons"><button class="ib" id="bMute" aria-label="Sound">🔊</button><button class="ib hidden" id="bPause" aria-label="Pause">⏸</button></div>
+<div id="pop"></div>
+<div id="zone"><b></b><small></small></div>
+<div class="ov" id="menu"><div class="panel">
+ <h1>SKY<br>STACK</h1>
+ <p class="sub">Tap to drop each floor on top of the last one. What hangs over the edge falls off. Land it <b>perfectly</b> and it grows back. How high can you build?</p>
+ <div class="chal hidden" id="mChal"></div>
+ <button class="btn" id="bPlay">PLAY</button>
+ <div class="best" id="mBest"></div>
+ <div class="hint">Tap, click or Space · P pause · M sound</div>
+</div></div>
+<div class="ov hidden" id="over"><div class="panel">
+ <div class="bigl">YOUR TOWER</div>
+ <div class="big" id="oScore">0</div>
+ <div class="bigl">FLOORS</div>
+ <div id="oNew" class="nb hidden">NEW BEST!</div>
+ <div class="verdict" id="oVerdict"></div>
+ <div class="rows"><div><b id="oPerf">0</b>perfect</div><div><b id="oStreak">0</b>best streak</div><div><b id="oBest">0</b>best</div></div>
+ <button class="btn" id="bAgain">PLAY AGAIN</button>
+ <button class="btn alt" id="bShare">📣 Challenge a friend</button>
+ <div class="hint">Your friend gets a link with your height to beat</div>
+</div></div>
+<div class="ov hidden" id="paused"><div class="panel"><h1 style="font-size:46px">PAUSED</h1><p class="sub">Take a breath. The tower waits.</p><button class="btn" id="bResume">RESUME</button></div></div>
+<div id="toast"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
+<script>
+'use strict';
+const $=id=>document.getElementById(id);
+const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:v}catch(e){return d}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const H=.5,BASE=3,RANGE=4.4;
+const beat=Math.max(0,Math.min(999,parseInt(new URLSearchParams(location.search).get('beat'))||0));
+
+// ---------- renderer / scene ----------
+const canvas=$('c');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true,preserveDrawingBuffer:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setClearColor(0,0);
+const scene=new THREE.Scene();
+const cam=new THREE.OrthographicCamera(-1,1,1,-1,.1,400);
+const VIEW=new THREE.Vector3(1,.82,1).normalize();
+scene.add(new THREE.HemisphereLight(0xffffff,0x6a5a9a,.75));
+const sun=new THREE.DirectionalLight(0xfff4e8,2.6);sun.position.set(3,10,6);scene.add(sun);scene.add(sun.target);
+let V=5,aspect=1;
+function resize(){const w=innerWidth,h=innerHeight;renderer.setSize(w,h,false);aspect=w/h;V=Math.max(5.2,3.7/aspect)}
+addEventListener('resize',resize);resize();
+
+const geo=new THREE.BoxGeometry(1,1,1);
+function blockColor(i){const c=new THREE.Color();c.setHSL(((hue0+i*3.2)%360)/360,.78,.6);return c}
+function makeBlock(w,d,i,h=H){const m=new THREE.Mesh(geo,new THREE.MeshLambertMaterial({color:blockColor(i)}));m.scale.set(w,h,d);scene.add(m);return m}
+
+// soft outline texture for rings / finish line
+function ringTex(){const c=document.createElement('canvas');c.width=c.height=128;const g=c.getContext('2d');
+ g.shadowColor='#fff';g.shadowBlur=10;g.strokeStyle='#fff';g.lineWidth=7;g.strokeRect(14,14,100,100);g.lineWidth=3;g.strokeRect(14,14,100,100);
+ const t=new THREE.CanvasTexture(c);return t}
+const RT=ringTex();
+const rings=[];
+function ring(x,y,z,w,d,col=0xffffff,big=1){const m=new THREE.Mesh(new THREE.PlaneGeometry(1,1),new THREE.MeshBasicMaterial({map:RT,color:col,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending}));
+ m.rotation.x=-Math.PI/2;m.position.set(x,y+.01,z);m.userData={w:w*1.28,d:d*1.28,t:0,big};m.scale.set(w*1.28,d*1.28,1);scene.add(m);rings.push(m)}
+
+// sparkles
+const sparks=[];const sGeo=new THREE.BoxGeometry(.09,.09,.09);
+function burst(x,y,z,w,d,n,col){for(let i=0;i<n;i++){const m=new THREE.Mesh(sGeo,new THREE.MeshBasicMaterial({color:col,transparent:true}));
+ const side=Math.random()*4|0,u=Math.random()-.5;
+ const px=side<2?x+(side?1:-1)*w/2:x+u*w,pz=side>=2?z+(side&1?1:-1)*d/2:z+u*d;
+ m.position.set(px,y,pz);const a=Math.atan2(pz-z,px-x);
+ m.userData={vx:Math.cos(a)*(1+Math.random()*2.5),vz:Math.sin(a)*(1+Math.random()*2.5),vy:1.5+Math.random()*3,t:0,life:.6+Math.random()*.5};scene.add(m);sparks.push(m)}}
+
+// stars (fade in high up)
+const starGeo=new THREE.BufferGeometry();{const p=[];const side=new THREE.Vector3(1,0,-1).normalize();
+ for(let i=0;i<1400;i++){const s=(Math.random()-.5)*70,y=(Math.random()-.5)*60,b=60+Math.random()*60;
+  p.push(side.x*s-VIEW.x*b,y,side.z*s-VIEW.z*b)}starGeo.setAttribute('position',new THREE.Float32BufferAttribute(p,3))}
+const stars=new THREE.Points(starGeo,new THREE.PointsMaterial({color:0xffffff,size:2*Math.min(devicePixelRatio,2),sizeAttenuation:false,transparent:true,opacity:0,depthWrite:false}));scene.add(stars);
+
+// clouds
+function cloudTex(){const c=document.createElement('canvas');c.width=256;c.height=128;const g=c.getContext('2d');
+ for(let i=0;i<14;i++){const x=40+Math.random()*176,y=58+Math.random()*30,r=18+Math.random()*26;const gr=g.createRadialGradient(x,y,0,x,y,r);
+  gr.addColorStop(0,'rgba(255,255,255,.95)');gr.addColorStop(.6,'rgba(255,255,255,.75)');gr.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=gr;g.beginPath();g.arc(x,y,r,0,7);g.fill()}
+ return new THREE.CanvasTexture(c)}
+const clouds=[];{const side=new THREE.Vector3(1,0,-1).normalize();const tx=[cloudTex(),cloudTex(),cloudTex()];
+ for(let i=0;i<16;i++){const front=i%4===0;const m=new THREE.Sprite(new THREE.SpriteMaterial({map:tx[i%3],transparent:true,depthWrite:false,opacity:front?.55:.9}));
+  const s=5+Math.random()*5;m.scale.set(s,s/2,1);const off=front?10:-(20+Math.random()*25);
+  m.userData={s:(Math.random()-.5)*40,off,y:(13+Math.random()*30)*H,v:(.3+Math.random()*.5)*(Math.random()<.5?-1:1),side};clouds.push(m);scene.add(m)}}
+function placeClouds(dt){for(const m of clouds){const u=m.userData;u.s+=u.v*dt;if(u.s>22)u.s=-22;if(u.s<-22)u.s=22;
+ m.position.set(u.side.x*u.s+VIEW.x*u.off,u.y,u.side.z*u.s+VIEW.z*u.off)}}
+
+// challenge finish line
+let goal=null;
+function makeGoal(){if(!beat)return;const y=beat*H;const g=new THREE.Group();
+ const pl=new THREE.Mesh(new THREE.PlaneGeometry(1,1),new THREE.MeshBasicMaterial({map:RT,color:0xffd23f,transparent:true,depthWrite:false}));pl.rotation.x=-Math.PI/2;pl.scale.set(BASE*1.9,BASE*1.9,1);g.add(pl);
+ const c=document.createElement('canvas');c.width=256;c.height=96;const x=c.getContext('2d');x.font='700 54px Fredoka,Arial';x.textAlign='center';x.fillStyle='#ffd23f';x.shadowColor='#0006';x.shadowBlur=8;x.fillText('🏁 '+beat,128,66);
+ const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthWrite:false}));sp.scale.set(2.4,.9,1);sp.position.set(-BASE*1.2,.6,BASE*1.2);g.add(sp);
+ g.position.y=y;scene.add(g);goal=g}
+
+// ---------- sky colours by height ----------
+const SKY=[[0,'#5fb8ff','#dff4ff'],[22,'#7fa8ff','#ffe3f1'],[42,'#ff8fb1','#ffd59e'],[62,'#5a3d9a','#ff8f8f'],[85,'#1a1450','#5a3d9a'],[115,'#05051a','#141040']];
+const ZONES=[[22,'Above the clouds','☁️ floor 22'],[42,'Golden sunset','🌇 floor 42'],[62,'Twilight','🌆 floor 62'],[85,'Starry night','🌙 floor 85'],[115,'Outer space!','🚀 floor 115'],[150,'Among the planets','🪐 floor 150'],[200,'Legend','👑 floor 200']];
+const hex=h=>[1,3,5].map(i=>parseInt(h.substr(i,2),16));
+function mixHex(a,b,t){const A=hex(a),B=hex(b);return 'rgb('+A.map((v,i)=>Math.round(v+(B[i]-v)*t)).join(',')+')'}
+let skyKey='';
+function setSky(f){let i=0;while(i<SKY.length-1&&f>=SKY[i+1][0])i++;const a=SKY[i],b=SKY[Math.min(i+1,SKY.length-1)];
+ const t=b===a?0:Math.min(1,(f-a[0])/(b[0]-a[0]));const top=mixHex(a[1],b[1],t),bot=mixHex(a[2],b[2],t);const k=top+bot;
+ if(k!==skyKey){skyKey=k;$('sky').style.background='linear-gradient('+top+','+bot+')';document.body.style.background=top}
+ stars.material.opacity=Math.max(0,Math.min(1,(f-60)/35));
+ const dark=Math.max(0,Math.min(1,(f-55)/40));
+ document.documentElement.style.setProperty('--d',dark)}
+
+// ---------- audio ----------
+let ac=null,muted=store.get('ss_mute','0')==='1';
+function au(){if(!ac){try{ac=new (window.AudioContext||window.webkitAudioContext)()}catch(e){}}if(ac&&ac.state==='suspended')ac.resume();return ac}
+function tone(f,t0,dur,type='sine',vol=.2,f2){const a=au();if(!a||muted)return;const o=a.createOscillator(),g=a.createGain();o.type=type;
+ const t=a.currentTime+t0;o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+dur);
+ g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+.008);g.gain.exponentialRampToValueAtTime(.0008,t+dur);o.connect(g).connect(a.destination);o.start(t);o.stop(t+dur+.05)}
+const PENTA=[0,2,4,7,9];
+const note=i=>261.63*Math.pow(2,(PENTA[i%5]+12*Math.floor(i/5))/12);
+const sfx={
+ place(){tone(180,0,.12,'triangle',.22,90);tone(520,0,.05,'square',.04)},
+ perfect(c){const i=Math.min(c-1,14);tone(note(i+5),0,.5,'sine',.22);tone(note(i+10),0,.35,'triangle',.06);tone(note(i+5)*2,.06,.3,'sine',.05)},
+ grow(){[0,1,2].forEach(k=>tone(note(12+k*2),k*.06,.25,'triangle',.08))},
+ fail(){tone(330,0,.6,'sawtooth',.08,70);tone(160,.05,.5,'triangle',.15,50)},
+ zone(){[0,4,7,12].forEach((k,j)=>tone(523.25*Math.pow(2,k/12),j*.09,.6,'sine',.12))},
+ record(){[0,4,7,12,16].forEach((k,j)=>tone(659.25*Math.pow(2,k/12),j*.07,.5,'triangle',.1))}};
+
+// ---------- game state ----------
+let state='menu',stack=[],cur=null,debris=[],score=0,perfects=0,combo=0,bestStreak=0,best=+store.get('ss_best','0')||0;
+let hue0=Math.random()*360,camY=0,camYT=0,camV=5,camVT=5,shake=0,overT=0,passedBeat=false,passedBest=false,zoneIdx=0,lastT=0;
+const pedestal=makeBlock(BASE,BASE,0,30);pedestal.position.set(0,-15+H/2-H,0);
+function speed(){return Math.min(8.5,3.1+score*.065)}
+
+function reset(){for(const b of stack)if(b.mesh!==pedestal){scene.remove(b.mesh);b.mesh.material.dispose()}
+ for(const d of debris){scene.remove(d.mesh);d.mesh.material.dispose()}if(cur){scene.remove(cur.mesh);cur.mesh.material.dispose();cur=null}
+ debris=[];hue0=Math.random()*360;pedestal.material.color.copy(blockColor(0)).offsetHSL(0,-.05,-.08);
+ stack=[{x:0,z:0,w:BASE,d:BASE,y:0,mesh:makeBlock(BASE,BASE,0)}];stack[0].mesh.position.set(0,0,0);
+ score=0;perfects=0;combo=0;bestStreak=0;passedBeat=false;passedBest=false;zoneIdx=0;camYT=0;setSky(0)}
+
+function spawn(){const top=stack[stack.length-1];const i=stack.length;const axis=i%2?'x':'z';
+ const m=makeBlock(top.w,top.d,i);cur={axis,t:Math.random()<.5?0:2,x:top.x,z:top.z,w:top.w,d:top.d,y:top.y+H,mesh:m};placeCur()}
+function placeCur(){const top=stack[stack.length-1];const p=((cur.t%4)+4)%4;const v=p<2?-1+p:3-p;cur[cur.axis]=top[cur.axis]+v*RANGE;
+ cur.mesh.position.set(cur.x,cur.y,cur.z)}
+
+function addDebris(x,y,z,w,d,i,vx,vz){const m=makeBlock(w,d,i);m.position.set(x,y,z);
+ debris.push({mesh:m,vx,vz,vy:0,rx:(Math.random()-.5)*3,rz:(Math.random()-.5)*3,t:0})}
+
+function drop(){if(state!=='play'||!cur)return;const top=stack[stack.length-1];const ax=cur.axis,size=ax==='x'?'w':'d';
+ const delta=cur[ax]-top[ax];const ov=top[size]-Math.abs(delta);const i=stack.length;
+ if(ov<=0){ // missed completely
+  scene.remove(cur.mesh);addDebris(cur.x,cur.y,cur.z,cur.w,cur.d,i,ax==='x'?Math.sign(delta)*1.5:0,ax==='z'?Math.sign(delta)*1.5:0);cur.mesh.material.dispose();cur=null;gameOver();return}
+ const tol=Math.max(.09,.16-score*.0015);
+ let perfect=Math.abs(delta)<tol;
+ if(perfect){cur[ax]=top[ax];combo++;perfects++;bestStreak=Math.max(bestStreak,combo);
+  if(combo>=3&&cur[size]<BASE-.001){const g=Math.min(BASE-cur[size],.28);cur[size]+=g;sfx.grow()}
+ }else{combo=0;const nw=ov,nx=top[ax]+delta/2;const cutW=Math.abs(delta),cutC=nx+Math.sign(delta)*(nw/2+cutW/2);
+  cur[size]=nw;cur[ax]=nx;
+  if(ax==='x')addDebris(cutC,cur.y,cur.z,cutW,cur.d,i,Math.sign(delta)*1.2,0);else addDebris(cur.x,cur.y,cutC,cur.w,cutW,i,0,Math.sign(delta)*1.2)}
+ cur.mesh.scale.set(cur.w,H,cur.d);cur.mesh.position.set(cur.x,cur.y,cur.z);
+ stack.push({x:cur.x,z:cur.z,w:cur.w,d:cur.d,y:cur.y,mesh:cur.mesh,pulse:perfect?1:0});cur=null;
+ score++;$('floors').textContent=score;camYT=score*H;shake=perfect?.05:.03;
+ if(perfect){sfx.perfect(combo);ring(stack[i].x,stack[i].y+H/2,stack[i].z,stack[i].w,stack[i].d,0xffffff,combo);if(combo>=3)burst(stack[i].x,stack[i].y+H/2,stack[i].z,stack[i].w,stack[i].d,Math.min(30,10+combo*2),0xffffff);
+  popText(combo>=3?'PERFECT ×'+combo+(stack[i].w>=BASE-.001&&stack[i].d>=BASE-.001?'':' ↔'):'PERFECT'+(combo>1?' ×'+combo:''))}
+ else sfx.place();
+ milestones();setSky(score);updateTarget();spawn()}
+
+function popText(t){const p=$('pop');p.textContent=t;p.classList.remove('go');void p.offsetWidth;p.classList.add('go')}
+function zoneText(a,b){const z=$('zone');z.querySelector('b').textContent=a;z.querySelector('small').textContent=b;z.classList.remove('go');void z.offsetWidth;z.classList.add('go')}
+function milestones(){
+ if(zoneIdx<ZONES.length&&score>=ZONES[zoneIdx][0]){zoneText(ZONES[zoneIdx][1],ZONES[zoneIdx][2]);sfx.zone();zoneIdx++}
+ if(beat&&!passedBeat&&score>beat){passedBeat=true;zoneText('Challenge beaten!','🏁 you passed '+beat);sfx.record();const t=stack[stack.length-1];burst(t.x,t.y,t.z,t.w,t.d,40,0xffd23f)}
+ if(best>=10&&!passedBest&&score>best){passedBest=true;if(!(beat&&score===beat+1)){zoneText('New record!','⭐ higher than ever');sfx.record()}}}
+function updateTarget(){const el=$('target');if(beat&&score<=beat){el.textContent='🏁 Beat '+beat+' · '+(beat-score+1)+' to go';el.classList.remove('hidden')}
+ else if(best&&score<=best&&!beat){el.textContent='⭐ Best '+best;el.classList.remove('hidden')}else el.classList.add('hidden')}
+
+function start(){au();reset();if(goal){scene.remove(goal);goal=null}makeGoal();state='play';$('menu').classList.add('hidden');$('over').classList.add('hidden');
+ $('hud').classList.remove('hidden');$('bPause').classList.remove('hidden');$('floors').textContent='0';updateTarget();camVT=V;spawn()}
+
+const VERDICTS=[[0,'Every skyscraper starts somewhere!'],[5,'A cosy little house.'],[12,'A proper apartment block!'],[22,'You touched the clouds!'],[42,'Up in the golden sunset!'],[62,'Twilight tower. Impressive!'],[85,'Building in the starlight!'],[115,'You reached space! 🚀'],[150,'Among the planets. Unreal.'],[200,'Legendary architect. 👑']];
+function gameOver(){state='over';combo=0;sfx.fail();shake=.15;overT=0;$('bPause').classList.add('hidden');
+ const isBest=score>best;if(isBest){best=score;store.set('ss_best',best)}
+ $('oScore').textContent=score;$('oPerf').textContent=perfects;$('oStreak').textContent=bestStreak;$('oBest').textContent=best;
+ $('oNew').classList.toggle('hidden',!isBest||score===0);
+ let v='';for(const[k,t]of VERDICTS)if(score>=k)v=t;if(beat)v=score>beat?'You beat your friend\'s '+beat+'! 🏆':'Your friend\'s tower: '+beat+'. So close!';$('oVerdict').textContent=v;
+ // zoom out to show the whole tower
+ const top=score*H;camYT=top/2-.5;camVT=Math.max(V,top*.47+2.5);
+ setTimeout(()=>{if(state==='over'){$('over').classList.remove('hidden');$('hud').classList.add('hidden')}},2100)}
+
+function shareText(){let s='I built a '+score+'-floor tower in Sky Stack 🏗️';
+ if(perfects)s+=' with '+perfects+' perfect drops';s+='!\n';
+ // mini tower, narrower towards the top, one colour band per 10 floors
+ const rows=Math.min(6,Math.max(1,Math.ceil(score/10)));const em=['🟪','🟦','🟩','🟨','🟧','🟥'];let t='';
+ for(let r=rows-1;r>=0;r--)t+=' '.repeat(Math.round(r*.6))+em[r%em.length].repeat(Math.max(1,7-r))+'\n';
+ return s+t+'Can you build higher? 👇'}
+async function share(){const url=location.origin+location.pathname+'?beat='+score;const text=shareText();
+ try{if(navigator.share){await navigator.share({title:'Sky Stack',text,url});return}}catch(e){if(e&&e.name==='AbortError')return}
+ try{await navigator.clipboard.writeText(text+'\n'+url);toast('Link copied! Paste it to a friend 📋')}catch(e){prompt('Copy this link:',url)}}
+function toast(t){const e=$('toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.h);toast.h=setTimeout(()=>e.classList.remove('on'),2400)}
+
+function pause(on){if(on&&state==='play'){state='pause';$('paused').classList.remove('hidden')}else if(!on&&state==='pause'){state='play';$('paused').classList.add('hidden');lastT=performance.now()}}
+
+// ---------- input ----------
+canvas.addEventListener('pointerdown',e=>{e.preventDefault();if(state==='play')drop()});
+$('bPlay').onclick=start;$('bAgain').onclick=start;$('bShare').onclick=share;$('bResume').onclick=()=>pause(false);
+$('bPause').onclick=()=>pause(state==='play');
+function setMute(m){muted=m;store.set('ss_mute',m?'1':'0');$('bMute').textContent=m?'🔇':'🔊'}
+$('bMute').onclick=()=>setMute(!muted);setMute(muted);
+addEventListener('keydown',e=>{if(e.repeat)return;const k=e.code;
+ if(k==='Space'||k==='Enter'||k==='ArrowDown'){e.preventDefault();if(state==='play')drop();else if(state==='menu')start();else if(state==='over'&&!$('over').classList.contains('hidden'))start();else if(state==='pause')pause(false)}
+ else if(k==='KeyP'||k==='Escape')pause(state==='play');else if(k==='KeyM')setMute(!muted)});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)pause(true)});
+
+// ---------- menu ----------
+if(beat){$('mChal').innerHTML='🏁 A friend built <b>'+beat+'</b> floors.<br>Can you build higher?';$('mChal').classList.remove('hidden');$('bPlay').textContent='ACCEPT CHALLENGE'}
+$('mBest').textContent=best?'Your best: '+best+' floors':'';
+// a little demo tower behind the menu
+reset();for(let i=0;i<7;i++){const t=stack[stack.length-1];const sh=i%2?'x':'z';const b={x:t.x,z:t.z,w:t.w,d:t.d,y:t.y+H};b[sh]+=(Math.random()-.5)*.3;
+ b.mesh=makeBlock(b.w,b.d,stack.length);b.mesh.position.set(b.x,b.y,b.z);stack.push(b)}camYT=camY=stack.length*H*.5;
+
+// ---------- loop ----------
+function frame(now){requestAnimationFrame(frame);const dt=Math.min(.05,(now-(lastT||now))/1000);lastT=now;
+ if(state==='play'&&cur){cur.t+=dt*speed()/RANGE;placeCur()}
+ if(state!=='pause'){
+  for(let j=debris.length-1;j>=0;j--){const d=debris[j];d.t+=dt;d.vy-=22*dt;const m=d.mesh;m.position.x+=d.vx*dt;m.position.z+=d.vz*dt;m.position.y+=d.vy*dt;
+   m.rotation.x+=d.rx*dt;m.rotation.z+=d.rz*dt;if(d.t>3){scene.remove(m);m.material.dispose();debris.splice(j,1)}}
+  for(let j=rings.length-1;j>=0;j--){const r=rings[j],u=r.userData;u.t+=dt;const k=1+u.t*(1.2+u.big*.15);r.scale.set(u.w*k,u.d*k,1);r.material.opacity=Math.max(0,1-u.t/.55);
+   if(u.t>.55){scene.remove(r);r.geometry.dispose();r.material.dispose();rings.splice(j,1)}}
+  for(let j=sparks.length-1;j>=0;j--){const s=sparks[j],u=s.userData;u.t+=dt;u.vy-=9*dt;s.position.x+=u.vx*dt;s.position.y+=u.vy*dt;s.position.z+=u.vz*dt;s.rotation.x+=dt*6;s.rotation.y+=dt*5;
+   s.material.opacity=Math.max(0,1-u.t/u.life);if(u.t>u.life){scene.remove(s);s.material.dispose();sparks.splice(j,1)}}
+  for(const b of stack)if(b.pulse>0){b.pulse=Math.max(0,b.pulse-dt*3);b.mesh.material.emissive.setRGB(b.pulse*.5,b.pulse*.5,b.pulse*.5)}
+  if(state==='over')overT+=dt;
+ }
+ if(state==='menu'){camYT=stack.length*H*.55}
+ camY+=(camYT-camY)*Math.min(1,dt*(state==='over'?2.2:5));camV+=((state==='over'?camVT:V)-camV)*Math.min(1,dt*(state==='over'?2:4));
+ shake=Math.max(0,shake-dt*.6);const sx=(Math.random()-.5)*shake,sy=(Math.random()-.5)*shake;
+ const look=new THREE.Vector3(sx,camY+(state==='play'?.9:0)+sy,0);
+ if(state==='menu'){const a=now*.00012;cam.position.set(look.x+Math.cos(a+.785)*40*Math.hypot(VIEW.x,VIEW.z),look.y+VIEW.y*40,look.z+Math.sin(a+.785)*40*Math.hypot(VIEW.x,VIEW.z))}
+ else cam.position.copy(look).addScaledVector(VIEW,40);
+ cam.lookAt(look);
+ cam.left=-camV*aspect;cam.right=camV*aspect;cam.top=camV;cam.bottom=-camV;cam.updateProjectionMatrix();
+ sun.position.set(look.x+3,look.y+10,look.z+6);sun.target.position.copy(look);
+ stars.position.y=camY*.92;placeClouds(dt);
+ renderer.render(scene,cam)}
+requestAnimationFrame(frame);
+
+// hook for automated screenshots: build n floors with mostly-perfect drops
+window.__stack={auto(n,miss=.25){if(state!=='play')start();for(let i=0;i<n;i++){if(i===n-1){for(const r of rings)r.userData.t=9;for(const s of sparks)s.userData.t=9}const top=stack[stack.length-1];cur[cur.axis]=top[cur.axis]+(Math.random()<miss?(Math.random()-.5)*.5:0);drop()}camY=camYT}};
+</script>
+</body></html>
