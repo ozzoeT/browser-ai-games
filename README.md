@@ -25,6 +25,7 @@ Racing, fighting, strategy, parkour, motorbike stunts, medieval battles, adventu
 | Key Pop | Keyboard emoji fun for babies and toddlers: pick worlds, every key pops emoji; calm mode, goodnight timer, English/Italian | 1 | [`key-pop/`](key-pop/) |
 | Pop Cascade | Bubble popping chains that play a melody, with neon, ocean and sticky kitchen themes | 1 | [`pop-cascade/`](pop-cascade/) |
 | Sky Stack | One-tap tower stacking up to space, with a challenge-a-friend link | 1 | [`sky-stack/`](sky-stack/) |
+| Hungry Hole | 3D hole that swallows a toy town and grows, 2-minute rounds with a challenge-a-friend link | 1 | [`hungry-hole/`](hungry-hole/) |
 
 All games are in English.
 
