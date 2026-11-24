@@ -52,6 +52,15 @@ const AUDIO=(()=>{
   g.connect(musicG);const r=ac.createGain();r.gain.value=.8;g.connect(r);r.connect(verb);env(g,t,.09,vol,dur,.85,.25,dur*.8);o.start(t);lfo.start(t);o.stop(t+dur+.4);lfo.stop(t+dur+.4);}
  function choir(t,root,dur,vol=.05,vowel='a',glide=0){for(let i=0;i<5;i++){const f=root*[1,1,1.5,2,1.498][i]*(1+(Math.random()-.5)*.012);voice(t+Math.random()*.04,f,dur,vol,glide,vowel);}}
  function clank(t,vol=.25,base=1){if(!ac)return;for(const p of[1,1.47,2.09,2.76,3.51]){tone(t,base*780*p*(1+(Math.random()-.5)*.06),.12+Math.random()*.18,vol/p,'sine',sfxG,0,.25);}noise(t,.04,3000,1,'highpass',vol*.5);}
+ // dry blows: a spear or a body hitting a shield (wood with a bronze rim) — short, no ringing
+ function thud(t,vol=.3,size=1){if(!ac)return;const f=(150+Math.random()*70)/size;
+  tone(t,f,.07,vol*.9,'triangle',sfxG,f*.45);                       // the body of the shield
+  noise(t,.045,700+Math.random()*500,.8,'lowpass',vol*.8,sfxG,.06);   // the wooden knock
+  noise(t,.012,2600+Math.random()*1200,1.2,'bandpass',vol*.35);}      // the contact click
+ function crack(t,vol=.25){if(!ac)return;                             // spear shaft on shield edge / shaft on shaft
+  noise(t,.022,1500+Math.random()*900,.9,'bandpass',vol,sfxG,.05);tone(t,320+Math.random()*120,.03,vol*.4,'square',sfxG,140);}
+ function bronze(t,vol=.06){if(!ac)return;                            // rare, short and damped metal: a spear point on a helmet
+  for(const p of[1,2.31])tone(t,(900+Math.random()*300)*p,.035,vol/p,'sine');noise(t,.015,3500,1,'highpass',vol*.6);}
  // ---------- beat clock ----------
  function setStyle(style,bpm){B.style=style;if(bpm){B.bpm=bpm;B.len=60/bpm;}
   if(style==='none'||style==='calm'){B.on=false;return;}
@@ -84,10 +93,12 @@ const AUDIO=(()=>{
    for(let i=0;i<Math.min(6,bodyHits);i++)noise(t+Math.random()*.3,.1,380,.8,'lowpass',.2);},
   fall(){if(!ac)return;const t=now()+.15;noise(t,.18,300,.7,'lowpass',.32);clank(t+.08,.05,.8);},
   warcry(){if(!ac)return;const t=now();choir(t,140,1.2,.07,'e',1.55);choir(t+.05,110,1.3,.06,'e',1.7);noise(t,1.2,800,.5,'bandpass',.12,sfxG,.4);},
-  clash(){if(!ac)return;const t=now();tone(t,70,.7,.9,'sine',sfxG,32,.4);noise(t,.5,900,.5,'lowpass',.8,sfxG,.5);for(let i=0;i<14;i++)clank(t+Math.random()*.4,.18,.8+Math.random()*.6);
+  clash(){if(!ac)return;const t=now();tone(t,70,.7,.9,'sine',sfxG,32,.4);noise(t,.5,900,.5,'lowpass',.8,sfxG,.5);for(let i=0;i<22;i++){const tt=t+Math.random()*.45;if(Math.random()<.7)thud(tt,.32,.8+Math.random()*.5);else crack(tt,.22);}for(let i=0;i<3;i++)bronze(t+Math.random()*.4,.05);
    for(let i=0;i<10;i++)noise(t+Math.random()*.3,.08,1500,2,'bandpass',.18);},
-  fight(intensity){if(!ac)return;const t=now();if(Math.random()<.55)clank(t,.05+.1*intensity,.7+Math.random()*.8);else noise(t,.05,1200+Math.random()*900,2,'bandpass',.08*intensity+.03);},
-  push(q){if(!ac)return;const t=now();noise(t,.16,420,.7,'lowpass',.35+.25*q);if(q>.8)voice(t,120,.25,.03,0,'o');},
+  fight(intensity){if(!ac)return;const t=now(),v=.12+.16*intensity,r=Math.random();
+   if(r<.6){thud(t,v,.8+Math.random()*.5);if(Math.random()<.35)thud(t+.06+Math.random()*.08,v*.7,1+Math.random()*.4);} // blows often come in pairs
+   else if(r<.92)crack(t,v*.8);else bronze(t,.04+.03*intensity);},
+  push(q){if(!ac)return;const t=now();noise(t,.16,420,.7,'lowpass',.35+.25*q);for(let i=0;i<3;i++)thud(t+i*.025+Math.random()*.02,.18+.12*q,1.2);if(q>.8)voice(t,120,.25,.03,0,'o');},
   cheer(){if(!ac)return;const t=now();choir(t,165,1.4,.06,'a',1.25);choir(t+.3,220,1.1,.05,'e',1.1);for(let i=0;i<4;i++)clank(t+i*.12,.06,1.4);},
   fanfare(){if(!ac)return;const t=now();[0,2,4,7,4,7,9,7].forEach((d,i)=>aulos(t+i*.16,TON*2*Math.pow(2,SC[d]/12),.18,.12));},
   horn(){if(!ac)return;const t=now();for(const f of[98,147])tone(t,f,1.6,.12,'sawtooth',sfxG,f*1.02,.6);},
