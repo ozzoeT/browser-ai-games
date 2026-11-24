@@ -25,7 +25,7 @@ Racing, fighting, strategy, parkour, motorbike stunts, medieval battles, adventu
 | Key Pop | Keyboard emoji fun for babies and toddlers: pick worlds, every key pops emoji; calm mode, goodnight timer, English/Italian | 1 | [`key-pop/`](key-pop/) |
 | Pop Cascade | Bubble popping chains that play a melody, with neon, ocean and sticky kitchen themes | 1 | [`pop-cascade/`](pop-cascade/) |
 | Sky Stack | One-tap tower stacking up to space, with a challenge-a-friend link | 1 | [`sky-stack/`](sky-stack/) |
-| Hungry Hole | 3D hole that swallows a toy town and grows, 2-minute rounds with a challenge-a-friend link | 1 | [`hungry-hole/`](hungry-hole/) |
+| Hungry Hole | 3D hole that swallows a toy town and grows, 5 worlds (town, sunset beach, neon city, snow village, moon base) with their own hole and effects, 2-minute rounds with a challenge-a-friend link | 1 | [`hungry-hole/`](hungry-hole/) |
 | Swarm Run | Crowd runner: number gates, traps, red crowds and ×10 stairs; unlockable colours | 1 | [`swarm-run/`](swarm-run/) |
 | Merge Zoo | Drop and merge cute animals in a jar, from a mouse up to the whale | 1 | [`merge-zoo/`](merge-zoo/) |
 | Phalanx | Marathon 490 BC: keep the Greek phalanx in step to the drum, shields up under the arrows, close the pincer and race to the ships (Italian/English) | 1 | [`phalanx/`](phalanx/) |
