@@ -29,6 +29,7 @@ Racing, fighting, strategy, parkour, motorbike stunts, medieval battles, adventu
 | Swarm Run | Crowd runner: number gates, traps, red crowds and ×10 stairs; unlockable colours | 1 | [`swarm-run/`](swarm-run/) |
 | Merge Zoo | Drop and merge cute animals in a jar, from a mouse up to the whale | 1 | [`merge-zoo/`](merge-zoo/) |
 | Phalanx | Marathon 490 BC: keep the Greek phalanx in step to the drum, shields up under the arrows, close the pincer and race to the ships (Italian/English) | 1 | [`phalanx/`](phalanx/) |
+| Pedal Leap | Bike ramp jump over the sea: pedal hard, grab boosts, hop, glide as far as you can; 3 tracks | 1–2 (one pedals, one steers) | [`pedal-leap/`](pedal-leap/) |
 
 All games are in English.
 
