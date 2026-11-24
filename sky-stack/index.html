@@ -252,7 +252,8 @@ function buildGhost(n,shape){clearGhost();if(!n)return;
  const line=new THREE.Mesh(new THREE.PlaneGeometry(1,1),new THREE.MeshBasicMaterial({map:RT,color:0xffe9a8,transparent:true,opacity:0,depthWrite:false,depthTest:false}));
  line.rotation.x=-Math.PI/2;line.scale.set(t[2]*1.25,t[3]*1.25,1);line.position.set(t[0],ty+H/2+.01,t[1]);g.add(line);
  scene.add(g);ghost={g,geo,mat,lbl,line,t:0}}
-function animGhost(dt){if(!ghost)return;ghost.t+=dt;const k=Math.min(1,Math.max(0,(ghost.t-.3)/1.2));ghost.mat.opacity=.26*k;ghost.lbl.material.opacity=k;ghost.line.material.opacity=.8*k}
+const GHOST_AT=3.2; // seconds after game over: first admire your own tower, then the record appears
+function animGhost(dt){if(!ghost)return;ghost.t+=dt;if(!ghost.sfx&&ghost.t>=GHOST_AT){ghost.sfx=true;sfx.ghost()}const k=Math.min(1,Math.max(0,(ghost.t-GHOST_AT)/1.1));ghost.mat.opacity=.26*k;ghost.lbl.material.opacity=k;ghost.line.material.opacity=.8*k}
 
 // challenge finish line
 let goal=null;
@@ -290,6 +291,7 @@ const sfx={
  fail(){tone(330,0,.6,'sawtooth',.08,70);tone(160,.05,.5,'triangle',.15,50)},
  zone(){[0,4,7,12].forEach((k,j)=>tone(523.25*Math.pow(2,k/12),j*.09,.6,'sine',.12))},
  flag(){[0,4,7,12].forEach((k,j)=>tone(392*Math.pow(2,k/12),j*.12,j===3?.7:.18,'triangle',.11));tone(98,0,.5,'sine',.12)},
+ ghost(){[0,7,12].forEach((k,j)=>tone(440*Math.pow(2,k/12),j*.1,.8,'sine',.06))},
  record(){[0,4,7,12,16].forEach((k,j)=>tone(659.25*Math.pow(2,k/12),j*.07,.5,'triangle',.1))}};
 
 // ---------- game state ----------
@@ -344,14 +346,15 @@ function start(){au();reset();if(goal){scene.remove(goal);goal=null}makeGoal();s
  $('hud').classList.remove('hidden');$('bPause').classList.remove('hidden');$('floors').textContent='0';updateTarget();camVT=V;spawn()}
 
 const VERDICTS=[[0,'Every skyscraper starts somewhere!'],[5,'A cosy little house.'],[12,'A proper apartment block!'],[22,'You touched the clouds!'],[42,'Up in the golden sunset!'],[62,'Twilight tower. Impressive!'],[85,'Building in the starlight!'],[115,'You reached space! 🚀'],[150,'Among the planets. Unreal.'],[200,'Legendary architect. 👑']];
-function gameOver(){state='over';combo=0;sfx.fail();shake=.15;overT=0;$('bPause').classList.add('hidden');setTimeout(()=>{if(state==='over')buildRoof()},450);
+function gameOver(){gameOver.t0=performance.now();state='over';combo=0;sfx.fail();shake=.15;overT=0;$('bPause').classList.add('hidden');setTimeout(()=>{if(state==='over')buildRoof()},450);
  const isBest=score>best,prevBest=best;buildGhost(prevBest,loadShape());if(isBest){best=score;store.set('ss_best',best);saveShape()}
  $('oScore').textContent=score;$('oPerf').textContent=perfects;$('oStreak').textContent=bestStreak;$('oBest').textContent=best;
  $('oNew').classList.toggle('hidden',!isBest||score===0);
  let v='';for(const[k,t]of VERDICTS)if(score>=k)v=t;if(beat)v=score>beat?'You beat your friend\'s '+beat+'! 🏆':'Your friend\'s tower: '+beat+'. So close!';$('oVerdict').textContent=v;
  // zoom out to show the whole tower
  const top=Math.max(score,ghost?prevBest:0)*H;camYT=top/2+.2;camVT=Math.max(V,top*.47+3);
- setTimeout(()=>{if(state==='over'){$('over').classList.remove('hidden');$('hud').classList.add('hidden')}},2100)}
+ clearTimeout(gameOver.h);gameOver.h=setTimeout(showOver,ghost?(GHOST_AT+1.9)*1000:2100)}
+function showOver(){clearTimeout(gameOver.h);if(state!=='over')return;if(ghost&&ghost.t<GHOST_AT)ghost.t=GHOST_AT;$('over').classList.remove('hidden');$('hud').classList.add('hidden')}
 
 function shareText(){let s='I built a '+score+'-floor tower in Sky Stack 🏗️';
  if(perfects)s+=' with '+perfects+' perfect drops';s+='!\n';
@@ -367,13 +370,13 @@ function toast(t){const e=$('toast');e.textContent=t;e.classList.add('on');clear
 function pause(on){if(on&&state==='play'){state='pause';$('paused').classList.remove('hidden')}else if(!on&&state==='pause'){state='play';$('paused').classList.add('hidden');lastT=performance.now()}}
 
 // ---------- input ----------
-canvas.addEventListener('pointerdown',e=>{e.preventDefault();if(state==='play')drop()});
+canvas.addEventListener('pointerdown',e=>{e.preventDefault();if(state==='play')drop();else if(state==='over'&&performance.now()-gameOver.t0>600)showOver()});
 $('bPlay').onclick=start;$('bAgain').onclick=start;$('bShare').onclick=share;$('bResume').onclick=()=>pause(false);
 $('bPause').onclick=()=>pause(state==='play');
 function setMute(m){muted=m;store.set('ss_mute',m?'1':'0');$('bMute').textContent=m?'🔇':'🔊'}
 $('bMute').onclick=()=>setMute(!muted);setMute(muted);
 addEventListener('keydown',e=>{if(e.repeat)return;const k=e.code;
- if(k==='Space'||k==='Enter'||k==='ArrowDown'){e.preventDefault();if(state==='play')drop();else if(state==='menu')start();else if(state==='over'&&!$('over').classList.contains('hidden'))start();else if(state==='pause')pause(false)}
+ if(k==='Space'||k==='Enter'||k==='ArrowDown'){e.preventDefault();if(state==='play')drop();else if(state==='menu')start();else if(state==='over'&&!$('over').classList.contains('hidden'))start();else if(state==='over'&&performance.now()-gameOver.t0>600)showOver();else if(state==='pause')pause(false)}
  else if(k==='KeyP'||k==='Escape')pause(state==='play');else if(k==='KeyM')setMute(!muted)});
 document.addEventListener('visibilitychange',()=>{if(document.hidden)pause(true)});
 
