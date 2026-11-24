@@ -38,6 +38,10 @@ h1{margin:0;font-size:clamp(50px,14vw,70px);line-height:.9;font-weight:700;backg
 .rows{display:flex;justify-content:center;gap:26px;margin:12px 0 16px;color:#2b2350a0;font-size:13px}.rows b{display:block;font-size:24px;color:#2b2350}
 .verdict{font-size:16px;font-weight:600;margin:4px 0 0;color:#2b2350}
 .hint{font-size:12.5px;color:#2b235080;margin-top:12px}
+.thl{font-size:12px;letter-spacing:2.5px;font-weight:600;color:#2b235090;margin:0 0 8px}
+.themes{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:0 0 18px}
+.th{padding:7px 11px;border-radius:99px;background:#2b235010;color:#2b2350;font-size:14.5px;font-weight:600;border:2px solid transparent;transition:background .15s}
+.th.on{border-color:#7b6cff;background:#7b6cff26}
 #toast{position:absolute;left:50%;bottom:28px;transform:translateX(-50%);padding:10px 18px;border-radius:99px;background:#2b2350e0;font-weight:600;opacity:0;transition:opacity .3s;pointer-events:none}
 #toast.on{opacity:1}
 </style></head><body>
@@ -50,6 +54,8 @@ h1{margin:0;font-size:clamp(50px,14vw,70px);line-height:.9;font-weight:700;backg
 <div class="ov" id="menu"><div class="panel">
  <h1>SKY<br>STACK</h1>
  <p class="sub">Tap to drop each floor on top of the last one. What hangs over the edge falls off. Land it <b>perfectly</b> and it grows back. How high can you build?</p>
+ <div class="thl">TOWER STYLE</div>
+ <div class="themes"></div>
  <div class="chal hidden" id="mChal"></div>
  <button class="btn" id="bPlay">PLAY</button>
  <div class="best" id="mBest"></div>
@@ -62,6 +68,7 @@ h1{margin:0;font-size:clamp(50px,14vw,70px);line-height:.9;font-weight:700;backg
  <div id="oNew" class="nb hidden">NEW BEST!</div>
  <div class="verdict" id="oVerdict"></div>
  <div class="rows"><div><b id="oPerf">0</b>perfect</div><div><b id="oStreak">0</b>best streak</div><div><b id="oBest">0</b>best</div></div>
+ <div class="themes" style="margin-top:-4px"></div>
  <button class="btn" id="bAgain">PLAY AGAIN</button>
  <button class="btn alt" id="bShare">📣 Challenge a friend</button>
  <div class="hint">Your friend gets a link with your height to beat</div>
@@ -90,9 +97,70 @@ let V=5,aspect=1;
 function resize(){const w=innerWidth,h=innerHeight;renderer.setSize(w,h,false);aspect=w/h;V=Math.max(5.2,3.7/aspect)}
 addEventListener('resize',resize);resize();
 
-const geo=new THREE.BoxGeometry(1,1,1);
-function blockColor(i){const c=new THREE.Color();c.setHSL(((hue0+i*3.2)%360)/360,.78,.6);return c}
-function makeBlock(w,d,i,h=H){const m=new THREE.Mesh(geo,new THREE.MeshLambertMaterial({color:blockColor(i)}));m.scale.set(w,h,d);scene.add(m);return m}
+// ---------- tower styles ----------
+const rnd=i=>{const v=Math.sin(i*12.9898+78.233)*43758.5453;return v-Math.floor(v)};
+const maxAniso=renderer.capabilities.getMaxAnisotropy();
+function canvasTex(draw,srgb=true){const c=document.createElement('canvas');c.width=c.height=256;const g=c.getContext('2d');draw(g);
+ const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.anisotropy=Math.min(8,maxAniso);if(srgb)t.colorSpace=THREE.SRGBColorSpace;return t}
+function speckle(g,x,y,w,h,n,a){for(let k=0;k<n;k++){g.fillStyle=Math.random()<.5?'rgba(0,0,0,'+a+')':'rgba(255,255,255,'+a*.8+')';g.fillRect(x+Math.random()*w,y+Math.random()*h,1+Math.random()*2,1+Math.random()*2)}}
+// 256px = 1 world unit; every row is 64px = half a floor, so rows line up with the floors
+function stoneTex(){return canvasTex(g=>{g.fillStyle='#4b463f';g.fillRect(0,0,256,256);
+ for(let r=0;r<4;r++){let x=Math.random()*256;const end=x+256;while(x<end-20){let w=46+Math.random()*60;if(end-x-w<40)w=end-x;
+  const L=48+Math.random()*16,hu=30+Math.random()*20;
+  for(const ox of [0,-256]){const X=x+ox+3,Y=r*64+3,W=w-6,Hh=58;
+   g.fillStyle='hsl('+hu+',7%,'+L+'%)';g.beginPath();g.roundRect(X,Y,W,Hh,9);g.fill();
+   g.fillStyle='rgba(255,255,255,.13)';g.fillRect(X+4,Y+2,W-8,6);g.fillStyle='rgba(0,0,0,.2)';g.fillRect(X+4,Y+Hh-8,W-8,6);
+   speckle(g,X+3,Y+3,W-6,Hh-6,110,.12);
+   if(Math.random()<.25){g.strokeStyle='rgba(0,0,0,.25)';g.lineWidth=1.5;g.beginPath();const cx=X+W*Math.random();g.moveTo(cx,Y+6);g.lineTo(cx+8,Y+26);g.lineTo(cx+2,Y+44);g.stroke()}
+   if(Math.random()<.18){g.fillStyle='rgba(90,130,60,.35)';g.beginPath();g.ellipse(X+W*Math.random(),Y+Hh-6,12,6,0,0,7);g.fill()}}
+  x+=w}}})}
+function brickTex(){return canvasTex(g=>{g.fillStyle='#d8cdbd';g.fillRect(0,0,256,256);
+ for(let r=0;r<4;r++)for(let b=-1;b<2;b++){const X=b*128+(r%2)*64+3,Y=r*64+3;
+  const hu=4+Math.random()*12,sa=55+Math.random()*15,L=34+Math.random()*12;
+  for(const ox of [0,256]){g.fillStyle='hsl('+hu+','+sa+'%,'+L+'%)';g.fillRect(X+ox,Y,122,58);
+   g.fillStyle='rgba(255,220,200,.12)';g.fillRect(X+ox,Y,122,5);g.fillStyle='rgba(0,0,0,.18)';g.fillRect(X+ox,Y+52,122,6);
+   speckle(g,X+ox,Y,122,58,140,.14)}}})}
+function woodTex(){return canvasTex(g=>{
+ for(let r=0;r<4;r++){const Y=r*64,L=36+Math.random()*12,hu=24+Math.random()*8;g.fillStyle='hsl('+hu+',48%,'+L+'%)';g.fillRect(0,Y,256,64);
+  const ph=Math.random()*7;
+  for(let k=0;k<9;k++){const y0=Y+5+k*6.5+Math.random()*2;g.strokeStyle='rgba(60,30,10,'+(.12+Math.random()*.18)+')';g.lineWidth=1+Math.random()*1.4;g.beginPath();
+   for(let x=0;x<=256;x+=4){const y=y0+Math.sin(x/256*Math.PI*2*(1+(k%2))+ph+k)*2.2;x?g.lineTo(x,y):g.moveTo(x,y)}g.stroke()}
+  if(Math.random()<.7){const kx=Math.random()*200+28,ky=Y+20+Math.random()*24;g.fillStyle='rgba(70,35,10,.45)';g.beginPath();g.ellipse(kx,ky,7,4,0,0,7);g.fill();g.strokeStyle='rgba(70,35,10,.25)';g.beginPath();g.ellipse(kx,ky,13,7,0,0,7);g.stroke()}
+  const sx=Math.random()*256;g.fillStyle='rgba(40,18,5,.75)';g.fillRect(sx,Y,3,64);
+  g.fillStyle='#3b3b40';for(const ny of [Y+14,Y+50])for(const nx of [sx-7,sx+10]){g.beginPath();g.arc(nx,ny,2.6,0,7);g.fill()}
+  g.fillStyle='rgba(40,18,5,.8)';g.fillRect(0,Y,256,3);g.fillStyle='rgba(255,230,190,.14)';g.fillRect(0,Y+3,256,3)}})}
+function neonTex(){return canvasTex(g=>{g.fillStyle='#0c0f2a';g.fillRect(0,0,256,256);
+ for(let r=0;r<4;r++)for(let c=0;c<4;c++){g.fillStyle=(r+c)%2?'#121640':'#0f1336';g.fillRect(c*64+4,r*64+6,56,52)}
+ g.fillStyle='#070920';for(let k=0;k<26;k++)g.fillRect((Math.random()*16|0)*16+5,(Math.random()*16|0)*16+5,7,4)})}
+function neonGlow(){return canvasTex(g=>{g.fillStyle='#000';g.fillRect(0,0,256,256);
+ const band=(y,h,a)=>{const gr=g.createLinearGradient(0,y-h,0,y+h);gr.addColorStop(0,'rgba(255,255,255,0)');gr.addColorStop(.5,'rgba(255,255,255,'+a+')');gr.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=gr;g.fillRect(0,y-h,256,2*h)};
+ for(const y of [0,128,256]){band(y,14,.35);g.fillStyle='#fff';g.fillRect(0,y-2.5,256,5)}
+ for(const y of [64,192]){g.fillStyle='rgba(255,255,255,.28)';g.fillRect(0,y-1,256,2)}
+ for(let c=0;c<4;c++){g.fillStyle='rgba(255,255,255,.22)';g.fillRect(c*64-1,0,2,256)}
+ for(let k=0;k<34;k++){const x=(Math.random()*16|0)*16+5,y=(Math.random()*16|0)*16+5;if(y%128<10||y%128>118)continue;g.fillStyle='rgba(255,255,255,'+(.5+Math.random()*.5)+')';g.fillRect(x,y,7,4)}},false)}
+
+const NIGHT=[[0,'#1b1150','#4a1f72'],[30,'#120c3e','#3a1460'],[62,'#0a0830','#26104a'],[115,'#03031a','#120e3a']];
+const THEMES={
+ classic:{name:'Classic',icon:'✨',color:i=>new THREE.Color().setHSL(((hue0+i*3.2)%360)/360,.78,.6),flag:['#ff5d8f','#fff'],pole:0xffffff},
+ castle:{name:'Castle',icon:'🏰',map:stoneTex,color:i=>new THREE.Color().setHSL(.1,.1,.8+rnd(i)*.16),flag:['#b3122e','#ffd23f'],pole:0x5a3a1e},
+ brick:{name:'Red brick',icon:'🧱',map:brickTex,color:i=>new THREE.Color().setHSL(.03,.25,.82+rnd(i)*.14),flag:['#1f4fb8','#fff'],pole:0x55585e},
+ neon:{name:'Neon',icon:'💡',map:neonTex,glow:neonGlow,color:()=>new THREE.Color(0xffffff),em:i=>new THREE.Color().setHSL(((hue0+i*7)%360)/360,1,.55),flag:['#0c0f2a','#ff3df0'],pole:0x30f0ff,sky:NIGHT,starsAt:-30},
+ wood:{name:'Wood',icon:'🪵',map:woodTex,color:i=>new THREE.Color().setHSL(.08,.3,.8+rnd(i*1.7)*.18),flag:['#2f8f3a','#fff6d8'],pole:0x6b4423}};
+let themeKey=THEMES[store.get('ss_theme','classic')]?store.get('ss_theme','classic'):'classic',theme=THEMES[themeKey];
+const texCache={};
+function themeTex(k){return texCache[themeKey+k]||(texCache[themeKey+k]=theme[k]())}
+function blockColor(i){return theme.color(i)}
+
+// box whose UVs are in world units (origin ox,oy,oz) so bricks keep their size whatever the block's size
+function boxGeo(w,h,d,ox,oy,oz){const g=new THREE.BoxGeometry(w,h,d);const p=g.attributes.position,n=g.attributes.normal,uv=g.attributes.uv;
+ for(let k=0;k<p.count;k++){const x=p.getX(k)+ox,y=p.getY(k)+oy+H/2,z=p.getZ(k)+oz;
+  if(Math.abs(n.getX(k))>.5)uv.setXY(k,z,y);else if(Math.abs(n.getY(k))>.5)uv.setXY(k,x,z);else uv.setXY(k,x,y)}
+ return g}
+function blockMat(i){const o={color:blockColor(i)};if(theme.map)o.map=themeTex('map');
+ if(theme.glow){o.emissiveMap=themeTex('glow');o.emissive=theme.em(i)}return new THREE.MeshLambertMaterial(o)}
+function makeBlock(w,d,i,h=H,x=0,y=0,z=0){const m=new THREE.Mesh(boxGeo(w,h,d,x,y,z),blockMat(i));m.position.set(x,y,z);m.userData.em=m.material.emissive.clone();scene.add(m);return m}
+function setGeo(m,w,h,d,ox,oy,oz){m.geometry.dispose();m.geometry=boxGeo(w,h,d,ox,oy,oz)}
+function kill(m){scene.remove(m);m.geometry.dispose();m.material.dispose()}
 
 // soft outline texture for rings / finish line
 function ringTex(){const c=document.createElement('canvas');c.width=c.height=128;const g=c.getContext('2d');
@@ -129,6 +197,43 @@ const clouds=[];{const side=new THREE.Vector3(1,0,-1).normalize();const tx=[clou
 function placeClouds(dt){for(const m of clouds){const u=m.userData;u.s+=u.v*dt;if(u.s>22)u.s=-22;if(u.s<-22)u.s=22;
  m.position.set(u.side.x*u.s+VIEW.x*u.off,u.y,u.side.z*u.s+VIEW.z*u.off)}}
 
+// ---------- the roof: battlements + flag when the tower is finished ----------
+let roof=null;
+function flagTex(){const c=document.createElement('canvas');c.width=192;c.height=120;const g=c.getContext('2d');const[a,b]=theme.flag;
+ g.fillStyle=a;g.fillRect(0,0,192,120);g.fillStyle=b;g.strokeStyle=b;
+ if(themeKey==='castle'){g.fillRect(0,0,96,60);g.fillRect(96,60,96,60);g.fillStyle=a;g.beginPath();g.arc(48,30,13,0,7);g.fill();g.fillStyle=b;g.beginPath();g.arc(144,90,13,0,7);g.fill()}
+ else if(themeKey==='brick'){g.fillRect(0,48,192,24);g.fillRect(58,0,24,120)}
+ else if(themeKey==='neon'){g.shadowColor=b;g.shadowBlur=16;g.lineWidth=9;g.lineJoin='round';g.beginPath();g.moveTo(108,10);g.lineTo(70,64);g.lineTo(104,62);g.lineTo(80,112);g.stroke();
+  g.lineWidth=4;g.strokeStyle='#30f0ff';g.shadowColor='#30f0ff';g.strokeRect(8,8,176,104)}
+ else if(themeKey==='wood'){g.beginPath();g.moveTo(96,14);g.lineTo(136,92);g.lineTo(56,92);g.fill();g.fillRect(88,92,16,16)}
+ else{g.beginPath();for(let k=0;k<10;k++){const r=k%2?16:38,an=-Math.PI/2+k*Math.PI/5;g.lineTo(96+Math.cos(an)*r,62+Math.sin(an)*r)}g.fill()}
+ const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;return t}
+function clearRoof(){if(!roof)return;for(const m of roof.merlons)kill(m);scene.remove(roof.g);roof.pole.geometry.dispose();roof.pole.material.dispose();
+ roof.flag.geometry.dispose();roof.flag.material.map.dispose();roof.flag.material.dispose();roof=null}
+function buildRoof(instant){clearRoof();const top=stack[stack.length-1],i=stack.length,y0=top.y+H/2;
+ const t=Math.min(.24,Math.min(top.w,top.d)*.24),mh=.32,merlons=[];
+ const add=(x,z,w,d)=>{const m=makeBlock(w,d,i,mh,x,y0+mh/2,z);m.userData.y=y0;merlons.push(m)};
+ const edge=(len,cb)=>{const n=Math.max(2,Math.round(len/.55));const seg=len/(2*n-1);for(let j=0;j<n;j++)cb(-len/2+seg/2+j*2*seg,seg,j,n)};
+ edge(top.w,(o,seg)=>{add(top.x+o,top.z+top.d/2-t/2,seg,t);add(top.x+o,top.z-top.d/2+t/2,seg,t)});
+ edge(top.d,(o,seg,j,n)=>{if(j===0||j===n-1)return;add(top.x+top.w/2-t/2,top.z+o,t,seg);add(top.x-top.w/2+t/2,top.z+o,t,seg)});
+ merlons.sort((a,b)=>Math.atan2(a.position.z-top.z,a.position.x-top.x)-Math.atan2(b.position.z-top.z,b.position.x-top.x));
+ const g=new THREE.Group();g.position.set(top.x,y0,top.z);scene.add(g);
+ const PH=1.7;const pg=new THREE.CylinderGeometry(.035,.045,PH,8);pg.translate(0,PH/2,0);
+ const pm=themeKey==='neon'?new THREE.MeshBasicMaterial({color:theme.pole}):new THREE.MeshLambertMaterial({color:theme.pole});
+ const pole=new THREE.Mesh(pg,pm);g.add(pole);
+ const fg=new THREE.PlaneGeometry(.95,.6,14,5);fg.translate(.475,-.3,0);fg.userData.x0=Float32Array.from({length:fg.attributes.position.count},(_,k)=>fg.attributes.position.getX(k));
+ const fm=themeKey==='neon'?new THREE.MeshBasicMaterial({map:flagTex(),side:THREE.DoubleSide}):new THREE.MeshLambertMaterial({map:flagTex(),side:THREE.DoubleSide});
+ const flag=new THREE.Mesh(fg,fm);flag.rotation.y=Math.PI/4;flag.position.y=PH-.04;g.add(flag);
+ roof={g,pole,flag,merlons,t:instant?9:0,PH,fan:!!instant};animRoof(0)}
+const easeBack=x=>{x=Math.min(1,Math.max(0,x));const c=1.9;return 1+(c+1)*Math.pow(x-1,3)+c*Math.pow(x-1,2)};
+function animRoof(dt){if(!roof)return;roof.t+=dt;const t=roof.t,n=roof.merlons.length;
+ roof.merlons.forEach((m,j)=>{const k=easeBack((t-j*.45/n)*4);m.scale.set(1,Math.max(.001,k),1);m.position.y=m.userData.y+(m.geometry.parameters.height*Math.max(.001,k))/2});
+ const pk=Math.min(1,Math.max(0,(t-.45)/.35));roof.pole.scale.set(1,Math.max(.001,pk),1);
+ const fk=Math.min(1,Math.max(0,(t-.75)/.7)),e=1-Math.pow(1-fk,3);roof.flag.visible=fk>0;roof.flag.position.y=.62+(roof.PH-.04-.62)*e;roof.flag.scale.setScalar(Math.max(.001,Math.min(1,fk*3)));
+ if(!roof.fan&&fk>=1){roof.fan=true;sfx.flag();const tp=stack[stack.length-1];burst(tp.x,tp.y+H/2+roof.PH,tp.z,.6,.6,24,theme.pole)}
+ const p=roof.flag.geometry.attributes.position,x0=roof.flag.geometry.userData.x0,T=performance.now()/1000;
+ for(let k=0;k<p.count;k++){const x=x0[k];p.setZ(k,Math.sin(x*7-T*6)*.09*x+Math.sin(x*3-T*2.3)*.04*x)}p.needsUpdate=true}
+
 // challenge finish line
 let goal=null;
 function makeGoal(){if(!beat)return;const y=beat*H;const g=new THREE.Group();
@@ -143,10 +248,10 @@ const ZONES=[[22,'Above the clouds','☁️ floor 22'],[42,'Golden sunset','🌇
 const hex=h=>[1,3,5].map(i=>parseInt(h.substr(i,2),16));
 function mixHex(a,b,t){const A=hex(a),B=hex(b);return 'rgb('+A.map((v,i)=>Math.round(v+(B[i]-v)*t)).join(',')+')'}
 let skyKey='';
-function setSky(f){let i=0;while(i<SKY.length-1&&f>=SKY[i+1][0])i++;const a=SKY[i],b=SKY[Math.min(i+1,SKY.length-1)];
+function setSky(f){const SK=theme.sky||SKY;let i=0;while(i<SK.length-1&&f>=SK[i+1][0])i++;const a=SK[i],b=SK[Math.min(i+1,SK.length-1)];
  const t=b===a?0:Math.min(1,(f-a[0])/(b[0]-a[0]));const top=mixHex(a[1],b[1],t),bot=mixHex(a[2],b[2],t);const k=top+bot;
  if(k!==skyKey){skyKey=k;$('sky').style.background='linear-gradient('+top+','+bot+')';document.body.style.background=top}
- stars.material.opacity=Math.max(0,Math.min(1,(f-60)/35));
+ stars.material.opacity=Math.max(0,Math.min(1,(f-(theme.starsAt??60))/35));
  const dark=Math.max(0,Math.min(1,(f-55)/40));
  document.documentElement.style.setProperty('--d',dark)}
 
@@ -164,40 +269,41 @@ const sfx={
  grow(){[0,1,2].forEach(k=>tone(note(12+k*2),k*.06,.25,'triangle',.08))},
  fail(){tone(330,0,.6,'sawtooth',.08,70);tone(160,.05,.5,'triangle',.15,50)},
  zone(){[0,4,7,12].forEach((k,j)=>tone(523.25*Math.pow(2,k/12),j*.09,.6,'sine',.12))},
+ flag(){[0,4,7,12].forEach((k,j)=>tone(392*Math.pow(2,k/12),j*.12,j===3?.7:.18,'triangle',.11));tone(98,0,.5,'sine',.12)},
  record(){[0,4,7,12,16].forEach((k,j)=>tone(659.25*Math.pow(2,k/12),j*.07,.5,'triangle',.1))}};
 
 // ---------- game state ----------
 let state='menu',stack=[],cur=null,debris=[],score=0,perfects=0,combo=0,bestStreak=0,best=+store.get('ss_best','0')||0;
 let hue0=Math.random()*360,camY=0,camYT=0,camV=5,camVT=5,shake=0,overT=0,passedBeat=false,passedBest=false,zoneIdx=0,lastT=0;
-const pedestal=makeBlock(BASE,BASE,0,30);pedestal.position.set(0,-15+H/2-H,0);
+let pedestal=null;
 function speed(){return Math.min(8.5,3.1+score*.065)}
 
-function reset(){for(const b of stack)if(b.mesh!==pedestal){scene.remove(b.mesh);b.mesh.material.dispose()}
- for(const d of debris){scene.remove(d.mesh);d.mesh.material.dispose()}if(cur){scene.remove(cur.mesh);cur.mesh.material.dispose();cur=null}
- debris=[];hue0=Math.random()*360;pedestal.material.color.copy(blockColor(0)).offsetHSL(0,-.05,-.08);
- stack=[{x:0,z:0,w:BASE,d:BASE,y:0,mesh:makeBlock(BASE,BASE,0)}];stack[0].mesh.position.set(0,0,0);
+function reset(){for(const b of stack)kill(b.mesh);
+ for(const d of debris)kill(d.mesh);if(cur){kill(cur.mesh);cur=null}clearRoof();
+ debris=[];hue0=Math.random()*360;if(pedestal)kill(pedestal);pedestal=makeBlock(BASE,BASE,0,30,0,-15+H/2-H,0);pedestal.material.color.offsetHSL(0,-.05,-.08);
+ stack=[{x:0,z:0,w:BASE,d:BASE,y:0,mesh:makeBlock(BASE,BASE,0)}];
  score=0;perfects=0;combo=0;bestStreak=0;passedBeat=false;passedBest=false;zoneIdx=0;camYT=0;setSky(0)}
 
 function spawn(){const top=stack[stack.length-1];const i=stack.length;const axis=i%2?'x':'z';
- const m=makeBlock(top.w,top.d,i);cur={axis,t:Math.random()<.5?0:2,x:top.x,z:top.z,w:top.w,d:top.d,y:top.y+H,mesh:m};placeCur()}
+ const m=makeBlock(top.w,top.d,i,H,top.x,top.y+H,top.z);cur={axis,t:Math.random()<.5?0:2,x:top.x,z:top.z,w:top.w,d:top.d,y:top.y+H,mesh:m};placeCur()}
 function placeCur(){const top=stack[stack.length-1];const p=((cur.t%4)+4)%4;const v=p<2?-1+p:3-p;cur[cur.axis]=top[cur.axis]+v*RANGE;
  cur.mesh.position.set(cur.x,cur.y,cur.z)}
 
-function addDebris(x,y,z,w,d,i,vx,vz){const m=makeBlock(w,d,i);m.position.set(x,y,z);
+function addDebris(x,y,z,w,d,i,vx,vz,ux=x,uz=z){const m=makeBlock(w,d,i,H,ux,y,uz);m.position.set(x,y,z);
  debris.push({mesh:m,vx,vz,vy:0,rx:(Math.random()-.5)*3,rz:(Math.random()-.5)*3,t:0})}
 
 function drop(){if(state!=='play'||!cur)return;const top=stack[stack.length-1];const ax=cur.axis,size=ax==='x'?'w':'d';
  const delta=cur[ax]-top[ax];const ov=top[size]-Math.abs(delta);const i=stack.length;
  if(ov<=0){ // missed completely
-  scene.remove(cur.mesh);addDebris(cur.x,cur.y,cur.z,cur.w,cur.d,i,ax==='x'?Math.sign(delta)*1.5:0,ax==='z'?Math.sign(delta)*1.5:0);cur.mesh.material.dispose();cur=null;gameOver();return}
+  kill(cur.mesh);addDebris(cur.x,cur.y,cur.z,cur.w,cur.d,i,ax==='x'?Math.sign(delta)*1.5:0,ax==='z'?Math.sign(delta)*1.5:0,top.x,top.z);cur=null;gameOver();return}
  const tol=Math.max(.09,.16-score*.0015);
  let perfect=Math.abs(delta)<tol;
  if(perfect){cur[ax]=top[ax];combo++;perfects++;bestStreak=Math.max(bestStreak,combo);
   if(combo>=3&&cur[size]<BASE-.001){const g=Math.min(BASE-cur[size],.28);cur[size]+=g;sfx.grow()}
  }else{combo=0;const nw=ov,nx=top[ax]+delta/2;const cutW=Math.abs(delta),cutC=nx+Math.sign(delta)*(nw/2+cutW/2);
   cur[size]=nw;cur[ax]=nx;
-  if(ax==='x')addDebris(cutC,cur.y,cur.z,cutW,cur.d,i,Math.sign(delta)*1.2,0);else addDebris(cur.x,cur.y,cutC,cur.w,cutW,i,0,Math.sign(delta)*1.2)}
- cur.mesh.scale.set(cur.w,H,cur.d);cur.mesh.position.set(cur.x,cur.y,cur.z);
+  if(ax==='x')addDebris(cutC,cur.y,cur.z,cutW,cur.d,i,Math.sign(delta)*1.2,0,cutC-delta,cur.z);else addDebris(cur.x,cur.y,cutC,cur.w,cutW,i,0,Math.sign(delta)*1.2,cur.x,cutC-delta)}
+ const sh=perfect?0:delta;cur.mesh.position.set(cur.x,cur.y,cur.z);setGeo(cur.mesh,cur.w,H,cur.d,cur.x-(ax==='x'?sh:0),cur.y,cur.z-(ax==='z'?sh:0));
  stack.push({x:cur.x,z:cur.z,w:cur.w,d:cur.d,y:cur.y,mesh:cur.mesh,pulse:perfect?1:0});cur=null;
  score++;$('floors').textContent=score;camYT=score*H;shake=perfect?.05:.03;
  if(perfect){sfx.perfect(combo);ring(stack[i].x,stack[i].y+H/2,stack[i].z,stack[i].w,stack[i].d,0xffffff,combo);if(combo>=3)burst(stack[i].x,stack[i].y+H/2,stack[i].z,stack[i].w,stack[i].d,Math.min(30,10+combo*2),0xffffff);
@@ -218,13 +324,13 @@ function start(){au();reset();if(goal){scene.remove(goal);goal=null}makeGoal();s
  $('hud').classList.remove('hidden');$('bPause').classList.remove('hidden');$('floors').textContent='0';updateTarget();camVT=V;spawn()}
 
 const VERDICTS=[[0,'Every skyscraper starts somewhere!'],[5,'A cosy little house.'],[12,'A proper apartment block!'],[22,'You touched the clouds!'],[42,'Up in the golden sunset!'],[62,'Twilight tower. Impressive!'],[85,'Building in the starlight!'],[115,'You reached space! 🚀'],[150,'Among the planets. Unreal.'],[200,'Legendary architect. 👑']];
-function gameOver(){state='over';combo=0;sfx.fail();shake=.15;overT=0;$('bPause').classList.add('hidden');
+function gameOver(){state='over';combo=0;sfx.fail();shake=.15;overT=0;$('bPause').classList.add('hidden');setTimeout(()=>{if(state==='over')buildRoof()},450);
  const isBest=score>best;if(isBest){best=score;store.set('ss_best',best)}
  $('oScore').textContent=score;$('oPerf').textContent=perfects;$('oStreak').textContent=bestStreak;$('oBest').textContent=best;
  $('oNew').classList.toggle('hidden',!isBest||score===0);
  let v='';for(const[k,t]of VERDICTS)if(score>=k)v=t;if(beat)v=score>beat?'You beat your friend\'s '+beat+'! 🏆':'Your friend\'s tower: '+beat+'. So close!';$('oVerdict').textContent=v;
  // zoom out to show the whole tower
- const top=score*H;camYT=top/2-.5;camVT=Math.max(V,top*.47+2.5);
+ const top=score*H;camYT=top/2+.2;camVT=Math.max(V,top*.47+3);
  setTimeout(()=>{if(state==='over'){$('over').classList.remove('hidden');$('hud').classList.add('hidden')}},2100)}
 
 function shareText(){let s='I built a '+score+'-floor tower in Sky Stack 🏗️';
@@ -254,22 +360,30 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden)pause(true)
 // ---------- menu ----------
 if(beat){$('mChal').innerHTML='🏁 A friend built <b>'+beat+'</b> floors.<br>Can you build higher?';$('mChal').classList.remove('hidden');$('bPlay').textContent='ACCEPT CHALLENGE'}
 $('mBest').textContent=best?'Your best: '+best+' floors':'';
-// a little demo tower behind the menu
-reset();for(let i=0;i<7;i++){const t=stack[stack.length-1];const sh=i%2?'x':'z';const b={x:t.x,z:t.z,w:t.w,d:t.d,y:t.y+H};b[sh]+=(Math.random()-.5)*.3;
- b.mesh=makeBlock(b.w,b.d,stack.length);b.mesh.position.set(b.x,b.y,b.z);stack.push(b)}camYT=camY=stack.length*H*.5;
+// a little demo tower behind the menu, already crowned
+function demo(){reset();for(let i=0;i<7;i++){const t=stack[stack.length-1];const sh=i%2?'x':'z';const b={x:t.x,z:t.z,w:t.w,d:t.d,y:t.y+H};b[sh]+=(Math.random()-.5)*.3;
+ b.mesh=makeBlock(b.w,b.d,stack.length,H,b.x,b.y,b.z);stack.push(b)}buildRoof(true);camYT=camY=stack.length*H*.5}
+function reskin(){const all=[pedestal,...stack.map(b=>b.mesh),...debris.map(d=>d.mesh)];
+ all.forEach((m,j)=>{const i=m===pedestal?0:j-1;m.material.dispose();m.material=blockMat(Math.max(0,i));m.userData.em=m.material.emissive.clone()});
+ pedestal.material.color.offsetHSL(0,-.05,-.08);if(roof)buildRoof(true)}
+function setTheme(k){themeKey=k;theme=THEMES[k];store.set('ss_theme',k);document.querySelectorAll('.th').forEach(b=>b.classList.toggle('on',b.dataset.k===k));skyKey='';
+ if(state==='menu')demo();else{reskin();setSky(score)}}
+document.querySelectorAll('.themes').forEach(box=>{for(const k in THEMES){const b=document.createElement('button');b.className='th';b.dataset.k=k;b.textContent=THEMES[k].icon+' '+THEMES[k].name;b.onclick=()=>{setTheme(k);sfx.place()};box.appendChild(b)}});
+setTheme(themeKey);
 
 // ---------- loop ----------
 function frame(now){requestAnimationFrame(frame);const dt=Math.min(.05,(now-(lastT||now))/1000);lastT=now;
  if(state==='play'&&cur){cur.t+=dt*speed()/RANGE;placeCur()}
  if(state!=='pause'){
   for(let j=debris.length-1;j>=0;j--){const d=debris[j];d.t+=dt;d.vy-=22*dt;const m=d.mesh;m.position.x+=d.vx*dt;m.position.z+=d.vz*dt;m.position.y+=d.vy*dt;
-   m.rotation.x+=d.rx*dt;m.rotation.z+=d.rz*dt;if(d.t>3){scene.remove(m);m.material.dispose();debris.splice(j,1)}}
+   m.rotation.x+=d.rx*dt;m.rotation.z+=d.rz*dt;if(d.t>3){kill(m);debris.splice(j,1)}}
   for(let j=rings.length-1;j>=0;j--){const r=rings[j],u=r.userData;u.t+=dt;const k=1+u.t*(1.2+u.big*.15);r.scale.set(u.w*k,u.d*k,1);r.material.opacity=Math.max(0,1-u.t/.55);
    if(u.t>.55){scene.remove(r);r.geometry.dispose();r.material.dispose();rings.splice(j,1)}}
   for(let j=sparks.length-1;j>=0;j--){const s=sparks[j],u=s.userData;u.t+=dt;u.vy-=9*dt;s.position.x+=u.vx*dt;s.position.y+=u.vy*dt;s.position.z+=u.vz*dt;s.rotation.x+=dt*6;s.rotation.y+=dt*5;
    s.material.opacity=Math.max(0,1-u.t/u.life);if(u.t>u.life){scene.remove(s);s.material.dispose();sparks.splice(j,1)}}
-  for(const b of stack)if(b.pulse>0){b.pulse=Math.max(0,b.pulse-dt*3);b.mesh.material.emissive.setRGB(b.pulse*.5,b.pulse*.5,b.pulse*.5)}
+  for(const b of stack)if(b.pulse>0){b.pulse=Math.max(0,b.pulse-dt*3);const e=b.mesh.userData.em;b.mesh.material.emissive.setRGB(e.r+b.pulse*.5,e.g+b.pulse*.5,e.b+b.pulse*.5)}
   if(state==='over')overT+=dt;
+  animRoof(dt);
  }
  if(state==='menu'){camYT=stack.length*H*.55}
  camY+=(camYT-camY)*Math.min(1,dt*(state==='over'?2.2:5));camV+=((state==='over'?camVT:V)-camV)*Math.min(1,dt*(state==='over'?2:4));
