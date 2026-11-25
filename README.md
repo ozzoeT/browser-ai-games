@@ -2,7 +2,7 @@
 
 A small collection of AI-made games you can play right in your browser. Nothing too hard, just fun: made for kids, and for dads and moms who want to play together with them :)
 
-Racing, fighting, strategy, parkour, motorbike stunts, medieval battles, adventure and a math game for little ones, a keyboard emoji game for toddlers, 1–2 players on one keyboard. No download, no build step: every game is a single HTML file.
+Racing, fighting, strategy, parkour, motorbike stunts, medieval battles, adventure and a math game for little ones, a keyboard emoji game for toddlers, a rhythm battle at Marathon, a calm deep-sea photo dive, a pixel art run and gun, 1–2 players on one keyboard. No download, no build step: every game is a single HTML file.
 
 **▶ Play:** https://ozzoet.github.io/browser-ai-games/
 
@@ -24,6 +24,14 @@ Racing, fighting, strategy, parkour, motorbike stunts, medieval battles, adventu
 | Rollway | 3D toy car run: fast roads, ramps and boost pads, tunnels you can drive upside down | 1 | [`rollway/`](rollway/) |
 | Key Pop | Keyboard emoji fun for babies and toddlers: pick worlds, every key pops emoji; calm mode, goodnight timer, English/Italian | 1 | [`key-pop/`](key-pop/) |
 | Pop Cascade | Bubble popping chains that play a melody, with neon, ocean and sticky kitchen themes | 1 | [`pop-cascade/`](pop-cascade/) |
+| Sky Stack | One-tap tower stacking up to space in 5 styles (classic, castle, brick, neon, wood), crowned with battlements and a flag, with a challenge-a-friend link | 1 | [`sky-stack/`](sky-stack/) |
+| Hungry Hole | 3D hole that swallows a toy town and grows, 5 worlds (town, sunset beach, neon city, snow village, moon base) with their own hole and effects, 2-minute rounds with a challenge-a-friend link | 1 | [`hungry-hole/`](hungry-hole/) |
+| Swarm Run | Crowd runner: number gates, traps, red crowds and ×10 stairs; unlockable colours | 1 | [`swarm-run/`](swarm-run/) |
+| Merge Zoo | Drop and merge cute animals in a jar, from a mouse up to the whale | 1 | [`merge-zoo/`](merge-zoo/) |
+| Phalanx | Marathon 490 BC: keep the Greek phalanx in step to the drum, shields up under the arrows, close the pincer and race to the ships (Italian/English) | 1 | [`phalanx/`](phalanx/) |
+| Pedal Leap | Bike ramp jump over the sea: pedal hard, grab boosts, hop, glide as far as you can; 3 tracks | 1–2 (one pedals, one steers) | [`pedal-leap/`](pedal-leap/) |
+| Deep Lens | Calm deep-sea exploration in pixel art: dive with a torch and a camera, photograph 16 real deep-sea animals for your album | 1 | [`deep-lens/`](deep-lens/) |
+| Bolt Brigade | Pixel art run and gun: 3 missions (toy soldiers in the desert, goo aliens in the jungle, robots in a snowy night base), weapons to grab, prisoners to free, a little tank and 3 giant bosses; easy mode | 1–2 | [`bolt-brigade/`](bolt-brigade/) |
 
 All games are in English.
 
