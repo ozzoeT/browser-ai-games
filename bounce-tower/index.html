@@ -67,13 +67,13 @@ h1{margin:0;font-size:clamp(46px,13vw,66px);line-height:.9;font-weight:700;backg
 <div id="hint" class="hidden">Move the mouse ← → to spin the tower</div>
 <div class="ov" id="menu"><div class="panel">
  <h1>BOUNCE<br>TOWER</h1>
- <p class="sub">The ball never stops bouncing. <b>Spin the tower</b> so a shelf is always waiting under it, climb as high as you can and stay ahead of the rising flood!</p>
+ <p class="sub">The ball never stops bouncing. <b>Spin the tower</b> so a shelf is waiting under it, and land where the sky above is open: the ball can't go through shelves! Climb as high as you can, ahead of the rising flood.</p>
  <div class="thl">START FROM</div>
  <div class="worlds" id="mWorlds"></div>
  <div class="chal hidden" id="mChal"></div>
  <button class="btn" id="bPlay">PLAY</button>
  <div class="best" id="mBest"></div>
- <div class="hintp">Mouse: move left/right · Touch: drag · Keys: <span class="keys">←</span> <span class="keys">→</span><br>🟥 spiky shelves hurt · 🟨 springs launch you · ⭐ stars push the flood down</div>
+ <div class="hintp">Mouse: move left/right · Touch: drag · Keys: <span class="keys">←</span> <span class="keys">→</span><br>🟧 orange shadow = a shelf above blocks you · 🟥 spikes hurt<br>🟨 springs smash through shelves · ⭐ stars push the flood down</div>
 </div></div>
 <div class="ov hidden" id="over"><div class="panel">
  <div class="bigl" id="oWhy">YOUR CLIMB</div>
@@ -120,6 +120,7 @@ const C = h => new THREE.Color(h);
 const H = 2.2;                 // floor height
 const RP = 1.0, RI = .9, RO = 3.15, SD = .3, BEV = .07; // pole radius, shelf inner/outer radius, depth, bevel
 const RB = 2.1, BR = .4;       // ball distance from axis, ball radius
+const SLAB = SD + 2 * BEV;      // shelf thickness (top at the floor height)
 const G = 24;
 const VB = Math.sqrt(2 * G * H * 1.3), VSPR = Math.sqrt(2 * G * H * 2.35);
 const BALL_A = -PI / 2;        // world angle of the ball (in front, towards the camera)
@@ -305,7 +306,7 @@ const SHELF_TEX = [
     sideE: (x, w, h) => { x.fillStyle = '#000'; x.fillRect(0, 0, w, h); x.fillStyle = '#3ad8ff'; for (let i = 0; i < w; i += 32) x.fillRect(i + 4, 50, 20, 10); } },
 ];
 const GLOW = ctex(64, 64, x => { const g = x.createRadialGradient(32, 32, 0, 32, 32, 32); g.addColorStop(0, '#fff'); g.addColorStop(.3, 'rgba(255,255,255,.5)'); g.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g; x.fillRect(0, 0, 64, 64); });
-const BLOB = ctex(64, 64, x => { const g = x.createRadialGradient(32, 32, 0, 32, 32, 32); g.addColorStop(0, 'rgba(0,0,0,.6)'); g.addColorStop(.6, 'rgba(0,0,0,.35)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(0, 0, 64, 64); });
+const BLOB = ctex(64, 64, x => { const g = x.createRadialGradient(32, 32, 0, 32, 32, 32); g.addColorStop(0, 'rgba(255,255,255,.65)'); g.addColorStop(.6, 'rgba(255,255,255,.4)'); g.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g; x.fillRect(0, 0, 64, 64); });
 
 // ---------- materials ----------
 function phys(o) { return new THREE.MeshPhysicalMaterial(Object.assign({ roughness: .38, clearcoat: .8, clearcoatRoughness: .14, envMap: ENV, envMapIntensity: .75 }, o)); }
@@ -494,20 +495,26 @@ function spawnLevel(i, S) {
       for (let k = 0; k < 3; k++) put(sp, GEO.coil, SPRING.coil, 0, .06 + k * .07, 0); put(sp, GEO.pad, SPRING.pad, 0, .27, 0); L.sg.add(sp); sh.spring = sp; (sh.extra = sh.extra || []).push(sp); }
     L.shelves.push(sh); return sh;
   };
-  if (i === S.start || (i % WORLD === 0)) { add(0, TAU, 'safe'); }
+  if (i === S.start) { add(0, TAU, 'safe'); }
   else {
-    const d = clamp((i - 3) / 95, 0, 1);
-    let nS = R() < 1 - d * 1.6 ? 3 : R() < lerp(.95, .35, d) ? 2 : 1;
-    let nD = i - S.start < 3 ? 0 : R() < lerp(.3, .9, d) ? (R() < lerp(.05, .6, d) ? 2 : 1) : 0;
-    const types = []; for (let k = 0; k < nS; k++) types.push('safe'); for (let k = 0; k < nD; k++) types.push('red');
-    for (let k = types.length - 1; k > 0; k--) { const j = Math.floor(R() * (k + 1)); [types[k], types[j]] = [types[j], types[k]]; }
-    const slot = TAU / types.length, base = R() * TAU;
-    let anyPlain = false;
-    types.forEach((ty, k) => { let w = ty === 'red' ? (lerp(40, 75, d) + R() * 25) * PI / 180 : (lerp(105, 55, d) + R() * 25) * PI / 180; w = Math.min(w, slot * .8);
-      const a0 = base + k * slot + R() * (slot - w); let type = ty;
-      if (ty === 'safe') { if (i - S.start > 4 && R() < .08) type = 'spring'; else if (i - S.start > 9 && R() < lerp(.08, .32, d)) type = 'crumble'; else anyPlain = true; }
-      add(a0, w, type); });
-    if (i - S.start > 16 && R() < lerp(.15, .5, d)) { L.omega = (R() < .5 ? -1 : 1) * lerp(.45, 1.1, R()) * lerp(.8, 1.3, d); L.phase = R() * TAU; }
+    const d = clamp((i - 3) / 95, 0, 1), gate = i % WORLD === 0, lower = levels.get(i - 1);
+    let plan = null;
+    for (let tries = 0; tries < 14 && !plan; tries++) {
+      const P = { specs: [], omega: 0, phase: 0 };
+      const nS = gate ? 3 : R() < 1 - d * 1.6 ? 3 : R() < lerp(.95, .4, d) ? 2 : 1;
+      let nD = gate || i - S.start < 3 ? 0 : R() < lerp(.3, .9, d) ? (R() < lerp(.05, .6, d) ? 2 : 1) : 0;
+      nD = Math.min(nD, 4 - nS);
+      const types = []; for (let k = 0; k < nS; k++) types.push('safe'); for (let k = 0; k < nD; k++) types.push('red');
+      for (let k = types.length - 1; k > 0; k--) { const j = Math.floor(R() * (k + 1)); [types[k], types[j]] = [types[j], types[k]]; }
+      const slot = TAU / types.length, base = R() * TAU;
+      types.forEach((ty, k) => { let w = gate ? 80 * PI / 180 : ty === 'red' ? (lerp(35, 65, d) + R() * 20) * PI / 180 : (lerp(95, 55, d) + R() * 22) * PI / 180; w = Math.min(w, slot * .62);
+        const a0 = base + k * slot + R() * (slot - w); let type = ty;
+        if (ty === 'safe' && !gate) { if (i - S.start > 4 && R() < .08) type = 'spring'; else if (i - S.start > 9 && R() < lerp(.08, .3, d)) type = 'crumble'; }
+        P.specs.push({ a0, w, type }); });
+      if (!gate && i - S.start > 16 && R() < lerp(.15, .5, d)) { P.omega = (R() < .5 ? -1 : 1) * lerp(.45, 1.1, R()) * lerp(.8, 1.3, d); P.phase = R() * TAU; }
+      if (passable(lower, P, S)) plan = P; else if (tries === 13) plan = carve(lower, P);
+    }
+    plan.specs.forEach(o => add(o.a0, o.w, o.type)); L.omega = plan.omega; L.phase = plan.phase;
     if (R() < .32) { const safe = L.shelves.filter(s => s.type !== 'red'); const s = pick(R, safe); const a = s.a0 + s.w / 2;
       const m = new THREE.Mesh(GEO.star, GOLD); m.position.set(Math.cos(a) * RB, 1.25, -Math.sin(a) * RB); L.sg.add(m);
       const gl = new THREE.Sprite(new THREE.SpriteMaterial({ map: GLOW, color: 0xffd070, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: .8 })); gl.scale.setScalar(1.4); m.add(gl);
@@ -517,6 +524,25 @@ function spawnLevel(i, S) {
     const fl = new THREE.Group(); fl.position.set(0, 0, 0); L.g.add(fl); put(fl, GEO.cyl, mat('#ffffff', { m: .6, r: .3, env: true }), RO + .25, 1.2, 0, .04, 2.4, .04);
     put(fl, GEO.box, mat('#ff4060', { ds: true }), RO + .7, 2.1, 0, .9, .55, .03); L.flag = r; }
   return L;
+}
+// A floor is reachable if, somewhere, a safe shelf of the floor below has open sky above it (room for the ball).
+function passable(lower, P, S) {
+  if (!lower || lower.i < S.start) return true;
+  if ((lower.omega || P.omega) && Math.abs(lower.omega - P.omega) > .2) return true;   // they turn against each other: a gap comes round
+  const off = (lower.omega ? lower.phase : 0) - (P.omega ? P.phase : 0);
+  let run = 0, bestRun = 0;
+  for (let k = 0; k < 2 * 158; k++) { const a = (k % 158) * .04;
+    const low = lower.shelves.some(sh => sh.type !== 'red' && (sh.w >= TAU - .01 || (mod(a - sh.a0, TAU) >= .12 && mod(a - sh.a0, TAU) <= sh.w - .12)));
+    const au = a + off, free = !P.specs.some(o => { const dd = mod(au - o.a0, TAU); return dd <= o.w + .24 || dd >= TAU - .24; });
+    run = low && free ? run + 1 : 0; bestRun = Math.max(bestRun, run); }
+  return bestRun >= 4;
+}
+function carve(lower, P) {
+  const sh = lower.shelves.find(o => o.type !== 'red'); if (!sh) return P;
+  const off = (lower.omega ? lower.phase : 0) - (P.omega ? P.phase : 0), c = (sh.w >= TAU - .01 ? 0 : sh.a0 + sh.w / 2) + off;
+  P.specs = P.specs.filter(o => { const dd = mod(c - o.a0, TAU); return !(dd <= o.w + .5 || dd >= TAU - .5); });
+  if (!P.specs.some(o => o.type !== 'red')) P.specs.push({ a0: c + PI - .6, w: 1.2, type: 'safe' });
+  return P;
 }
 function dropLevel(L) { poleG.remove(L.g); levels.delete(L.i); }
 function clearLevels() { for (const L of [...levels.values()]) dropLevel(L); }
@@ -758,7 +784,7 @@ function reset(mode) {
   clearLevels(); trail.length = 0; runSeed = 1 + Math.floor(Math.random() * 1e6);
   if (!unlocked(S.startWorld)) S.startWorld = 0;
   Object.assign(S, { mode, start: S.startWorld * WORLD, streak: 0, bestStreak: 0, stars: 0, hearts: 3, lavaOn: false, lavaWait: 2.5, shake: 0, deadT: 0, hurtT: 0, thetaT: S.theta, why: '' });
-  S.lastL = S.maxL = S.start; S.y = S.start * H + BR; S.vy = VB * .8; S.lava = S.start * H - 9; S.camY = S.y; S.worldShown = themeOf(S.start);
+  S.lastL = S.maxL = S.start; S.smash = false; S.bonkT = 0; S.bonks = 0; S.y = S.start * H + BR; S.vy = VB * .8; S.lava = S.start * H - 9; S.camY = S.y; S.worldShown = themeOf(S.start);
   for (let i = 0; i < 4; i++) fxA.update(10), fxN.update(10);
   updateHUD(true);
 }
@@ -811,7 +837,7 @@ function showMenu() {
 }
 function play() {
   audio(); reset('play'); show(null); $('hud').classList.remove('hidden'); $('starsBox').classList.remove('hidden'); $('tide').classList.remove('hidden'); $('bPause').classList.remove('hidden');
-  const h = $('hint'); h.textContent = TOUCH ? 'Drag ← → to spin the tower' : 'Move the mouse ← → to spin the tower'; h.classList.remove('hidden'); h.style.opacity = 1;
+  const h = $('hint'); h.textContent = (TOUCH ? 'Drag ← →' : 'Move the mouse ← →') + ' to spin · land under a gap to go up'; h.classList.remove('hidden'); h.style.opacity = 1;
   worldBanner(themeOf(S.start)); S.thetaT = S.theta;
 }
 function pause(on) { if (on) { S.mode = 'pause'; show('paused'); } else { S.mode = 'play'; show(null); } }
@@ -840,15 +866,16 @@ function shelfUnder(L, a) {
 }
 function land(L, s) {
   const th = L.t;
-  if (s.type === 'red') { hurt(L, s); return false; }
-  S.y = L.y + BR; S.vy = s.type === 'spring' ? VSPR : VB; S.sqv = -7.5;
+  if (s.type === 'red') { S.y = L.y + BR; S.vy = VB * .8; S.sqv = -7; S.lastL = L.i; S.streak = 0; S.smash = false;
+    if (S.mode === 'play' && S.hurtT <= 0) hurt(L, s); else { s.flash = .5; sparkFX(0, L.y + .2, RB, '#ff4050', 10, 4); } return true; }
+  S.y = L.y + BR; S.vy = s.type === 'spring' ? VSPR : VB; S.sqv = -7.5; S.smash = s.type === 'spring';
   const up = L.i > S.lastL; S.streak = up ? S.streak + 1 : 0; S.bestStreak = Math.max(S.bestStreak, S.streak); S.lastL = L.i;
   if (L.i > S.maxL) { S.maxL = L.i; updateHUD(); const w = themeOf(L.i); if (w > S.worldShown) { S.worldShown = w; worldBanner(w); SFX.world(); for (let k = 0; k < 3; k++) ringFX(L.y + .05, THEMES[w].ring, 1.6 + k * .6, 1 - k * .2); }
     if (BEAT && L.i === BEAT) { popText('🏁 FRIEND BEATEN!', '#ffe07a'); sparkFX(0, L.y + .4, RB, '#ffe07a', 40, 8); } }
   const power = s.type === 'spring' ? 1.8 : 1 + Math.min(S.streak, 12) * .05;
   burst(L.y, th, power, S.streak);
   if (S.mode === 'play') SFX.bounce(S.streak, s.type === 'spring');
-  if (s.type === 'spring') { s.springT = .35; popText('BOING!', '#ffe14a'); }
+  if (s.type === 'spring') { s.springT = .35; popText('BOING! SMASH UP!', '#ffe14a'); }
   if (S.streak === 5) popText('🔥 ON FIRE!', '#ffb040'); else if (S.streak === 10) popText('🌈 UNSTOPPABLE!', '#ffffff'); else if (S.streak === 20) popText('🚀 LEGENDARY!', '#9af0ff');
   if (s.type === 'crumble') { s.alive = false; s.fall = { vy: 0, t: 0 }; SFX.crumble(); for (let k = 0; k < 14; k++) fxN.spawn({ x: rand(-.6, .6), y: L.y - .1, z: RB + rand(-.5, .5), vx: rand(-1, 1), vy: rand(-1, 1), vz: rand(-1, 1), life: rand(.5, 1), size: rand(.15, .3), c: col(MATS[th].emiTheme ? '#6a5a7a' : '#b89a78'), g: 6, drag: 1.5, shape: 1 }); }
   if (S.mode === 'play') { if (!S.lavaOn && L.i !== S.start) S.lavaOn = true; if (L.i > S.start) $('hint').style.opacity = 0; }
@@ -856,8 +883,41 @@ function land(L, s) {
   return true;
 }
 function hurt(L, s) {
-  s.flash = 1; S.hearts--; S.streak = 0; S.hurtT = .8; S.shake = .7; updateHUD(); SFX.zap(); sparkFX(0, L.y + .2, RB, '#ff4050', 26, 7); sparkFX(0, L.y + .2, RB, '#ffffff', 10, 5);
+  s.flash = 1; S.hearts--; S.streak = 0; S.hurtT = 1.1; S.shake = .7; updateHUD(); SFX.zap(); sparkFX(0, L.y + .2, RB, '#ff4050', 26, 7); sparkFX(0, L.y + .2, RB, '#ffffff', 10, 5);
   popText(S.hearts > 0 ? '💥 OUCH!' : '💔', '#ff7a7a'); if (S.hearts <= 0) gameOver('spikes');
+}
+function shelfAt(L, a, m) {   // m < 0: the ball centre must be that far inside the shelf
+  for (const s of L.shelves) { if (!s.alive) continue; if (s.w >= TAU - .01) return s; const d = mod(a - s.a0, TAU);
+    if (m >= 0 ? (d <= s.w + m || d >= TAU - m) : (d >= -m && d <= s.w + m)) return s; }
+  return null;
+}
+function bonk(L) {   // hit the underside of a shelf: knocked back down
+  S.y = L.y - SLAB - BR + .09; S.vy = Math.min(-S.vy * .2, -1.5); S.streak = 0; S.sqv = 5; S.bonkT = .5; S.bonks = (S.bonks || 0) + 1; S.shake = Math.max(S.shake, .2);
+  for (let k = 0; k < 8; k++) fxN.spawn({ x: rand(-.3, .3), y: L.y - SLAB, z: RB + rand(-.2, .2), vx: rand(-1.5, 1.5), vy: rand(-2, 0), vz: rand(-.5, .5), life: rand(.4, .7), size: rand(.08, .14), c: col('#ffffff'), g: 6, drag: 2, shape: 1, a: .8 });
+  if (S.mode === 'play') { tone(150, .12, 'square', .1, 70); noise(.08, .2, 600); if (S.bonks % 3 === 1) popText('BONK! Land under a gap', '#ffd0a0'); }
+}
+function smashShelf(L, s) {   // spring launch: the ball breaks the shelves above it
+  s.alive = false; s.fall = { vy: Math.max(2, S.vy * .3), t: 0 }; S.vy *= .92; S.shake = Math.max(S.shake, .35);
+  const c = s.type === 'red' ? '#ff4050' : THEMES[L.t].ring; sparkFX(0, L.y - SLAB * .5, RB, c, 22, 7);
+  for (let k = 0; k < 12; k++) fxN.spawn({ x: rand(-.5, .5), y: L.y - .2, z: RB + rand(-.4, .4), vx: rand(-2, 2), vy: rand(0, 4), vz: rand(-1, 1), life: rand(.5, 1), size: rand(.15, .3), c: col(s.type === 'red' ? '#c01e2e' : '#a89888'), g: 9, drag: 1.2, shape: 1 });
+  if (S.mode === 'play') { SFX.crumble(); tone(500, .2, 'triangle', .12, 1100); }
+}
+// collisions against shelves: land on top, bonk from below, and shelves swept sideways into the ball
+function collide(prevY, menu) {
+  const prevB = prevY - BR, newB = S.y - BR;
+  if (S.vy < 0) { const hi = Math.floor(prevB / H + 1e-6), lo = Math.ceil(newB / H - 1e-6);
+    for (let i = hi; i >= lo; i--) { const L = levels.get(i); if (!L || L.i < S.start) continue; const top = L.y; if (!(top <= prevB + 1e-6 && top > newB)) continue;
+      const s = shelfUnder(L, localAngle(L)); if (s) { land(L, s); return; } } }
+  else if (S.vy > 0) { const pT = prevY + BR - .1, nT = S.y + BR - .1;
+    for (let i = Math.floor(prevY / H); i <= Math.floor(S.y / H) + 2; i++) { const L = levels.get(i); if (!L || L.i < S.start) continue; const u = L.y - SLAB;
+      if (!(pT <= u && nT > u)) continue; const s = shelfAt(L, localAngle(L), -.04); if (!s) continue;
+      if (S.smash) smashShelf(L, s); else { bonk(L); return; } } }
+  for (let i = Math.floor((S.y - BR) / H); i <= Math.floor((S.y + BR + SLAB) / H); i++) { const L = levels.get(i); if (!L || L.i < S.start) continue;
+    if (!(S.y + BR - .1 > L.y - SLAB && S.y - BR < L.y - .02)) continue;
+    const s = shelfAt(L, localAngle(L), -.04); if (!s) continue;
+    if (S.smash) { smashShelf(L, s); continue; }
+    if (S.y > L.y - SLAB * .5) { if (S.vy <= 0) land(L, s); else S.y = L.y + BR; } else bonk(L);
+    return; }
 }
 function gameOver(why) {
   if (S.mode !== 'play') return; S.mode = 'dead'; S.deadT = 0; S.why = why; S.shake = 1;
@@ -889,10 +949,10 @@ function step(dt) {
   }
   // ball
   if (playing || menu) {
-    const prevB = S.y - BR; S.vy -= G * dt; S.y += S.vy * dt; const newB = S.y - BR;
-    if (S.vy < 0) { const hi = Math.floor(prevB / H + 1e-6), lo = Math.ceil(newB / H - 1e-6);
-      for (let i = hi; i >= lo; i--) { const L = levels.get(i); if (!L || L.i < S.start) continue; const top = L.y; if (!(top <= prevB + 1e-6 && top > newB)) continue;
-        const s = shelfUnder(L, localAngle(L)); if (s) { if (menu && s.type === 'red') continue; if (land(L, s)) break; } } }
+    const prevY = S.y; S.vy -= G * dt; S.y += S.vy * dt;
+    collide(prevY, menu);
+    if (S.smash && S.vy < 0) S.smash = false;
+    if (S.bonkT > 0) S.bonkT -= dt;
     if (menu && S.y < S.start * H - 4) reset('menu');
     // stars
     for (let i = Math.floor(S.y / H) - 1; i <= Math.floor(S.y / H) + 1; i++) { const L = levels.get(i); if (!L || !L.star || L.star.taken) continue;
@@ -919,7 +979,11 @@ function step(dt) {
       if (s.flash > 0) { s.flash -= dt * 1.5; s.mesh.material[0] = s.flash > 0 && Math.sin(s.flash * 40) > 0 ? RED.side : RED.top; }
       if (s.springT > 0) { s.springT -= dt; const k = Math.sin((1 - s.springT / .35) * PI); s.spring.scale.y = 1 + k * 1.6; }
       if (s.fall) { s.fall.t += dt; s.fall.vy -= 18 * dt; s.mesh.position.y += s.fall.vy * dt; s.mesh.rotation.x = s.fall.t * .7; s.mesh.rotation.z = s.fall.t * .4;
-        if (s.extra) s.extra.forEach(e => e.visible = false); if (s.fall.t > 2) { s.mesh.visible = false; s.fall = null; } }
+        if (s.extra) s.extra.forEach(e => e.visible = false); if (s.fall.t > 2) { s.mesh.visible = false; s.fall = null; s.regrow = 2.2; } }
+      else if (s.regrow > 0) { s.regrow -= dt;   // broken shelves grow back out of the pole (never inside the ball)
+        if (s.regrow <= 0) { if (S.y + BR > L.y - SLAB - .1 && S.y - BR < L.y + .1) s.regrow = .25;
+          else { s.alive = true; s.mesh.visible = true; s.mesh.position.y = 0; s.mesh.rotation.x = s.mesh.rotation.z = 0; s.pop = 0; if (s.extra) s.extra.forEach(e => e.visible = true); } } }
+      if (s.pop != null && s.pop < 1) { s.pop = Math.min(1, s.pop + dt * 3); const k = s.pop, e = 1 + 2.7 * Math.pow(k - 1, 3) + 1.7 * Math.pow(k - 1, 2); s.mesh.scale.set(e, 1, e); }
     }
   }
   // camera target
@@ -931,14 +995,21 @@ function step(dt) {
   for (const r of rings) if (r.visible) { r.userData.t += dt * 1.6 * r.userData.v; const t = r.userData.t; if (t >= 1) { r.visible = false; continue; } r.scale.setScalar(r.userData.s * lerp(.4, 2.6, 1 - Math.pow(1 - t, 2))); r.material.opacity = (1 - t) * .9; }
 }
 
-// bot (menu demo + tests): turn to the middle of the safest shelf of the next floor
+// bot (menu demo + tests): pass the next floor through a gap, then land where the sky above is open
 const BOT = { on: /bot/.test(location.search) };
 function bot() {
-  const goingUp = S.vy > 0, cur = Math.floor((S.y - BR + .01) / H);
-  const tryL = [cur + (goingUp ? 1 : 0), cur, cur - 1];
-  for (const i of tryL) { const L = levels.get(i); if (!L || i < S.start) continue; const safe = L.shelves.filter(s => s.alive && s.type !== 'red'); if (!safe.length) continue;
-    let best = null, bd = 1e9; for (const s of safe) { const c = s.a0 + s.w / 2, need = BALL_A - L.spin - c, d = Math.abs(wrapPI(need - S.theta)); if (d < bd) { bd = d; best = need; } }
-    if (best != null) { S.thetaT = S.theta + wrapPI(best - S.theta); return; } }
+  const cur = Math.floor((S.y - BR) / H), L = levels.get(cur), U = levels.get(cur + 1);
+  const aOf = (Lv, th) => BALL_A - th - Lv.spin;
+  const free = (Lv, th) => !Lv || Lv.i < S.start || !shelfAt(Lv, aOf(Lv, th), .07);
+  const safe = (Lv, th) => { if (!Lv || Lv.i < S.start) return false; const s = shelfAt(Lv, aOf(Lv, th), -.15); return s && s.type !== 'red'; };
+  const near = ok => { for (let k = 0; k <= 78; k++) for (const sg of k ? [1, -1] : [1]) { const th = S.theta + sg * k * .04; if (ok(th)) return th; } return null; };
+  if (U && !S.smash && S.y - BR < U.y && S.y + BR > U.y - SLAB - .05) { S.thetaT = S.theta; return; }   // inside a floor's gap: hold still
+  const apexTop = S.y + BR + Math.max(0, S.vy) ** 2 / (2 * G);
+  let t = null;
+  if (S.vy > 0 && !S.smash && U && apexTop > U.y - SLAB) t = near(th => free(U, th) && safe(L, th));
+  if (t == null && (S.vy <= 0 || S.smash || !U || apexTop <= U.y - SLAB)) { t = near(th => safe(L, th) && free(U, th)); if (t == null) t = near(th => safe(L, th)); }
+  if (t == null && U) t = near(th => free(U, th));
+  if (t != null) S.thetaT = t;
 }
 
 // ---------- per-frame look ----------
@@ -957,7 +1028,7 @@ function look(dt) {
   if (POST) { POST.bright.uniforms.th.value = lerp(TA.bloom[0], TB.bloom[0], f); POST.comp.uniforms.bloom.value = lerp(TA.bloom[1], TB.bloom[1], f); }
   lerpC(ballMat.color, A.ball, B.ball, f);
   const fire = S.streak >= 5; ballMat.emissive.set(fire ? (S.streak >= 10 ? '#ff60a0' : '#ff5010') : '#000'); ballMat.emissiveIntensity = fire ? .35 + .15 * Math.sin(S.time * 12) : 0;
-  ballGlow.material.opacity = fire ? .55 : 0; ballGlow.material.color.set(S.streak >= 10 ? '#ff80ff' : '#ffa040');
+  ballGlow.material.opacity = fire || S.smash ? .55 : 0; ballGlow.material.color.set(S.streak >= 10 ? '#ff80ff' : '#ffa040');
   ambient.forEach((s, i) => { const w = (i === a ? 1 - f : 0) + (i === b ? f : 0); s.pts.visible = w > .01; s.u.uA.value = w; s.u.uC.value.set(0, S.camY, -2); });
   // flood colours follow the world it is in
   const [ha, hb, hf] = blendAt(S.lava + 3);
@@ -980,7 +1051,7 @@ function ballLook(dt) {
   bodyM.scale.set(BR * sxz, BR * sy, BR * sxz); bodyM.position.y = S.sq * BR * .8; bodyM.rotation.y = -S.theta * .4;
   face.position.y = S.sq * BR * .6; face.scale.set(sxz, sy, 1);
   // eyes: look where you're going, blink, scared when falling or hurt
-  const scared = S.vy < -13 || S.hurtT > 0 || S.mode === 'dead';
+  const scared = S.vy < -13 || S.hurtT > 0 || S.bonkT > 0 || S.mode === 'dead';
   S.blink -= dt; if (S.blink < -.12) S.blink = rand(2, 4.5); const bl = S.blink < 0 ? .1 : 1;
   const ly = clamp(S.vy / 18, -1, 1) * .025;
   eyes.forEach(({ e, p }) => { e.scale.set(scared ? 1.2 : 1, (scared ? 1.25 : 1) * bl, 1); p.position.set(0, ly, 0); p.scale.setScalar(scared ? .75 : 1); });
@@ -989,7 +1060,8 @@ function ballLook(dt) {
   blob.visible = false;
   if (S.mode === 'play' || S.mode === 'menu') for (let i = Math.floor((S.y - BR) / H); i >= Math.floor((S.y - BR) / H) - 6; i--) { const L = levels.get(i); if (!L || i < S.start) continue;
     const s = shelfUnder(L, localAngle(L)); if (s) { const d = S.y - BR - L.y; blob.visible = true; blob.position.set(0, L.y + .015, RB); blob.scale.setScalar(clamp(1.15 - d * .06, .5, 1.1));
-      blob.material.color.set(s.type === 'red' ? '#ff2a2a' : '#ffffff'); blob.material.opacity = clamp(1 - d * .07, .35, 1); break; } }
+      const A = levels.get(L.i + 1), blocked = s.type !== 'red' && A && shelfAt(A, localAngle(A), -.04);
+      blob.material.color.set(s.type === 'red' ? '#ff1a1a' : blocked ? '#ff8a00' : '#1a1830'); blob.material.opacity = clamp(1 - d * .07, .35, 1); break; } }
   updateTrail(BALL_A - S.theta, S.y, S, dt);
   ribA.visible = ribN.visible = S.mode !== 'over';
   ball.visible = !(S.mode === 'over' && S.y < S.lava);
