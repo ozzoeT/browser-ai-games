@@ -997,8 +997,8 @@ function buildMenu(){const box=$('missions');box.innerHTML='';MIS.forEach((M,i)=
   b.innerHTML=`<span>${i+1}. ${M.name}<br><small>${lock?'🔒 Finish mission '+i+' to unlock':M.sub}</small></span><span>${lock?'':'▶'}</span>`;b.onclick=()=>{audioInit();$('menu').classList.add('hidden');startMission(i);};box.appendChild(b);});
  $('p1b').classList.toggle('on',save.players===1);$('p2b').classList.toggle('on',save.players===2);$('dEasy').classList.toggle('on',!save.diff);$('dNorm').classList.toggle('on',!!save.diff);
  $('help').innerHTML=touchDev&&save.players<2?'Left: stick to move and aim (up = shoot up, down = crouch). Right: FIRE, JUMP, BOMB.<br>Jump on the little tank to drive it. Two players need a keyboard or gamepads.':(save.players>1?`<b>Player 1</b>: ${kb('W','A','S','D')} move/aim · ${kb('C')} fire · ${kb('V')} jump · ${kb('B')} bomb<br><b>Player 2</b>: ${kb('←','↑','↓','→')} move/aim · ${kb('J')} fire · ${kb('K')} jump · ${kb('L')} bomb`
-  :`${kb('←','↑','↓','→')} or ${kb('W','A','S','D')} move · ↑ aim up · ↓ crouch (in the air: shoot down)<br>${kb('J')} or ${kb('Z')} fire · ${kb('K')} ${kb('X')} or ${kb('Space')} jump · ${kb('L')} or ${kb('B')} bomb`)
-  +`<br>Tank: jump on it to get in, ↓ + jump to get out, bomb = cannon · ${kb('Esc')} pause · 🎮 gamepads work too`;}
+  :`${kb('A')} ${kb('D')} move · ${kb('W')} aim up · ${kb('S')} crouch (in the air: shoot down) · ${kb('Space')} jump<br>🖱️ <b>Left click</b> fire (hold for rapid fire) · <b>Right click</b> bomb<br><small>Arrow keys move too · no mouse? ${kb('J')} fire · ${kb('K')} jump · ${kb('L')} bomb</small>`)
+  +`<br>Tank: jump on it to get in, S/↓ + jump to get out, bomb = cannon · ${kb('Esc')} pause · 🎮 gamepads work too`;}
 $('p1b').onclick=()=>{save.players=1;persist();buildMenu();};$('p2b').onclick=()=>{save.players=2;persist();buildMenu();};
 $('dEasy').onclick=()=>{save.diff=0;persist();buildMenu();};$('dNorm').onclick=()=>{save.diff=1;persist();buildMenu();};
 function pause(){if(state!=='play')return;state='pause';$('menu').classList.remove('hidden');$('pick').classList.add('hidden');$('bResume').classList.remove('hidden');$('bQuit').classList.remove('hidden');musicStop();}
@@ -1023,6 +1023,12 @@ addEventListener('keydown',e=>{KB[e.code]=1;if(GAMEK.has(e.code)&&state==='play'
 addEventListener('keyup',e=>{KB[e.code]=0;});addEventListener('blur',()=>{for(const k in KB)KB[k]=0;pause();});
 document.addEventListener('visibilitychange',()=>{if(document.hidden)pause();});
 const TCH={l:0,r:0,u:0,d:0,fire:0,jump:0,bomb:0};
+// single player mouse: left button = fire (hold for continuous), right button = bomb
+const MS={fire:0,bomb:0};
+addEventListener('mousedown',e=>{if(state!=='play'||save.players>1||e.target.closest('button,a,.tb'))return;audioInit();if(e.button===0)MS.fire=1;else if(e.button===2)MS.bomb=1;e.preventDefault();});
+addEventListener('mouseup',e=>{if(e.button===0)MS.fire=0;else if(e.button===2)MS.bomb=0;});
+addEventListener('contextmenu',e=>{if(state==='play'||state==='pause')e.preventDefault();});
+addEventListener('blur',()=>{MS.fire=MS.bomb=0;});
 (function touchSetup(){const st=$('stick'),kn=$('knob');let id=null;
  const mv=e=>{const r=st.getBoundingClientRect(),dx=(e.clientX-r.left-r.width/2)/(r.width/2),dy=(e.clientY-r.top-r.height/2)/(r.height/2);TCH.l=dx<-.3;TCH.r=dx>.3;TCH.u=dy<-.5;TCH.d=dy>.5;const l=Math.min(1,Math.hypot(dx,dy)),a=Math.atan2(dy,dx);kn.style.transform=`translate(${Math.cos(a)*l*46}px,${Math.sin(a)*l*46}px)`;};
  st.addEventListener('pointerdown',e=>{id=e.pointerId;st.setPointerCapture(id);mv(e);audioInit();});st.addEventListener('pointermove',e=>{if(e.pointerId===id)mv(e);});
@@ -1033,7 +1039,7 @@ const TCH={l:0,r:0,u:0,d:0,fire:0,jump:0,bomb:0};
 function padState(gp){if(!gp)return null;const b=i=>!!(gp.buttons[i]&&gp.buttons[i].pressed),a=gp.axes;return{l:a[0]<-.4||b(14),r:a[0]>.4||b(15),u:a[1]<-.55||b(12),d:a[1]>.55||b(13),jump:b(0),fire:b(2)||b(5)||b(7),bomb:b(1)||b(3)||b(4)||b(6),start:b(9)};}
 let padStartPrev=false;
 function readInput(){const k=c=>!!KB[c],two=save.players>1,pads=(navigator.getGamepads?[...navigator.getGamepads()]:[]).filter(Boolean).map(padState);
- const S=[];if(!two)S[0]={l:k('ArrowLeft')||k('KeyA'),r:k('ArrowRight')||k('KeyD'),u:k('ArrowUp')||k('KeyW'),d:k('ArrowDown')||k('KeyS'),fire:k('KeyJ')||k('KeyZ')||k('KeyC'),jump:k('KeyK')||k('KeyX')||k('KeyV')||k('Space'),bomb:k('KeyL')||k('KeyB')};
+ const S=[];if(!two)S[0]={l:k('ArrowLeft')||k('KeyA'),r:k('ArrowRight')||k('KeyD'),u:k('ArrowUp')||k('KeyW'),d:k('ArrowDown')||k('KeyS'),fire:!!MS.fire||k('KeyJ'),jump:k('Space')||k('KeyK'),bomb:!!MS.bomb||k('KeyL')};
  else{S[0]={l:k('KeyA'),r:k('KeyD'),u:k('KeyW'),d:k('KeyS'),fire:k('KeyC'),jump:k('KeyV')||k('Space'),bomb:k('KeyB')};S[1]={l:k('ArrowLeft'),r:k('ArrowRight'),u:k('ArrowUp'),d:k('ArrowDown'),fire:k('KeyJ')||k('Numpad1'),jump:k('KeyK')||k('Numpad2'),bomb:k('KeyL')||k('Numpad3')};}
  pads.forEach((g,i)=>{const t=S[two?i:0];if(!t)return;for(const key in t)t[key]=t[key]||g[key];});
  for(const key in TCH)S[0][key]=S[0][key]||TCH[key];
