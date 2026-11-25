@@ -2,7 +2,7 @@
 
 A small collection of AI-made games you can play right in your browser. Nothing too hard, just fun: made for kids, and for dads and moms who want to play together with them :)
 
-Racing, fighting, strategy, parkour, motorbike stunts, medieval battles, adventure and a math game for little ones, a keyboard emoji game for toddlers, a rhythm battle at Marathon, a calm deep-sea photo dive, a pixel art run and gun, 1–2 players on one keyboard. No download, no build step: every game is a single HTML file.
+Racing, fighting, strategy, parkour, motorbike stunts, medieval battles, adventure and a math game for little ones, a keyboard emoji game for toddlers, a rhythm battle at Marathon, a calm deep-sea photo dive, a pixel art run and gun, a bouncing tower climb, 1–2 players on one keyboard. No download, no build step: every game is a single HTML file.
 
 **▶ Play:** https://ozzoet.github.io/browser-ai-games/
 
@@ -32,6 +32,7 @@ Racing, fighting, strategy, parkour, motorbike stunts, medieval battles, adventu
 | Pedal Leap | Bike ramp jump over the sea: pedal hard, grab boosts, hop, glide as far as you can; 3 tracks | 1–2 (one pedals, one steers) | [`pedal-leap/`](pedal-leap/) |
 | Deep Lens | Calm deep-sea exploration in pixel art: dive with a torch and a camera, photograph 16 real deep-sea animals for your album | 1 | [`deep-lens/`](deep-lens/) |
 | Bolt Brigade | Pixel art run and gun: 3 missions (toy soldiers in the desert, goo aliens in the jungle, robots in a snowy night base), weapons to grab, prisoners to free, a little tank and 3 giant bosses; easy mode | 1–2 | [`bolt-brigade/`](bolt-brigade/) |
+| Bounce Tower | Spin the tower so a shelf is always under the bouncing ball: climb through 7 worlds (garden, candy, ice, sunset, neon city, volcano, space) ahead of the rising flood | 1 | [`bounce-tower/`](bounce-tower/) |
 
 All games are in English.
 
