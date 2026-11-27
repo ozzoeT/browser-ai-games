@@ -35,6 +35,7 @@ Racing, fighting, strategy, parkour, motorbike stunts, medieval battles, adventu
 | Bounce Tower | Spin the tower so a shelf is always under the bouncing ball: climb through 7 worlds (garden, candy, ice, sunset, neon city, volcano, space) ahead of the rising flood | 1 | [`bounce-tower/`](bounce-tower/) |
 | Open Throttle | First-person free-roam driving from a detailed pixel-art cockpit (wheel, gauges, mirrors, radar), ramps, jumps and boost across 4 open worlds (valley, canyon, snow, Moon) hunting stars | 1 | [`open-throttle/`](open-throttle/) |
 | Handy Home | Cozy pixel-art home makeover: sweep, scrub, fill, sand, paint, hammer and fix pipes across 4 rooms, then decorate with lamps and plants (real sunlight and lamp light, a cat to pet, before/after slider) | 1 | [`handy-home/`](handy-home/) |
+| Handy Home: First Person | The same house makeover walking around in first person: chunky 3D pixel art (low-res render, outlines, dithered colours), tools in your hand, sunbeams with floating dust, lamps you switch on by decorating, mouse or touch controls | 1 | [`handy-home/fp.html`](handy-home/fp.html) |
 
 All games are in English.
 
