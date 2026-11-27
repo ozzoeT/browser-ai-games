@@ -158,7 +158,7 @@ const ren=new THREE.WebGLRenderer({canvas:cv,antialias:false,powerPreference:'hi
 ren.setPixelRatio(1);ren.shadowMap.enabled=true;ren.shadowMap.type=THREE.BasicShadowMap;ren.autoClear=false;
 ren.outputColorSpace=THREE.LinearSRGBColorSpace; // post shader does sRGB + palette quantise itself
 let RW=384,RH=216,PXS=4,RT=null;
-const cam=new THREE.PerspectiveCamera(72,RW/RH,.05,40),vmCam=new THREE.PerspectiveCamera(58,RW/RH,.05,40);
+const cam=new THREE.PerspectiveCamera(72,RW/RH,.1,40),vmCam=new THREE.PerspectiveCamera(58,RW/RH,.05,40);
 const postMat=new THREE.ShaderMaterial({uniforms:{tC:{value:null},tD:{value:null},res:{value:new THREE.Vector2(RW,RH)},cn:{value:.05},cf:{value:40},fade:{value:0},warm:{value:new THREE.Vector3(1.05,1,.92)},sat:{value:1.12},vig:{value:.3},flash:{value:0}},
  vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position.xy,0.,1.);}',
  fragmentShader:`uniform sampler2D tC,tD;uniform vec2 res;uniform float cn,cf,fade,sat,vig,flash;uniform vec3 warm;varying vec2 vUv;
@@ -202,7 +202,7 @@ class Layer{
   const w=this.w=Math.max(1,Math.round((u1-u0)*TD)),h=this.h=Math.max(1,Math.round((v1-v0)*TD));
   this.cv=mk(w,h);this.g=this.cv.getContext('2d',{willReadFrequently:true});this.im=this.g.createImageData(w,h);
   this.src=new Uint8ClampedArray(w*h*3);this.cov=new Float32Array(w*h);this.need=new Uint8Array(w*h);this.cnt=0;this.done=0;
-  this.tex=T3(this.cv);this.mat=new THREE.MeshLambertMaterial({map:this.tex,alphaTest:.5});
+  this.tex=T3(this.cv);const po=-1-Math.round(off*1000);this.mat=new THREE.MeshLambertMaterial({map:this.tex,alphaTest:.5,polygonOffset:true,polygonOffsetFactor:po,polygonOffsetUnits:po*2});
   this.mesh=new THREE.Mesh(quadGeo(S,u0,v0,u1,v1,off),this.mat);this.mesh.receiveShadow=true;this.mesh.userData.layer=this;
   const d=this.im.data;
   for(let y=0;y<h;y++)for(let x=0;x<w;x++){const u=u0+(x+.5)/TD,v=v1-(y+.5)/TD,i=y*w+x,c=fn(x,y,u,v);if(!c)continue;
@@ -296,10 +296,10 @@ function newRoom(o){const W=o.W,D=o.D,H=o.H;
  for(const k of['N','S','W','E']){const S=r.S[k];
   const m=new THREE.MeshLambertMaterial({map:T3(surfTex(S,(x,y,u,v)=>inHole(S,u,v)?null:o.wall(x,y,u,v,S))),alphaTest:.5});
   const pl=new THREE.Mesh(quadGeo(S,0,0,S.len,S.ht,0),m);pl.receiveShadow=true;pl.userData.hole=k===wi.wall?(h)=>inHole(S,h.uv.x*S.len,h.uv.y*S.ht):null;scene.add(pl);r.solids.push(pl);
-  const slab=(u0,u1,v0,v1)=>{onWall(scene,S,u1-u0,v1-v0,.26,shellM,(u0+u1)/2,(v0+v1)/2,-.26);};
+  const slab=(u0,u1,v0,v1)=>{onWall(scene,S,u1-u0,v1-v0,.26,shellM,(u0+u1)/2,(v0+v1)/2,-.28);};
   if(k===wi.wall){slab(-.3,wi.u-wi.w/2,-.3,H+.3);slab(wi.u+wi.w/2,S.len+.3,-.3,H+.3);slab(wi.u-wi.w/2,wi.u+wi.w/2,-.3,wi.v0);slab(wi.u-wi.w/2,wi.u+wi.w/2,wi.v1,H+.3);}
   else slab(-.3,S.len+.3,-.3,H+.3);}
- box(W+.8,.26,D+.8,shellM,0,H+.13,0,scene);box(W+.8,.26,D+.8,shellM,0,-.13,0,scene);
+ box(W+.8,.26,D+.8,shellM,0,H+.15,0,scene);box(W+.8,.26,D+.8,shellM,0,-.15,0,scene);
  const fl=new THREE.Mesh(quadGeo(r.S.F,0,0,W,D,0),new THREE.MeshLambertMaterial({map:T3(surfTex(r.S.F,o.floor))}));fl.receiveShadow=true;scene.add(fl);r.solids.push(fl);
  const ce=new THREE.Mesh(quadGeo(r.S.C,0,0,W,D,0),new THREE.MeshLambertMaterial({map:T3(surfTex(r.S.C,ceilTex))}));ce.receiveShadow=true;scene.add(ce);r.solids.push(ce);
  // window
