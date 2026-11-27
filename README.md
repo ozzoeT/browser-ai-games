@@ -2,7 +2,7 @@
 
 A small collection of AI-made games you can play right in your browser. Nothing too hard, just fun: made for kids, and for dads and moms who want to play together with them :)
 
-Racing, fighting, strategy, parkour, motorbike stunts, medieval battles, adventure and a math game for little ones, a keyboard emoji game for toddlers, a rhythm battle at Marathon, a calm deep-sea photo dive, a pixel art run and gun, a bouncing tower climb, a first-person free-roam drive, 1–2 players on one keyboard. No download, no build step: every game is a single HTML file.
+Racing, fighting, strategy, parkour, motorbike stunts, medieval battles, adventure and a math game for little ones, a keyboard emoji game for toddlers, a rhythm battle at Marathon, a calm deep-sea photo dive, a pixel art run and gun, a bouncing tower climb, a first-person free-roam drive, a cozy pixel-art home makeover, 1–2 players on one keyboard. No download, no build step: every game is a single HTML file.
 
 **▶ Play:** https://ozzoet.github.io/browser-ai-games/
 
@@ -34,6 +34,7 @@ Racing, fighting, strategy, parkour, motorbike stunts, medieval battles, adventu
 | Bolt Brigade | Pixel art run and gun: 3 missions (toy soldiers in the desert, goo aliens in the jungle, robots in a snowy night base), weapons to grab, prisoners to free, a little tank and 3 giant bosses; easy mode | 1–2 | [`bolt-brigade/`](bolt-brigade/) |
 | Bounce Tower | Spin the tower so a shelf is always under the bouncing ball: climb through 7 worlds (garden, candy, ice, sunset, neon city, volcano, space) ahead of the rising flood | 1 | [`bounce-tower/`](bounce-tower/) |
 | Open Throttle | First-person free-roam driving from a detailed pixel-art cockpit (wheel, gauges, mirrors, radar), ramps, jumps and boost across 4 open worlds (valley, canyon, snow, Moon) hunting stars | 1 | [`open-throttle/`](open-throttle/) |
+| Handy Home | Cozy pixel-art home makeover: sweep, scrub, fill, sand, paint, hammer and fix pipes across 4 rooms, then decorate with lamps and plants (real sunlight and lamp light, a cat to pet, before/after slider) | 1 | [`handy-home/`](handy-home/) |
 
 All games are in English.
 
